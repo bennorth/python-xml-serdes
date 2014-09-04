@@ -94,8 +94,8 @@ class Instance(TypeDescriptor):
         self.verify_tag(elt, expected_tag)
         descr = self.cls.XML_Descriptor
         if len(elt) != len(descr.children):
-            raise ValueError('XML element has %d children but expecting %d'
-                             % (len(elt), len(descr.children)))
+            raise ValueError('expecting %d children but got %d'
+                             % (len(descr.children), len(elt)))
 
         # TODO: Allow alternative constructors
         ctor = self.cls
