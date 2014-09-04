@@ -70,6 +70,13 @@ class TestInstanceTypes(TestCase):
                                      'XML element has 3 children but expecting 2'):
             bad_rect = td.extract_from(bad_xml, 'rect')
 
+    def test_bad_xml_wrong_tag(self):
+        td = X.Instance(Rectangle)
+        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
+        with self.assertRaisesRegexp(ValueError,
+                                     'expected tag "width" but got "a"'):
+            bad_rect = td.extract_from(bad_xml, 'rect')
+
 class TestNumpyBase:
     def bad_value_1(self, x, regexp):
         with self.assertRaisesRegexp(ValueError, regexp):
