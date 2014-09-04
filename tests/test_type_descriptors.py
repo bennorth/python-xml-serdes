@@ -67,7 +67,7 @@ class TestInstanceTypes(TestCase):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
         with self.assertRaisesRegexp(ValueError,
-                                     'XML element has 3 children but expecting 2'):
+                                     'expecting 2 children but got 3'):
             bad_rect = td.extract_from(bad_xml, 'rect')
 
     def test_bad_xml_wrong_tag(self):
@@ -195,7 +195,7 @@ class TestObject(TestCase):
 
     def test_bad_n_children(self):
         bad_xml = etree.fromstring('<rect><width>99</width></rect>')
-        with self.assertRaisesRegexp(ValueError, 'has 1 children but expecting 2'):
+        with self.assertRaisesRegexp(ValueError, 'expecting 2 children but got 1'):
             bad_rect = X.Deserialize(Rectangle, bad_xml, 'rect')
 
     def test_bad_root_tag(self):
