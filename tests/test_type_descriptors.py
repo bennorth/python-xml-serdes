@@ -63,6 +63,13 @@ class TestInstanceTypes(TestCase):
         rect_round_trip = td.extract_from(elt, 'rect')
         self.assertEqual(rect, rect_round_trip)
 
+    def test_bad_xml_wrong_n_children(self):
+        td = X.Instance(Rectangle)
+        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
+        with self.assertRaisesRegexp(ValueError,
+                                     'XML element has 3 children but expecting 2'):
+            bad_rect = td.extract_from(bad_xml, 'rect')
+
 class TestNumpyBase:
     def bad_value_1(self, x, regexp):
         with self.assertRaisesRegexp(ValueError, regexp):
