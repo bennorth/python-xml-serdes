@@ -81,7 +81,7 @@ class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_de
 
     def extract_from(self, elt):
         """
-        Deerialize, from an XML element, a value of the relevant type.
+        Deserialize, from an XML element, a value of the relevant type.
 
         >>> descr = DescriptorElement.new_from_tuple(('width', Atomic(int)))
         >>> xml_elt = etree.fromstring('<width>99</width>')
