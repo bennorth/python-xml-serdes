@@ -8,7 +8,7 @@ AtomicTypes = (int, float, str,
                np.int8, np.int16, np.int32, np.int64,
                np.uint8, np.uint16, np.uint32, np.uint64)
 
-class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_descr')):
+class ElementDescriptor(namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
     """
     Object which represents the mapping between an XML element and a
     property of a Python object, together with the native Python type of
@@ -24,8 +24,8 @@ class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_de
     :type type_descr: subclass of :class:`XMLserdes.TypeDescriptor`
 
     A more convenient way of constructing a
-    :class:`XMLserdes.DescriptorElement` is to use the
-    :meth:`XMLserdes.DescriptorElement.new_from_tuple` method.
+    :class:`XMLserdes.ElementDescriptor` is to use the
+    :meth:`XMLserdes.ElementDescriptor.new_from_tuple` method.
     """
 
     # TODO Better names.  'SimpleDescriptor', 'CompoundDescriptor'? Sth to indicate
@@ -33,7 +33,7 @@ class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_de
     @classmethod
     def new_from_tuple(cls, tup):
         """
-        Construct a new :class:`XMLserdes.DescriptorElement` from a two-
+        Construct a new :class:`XMLserdes.ElementDescriptor` from a two-
         or three-element tuple, covering the most common cases.
 
         :param tuple tup: two- or three-element tuple describing required instance
@@ -41,7 +41,7 @@ class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_de
         The tuple must be one of:
 
         - a pair ``(tag, type_descriptor)``, in which case the
-          ``value_from`` field of the resulting ``DescriptorElement`` is
+          ``value_from`` field of the resulting ``ElementDescriptor`` is
           ``attrgetter(tag)``
 
         - a triple ``(tag, field_name_or_callable, type_descriptor)``;
@@ -66,12 +66,12 @@ class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_de
         """
         Serialize, into an XML element, the relevant property from the given object.
 
-        >>> descr = DescriptorElement.new_from_tuple(('width', Atomic(int)))
+        >>> descr = ElementDescriptor.new_from_tuple(('width', Atomic(int)))
         >>> shape = namedtuple('Shape', 'width')(42)
         >>> etree.tostring(descr.xml_element(shape))
         '<width>42</width>'
 
-        >>> descr_different_tag = DescriptorElement.new_from_tuple(('shape-width',
+        >>> descr_different_tag = ElementDescriptor.new_from_tuple(('shape-width',
         ...                                                         'width',
         ...                                                         Atomic(int)))
         >>> etree.tostring(descr_different_tag.xml_element(shape))
@@ -83,7 +83,7 @@ class DescriptorElement(namedtuple('_DescriptorElement', 'tag value_from type_de
         """
         Deserialize, from an XML element, a value of the relevant type.
 
-        >>> descr = DescriptorElement.new_from_tuple(('width', Atomic(int)))
+        >>> descr = ElementDescriptor.new_from_tuple(('width', Atomic(int)))
         >>> xml_elt = etree.fromstring('<width>99</width>')
         >>> descr.extract_from(xml_elt)
         99
@@ -98,7 +98,7 @@ class Descriptor(namedtuple('_Descriptor', 'children')):
     should be de/serialized from/to the contents of an XML element.
 
     :ivar children: list of children, each as a
-        :class:`XMLserdes.DescriptorElement` instance
+        :class:`XMLserdes.ElementDescriptor` instance
 
     Most conveniently constructed via the
     :func:`XMLserdes.SerDesDescriptor` function.
@@ -108,7 +108,7 @@ class Descriptor(namedtuple('_Descriptor', 'children')):
     @classmethod
     def new_from_abbreviated_args(cls, *args):
         raw_descriptor = cls._make(args)
-        return raw_descriptor._replace(children = map(DescriptorElement.new_from_tuple,
+        return raw_descriptor._replace(children = map(ElementDescriptor.new_from_tuple,
                                                       raw_descriptor.children))
 
 def SerDesDescriptor(children):
@@ -117,7 +117,7 @@ def SerDesDescriptor(children):
 
     :param children: descriptions of property/sub-element mappings; each
         should be a tuple suitable for passing to
-        :meth:`XMLserdes.DescriptorElement.new_from_tuple`.
+        :meth:`XMLserdes.ElementDescriptor.new_from_tuple`.
 
     :type children: iterable of tuples
 

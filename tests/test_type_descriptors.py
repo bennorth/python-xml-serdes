@@ -155,22 +155,22 @@ class TestDescriptors(TestCase):
         self.assertEquals(val, round_trip_val)
 
     def test_from_pair(self):
-        self.do_tests(X.DescriptorElement.new_from_tuple(('width', X.Atomic(int))),
+        self.do_tests(X.ElementDescriptor.new_from_tuple(('width', X.Atomic(int))),
                       'width')
 
     def test_from_triple_attr_name(self):
-        self.do_tests(X.DescriptorElement.new_from_tuple(('wd', 'width', X.Atomic(int))),
+        self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', 'width', X.Atomic(int))),
                       'wd')
 
     def test_from_triple_function(self):
-        self.do_tests(X.DescriptorElement.new_from_tuple(('wd', lambda x: x.width, X.Atomic(int))),
+        self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', lambda x: x.width, X.Atomic(int))),
                       'wd')
 
     def test_bad_construction(self):
         with self.assertRaisesRegexp(ValueError, 'length'):
-            de = X.DescriptorElement.new_from_tuple((1, 2, 3, 4))
+            de = X.ElementDescriptor.new_from_tuple((1, 2, 3, 4))
         with self.assertRaises(TypeError):
-            de = X.DescriptorElement.new_from_tuple(42)
+            de = X.ElementDescriptor.new_from_tuple(42)
 
 
 

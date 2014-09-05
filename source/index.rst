@@ -22,7 +22,7 @@ Top-level functions
 Classes and functions
 ---------------------
 
-.. autoclass:: XMLserdes.DescriptorElement
+.. autoclass:: XMLserdes.ElementDescriptor
    :members:
    :member-order: bysource
 
