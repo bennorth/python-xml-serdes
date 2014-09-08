@@ -12,6 +12,14 @@ import XMLserdes as X
 
 import re
 
+try:
+    etree_encoding = unicode
+except NameError:
+    etree_encoding = str
+
+def to_unicode(elt):
+    return etree.tostring(elt, encoding = etree_encoding)
+
 class TestAtomicTypes(TestCase):
     def test_1(self):
         for tp, val, exp_txt in [(int, 42, '42'),
@@ -20,7 +28,7 @@ class TestAtomicTypes(TestCase):
                                  (np.uint8, np.uint8(42), '42')]:
             td = X.Atomic(tp)
             elt = td.xml_element(val, 'foo')
-            self.assertEqual('<foo>%s</foo>' % exp_txt, etree.tostring(elt))
+            self.assertEqual('<foo>%s</foo>' % exp_txt, to_unicode(elt))
             val_round_trip = td.extract_from(elt, 'foo')
             self.assertIs(tp, type(val_round_trip))
             self.assertEqual(val, val_round_trip)
@@ -31,7 +39,7 @@ class TestListTypes(TestCase):
         td = X.List(X.Atomic(int), 'wd')
         elt = td.xml_element(val, 'widths')
         self.assertEqual('<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val),
-                         etree.tostring(elt))
+                         to_unicode(elt))
         val_round_trip = td.extract_from(elt, 'widths')
         self.assertEqual(val, val_round_trip)
 
@@ -58,7 +66,7 @@ class TestInstanceTypes(TestCase):
         td = X.Instance(Rectangle)
         rect = Rectangle(42, 100)
         elt = td.xml_element(rect, 'rect')
-        self.assertEqual(expected_rect_xml(42, 100), etree.tostring(elt))
+        self.assertEqual(expected_rect_xml(42, 100), to_unicode(elt))
 
         rect_round_trip = td.extract_from(elt, 'rect')
         self.assertEqual(rect, rect_round_trip)
@@ -108,7 +116,7 @@ class TestNumpyAtomic(TestCase, TestNumpyBase):
     def test_content(self):
         xs = np.array([32, 42, 100, 99, -100], dtype = np.int32)
         elt = self.td.xml_element(xs, 'values')
-        self.assertEqual('<values>32,42,100,99,-100</values>', etree.tostring(elt))
+        self.assertEqual('<values>32,42,100,99,-100</values>', to_unicode(elt))
 
 class TestNumpyAtomicConvenience(TestNumpyAtomic):
     def setUp(self):
@@ -131,7 +139,7 @@ class TestNumpyRecordStructured(TestCase, TestNumpyBase):
                  <rect><width>42</width><height>100</height></rect>
                  <rect><width>99</width><height>12</height></rect>
                </rects>""")
-        self.assertEquals(expected_xml, etree.tostring(xml_elt))
+        self.assertEquals(expected_xml, to_unicode(xml_elt))
         vals_rt = self.td.extract_from(xml_elt, 'rects')
         self.assertEquals(vals.dtype, vals_rt.dtype)
         self.assertEquals(vals.shape, vals_rt.shape)
@@ -150,7 +158,7 @@ class TestDescriptors(TestCase):
         self.assertEquals(exp_tag, descriptor_elt.tag)
         self.assertEquals(val, descriptor_elt.value_from(self.rect))
         xml_elt = descriptor_elt.xml_element(self.rect)
-        self.assertEquals('<%s>%d</%s>' % (exp_tag, val, exp_tag), etree.tostring(xml_elt))
+        self.assertEquals('<%s>%d</%s>' % (exp_tag, val, exp_tag), to_unicode(xml_elt))
         round_trip_val = descriptor_elt.extract_from(xml_elt)
         self.assertEquals(val, round_trip_val)
 
@@ -188,7 +196,7 @@ class TestObject(TestCase):
     def test_1(self):
         serialized_xml = X.Serialize(self.rect, 'rect')
         self.assertEqual(expected_rect_xml(42, 123),
-                         etree.tostring(serialized_xml))
+                         to_unicode(serialized_xml))
 
         rect_round_trip = X.Deserialize(Rectangle, serialized_xml, 'rect')
         self.assertEqual(self.rect, rect_round_trip)
@@ -225,7 +233,7 @@ class TestComplexObject(TestCase):
                         Rectangle(210, 297),
                         np.array([(20, 30), (40, 50)], dtype = RectangleDType))
         xml = X.Serialize(layout, 'layout')
-        xml_str = etree.tostring(xml)
+        xml_str = to_unicode(xml)
         expected_str = remove_whitespace(
             """<layout>
                  <colour>dark-blue</colour>

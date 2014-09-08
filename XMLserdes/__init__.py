@@ -108,8 +108,8 @@ class Descriptor(namedtuple('_Descriptor', 'children')):
     @classmethod
     def new_from_abbreviated_args(cls, *args):
         raw_descriptor = cls._make(args)
-        return raw_descriptor._replace(children = map(ElementDescriptor.new_from_tuple,
-                                                      raw_descriptor.children))
+        return raw_descriptor._replace(children = list(map(ElementDescriptor.new_from_tuple,
+                                                           raw_descriptor.children)))
 
 def SerDesDescriptor(children):
     """
@@ -388,7 +388,7 @@ class NumpyAtomicVector(NumpyVectorBase):
 
     def extract_elements_list(self, elt):
         s_elts = elt.text.split(',')
-        return map(self.dtype, s_elts)
+        return list(map(self.dtype, s_elts))
 
 class NumpyRecordVectorStructured(NumpyVectorBase):
     """
@@ -490,7 +490,7 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
         return tuple(values)
 
     def extract_elements_list(self, elt):
-        return map(self.extract_entry_element, elt)
+        return list(map(self.extract_entry_element, elt))
 
 def NumpyVector(dtype, contained_tag = None):
     """
