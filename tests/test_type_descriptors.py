@@ -47,7 +47,7 @@ class TestRectangleEquality(TestCase):
         r0 = Rectangle(42, 100)
         r1 = Rectangle(42, 100)
         self.assertIsNot(r0, r1)
-        self.assertEquals(r0, r1)
+        self.assertEqual(r0, r1)
 
 class TestInstanceTypes(TestCase):
     def test_bad_construction(self):
