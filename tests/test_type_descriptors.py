@@ -187,7 +187,8 @@ class TestDescriptors(TestCase):
                       'wd')
 
     def test_from_triple_function(self):
-        self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', lambda x: x.width, X.Atomic(int))),
+        def getwd(x): return x.width
+        self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', getwd, X.Atomic(int))),
                       'wd')
 
     def test_bad_construction(self):
