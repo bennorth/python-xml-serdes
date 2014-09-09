@@ -22,6 +22,7 @@ if not hasattr(TestCase, 'assertRaisesRegex'):
 def to_unicode(elt):
     return etree.tostring(elt, encoding = etree_encoding)
 
+
 class TestAtomicTypes(TestCase):
     def test_1(self):
         for tp, val, exp_txt in [(int, 42, '42'),
@@ -35,6 +36,7 @@ class TestAtomicTypes(TestCase):
             self.assertIs(tp, type(val_round_trip))
             self.assertEqual(val, val_round_trip)
 
+
 class TestListTypes(TestCase):
     def test_1(self):
         val = [42, 100, 99, 123]
@@ -45,12 +47,15 @@ class TestListTypes(TestCase):
         val_round_trip = td.extract_from(elt, 'widths')
         self.assertEqual(val, val_round_trip)
 
+
 class BareRectangle(namedtuple('BareRectangle', 'width height')):
     pass
+
 
 class Rectangle(namedtuple('BareRectangle', 'width height')):
     XML_Descriptor = X.SerDesDescriptor([('width', X.Atomic(int)),
                                          ('height', X.Atomic(int))])
+
 
 class TestRectangleEquality(TestCase):
     def test_equality(self):
@@ -58,6 +63,7 @@ class TestRectangleEquality(TestCase):
         r1 = Rectangle(42, 100)
         self.assertIsNot(r0, r1)
         self.assertEqual(r0, r1)
+
 
 class TestInstanceTypes(TestCase):
     def test_bad_construction(self):
@@ -87,6 +93,7 @@ class TestInstanceTypes(TestCase):
                                      'expected tag "width" but got "a"'):
             bad_rect = td.extract_from(bad_xml, 'rect')
 
+
 class TestNumpyBase:
     def bad_value_1(self, x, regexp):
         with self.assertRaisesRegex(ValueError, regexp):
@@ -96,6 +103,7 @@ class TestNumpyBase:
         self.bad_value_1('hello', 'not ndarray')
         self.bad_value_1(np.array([[1, 2], [3, 4]]), 'not 1-dimensional')
         self.bad_value_1(np.zeros((12,), dtype = np.float32), 'expecting dtype')
+
 
 class TestNumpyAtomic(TestCase, TestNumpyBase):
     def setUp(self):
@@ -120,14 +128,18 @@ class TestNumpyAtomic(TestCase, TestNumpyBase):
         elt = self.td.xml_element(xs, 'values')
         self.assertEqual('<values>32,42,100,99,-100</values>', to_unicode(elt))
 
+
 class TestNumpyAtomicConvenience(TestNumpyAtomic):
     def setUp(self):
         self.td = X.NumpyVector(np.int32)
 
+
 RectangleDType = np.dtype([('width', np.int32), ('height', np.int32)])
+
 
 def remove_whitespace(s):
     return re.sub(r'\s+', '', s)
+
 
 class TestNumpyRecordStructured(TestCase, TestNumpyBase):
     def setUp(self):
@@ -147,9 +159,11 @@ class TestNumpyRecordStructured(TestCase, TestNumpyBase):
         self.assertEqual(vals.shape, vals_rt.shape)
         self.assertTrue(np.all(vals_rt == vals))
 
+
 class TestNumpyRecordStructuredConvenience(TestNumpyRecordStructured):
     def setUp(self):
         self.td = X.NumpyVector(RectangleDType, 'rect')
+
 
 class TestDescriptors(TestCase):
     def setUp(self):
@@ -183,12 +197,8 @@ class TestDescriptors(TestCase):
             de = X.ElementDescriptor.new_from_tuple(42)
 
 
-
-
-
 def expected_rect_xml(w, h):
     return '<rect><width>%d</width><height>%d</height></rect>' % (w, h)
-
 
 
 class TestObject(TestCase):
@@ -222,6 +232,7 @@ class Layout(namedtuple('Layout_', 'colour cornerprops stripes ids shape compone
          ('product-id-codes', 'ids', X.NumpyAtomicVector(np.uint32)),
          ('shape', X.Instance(Rectangle)),
          ('components', X.NumpyRecordVectorStructured(RectangleDType, 'rect'))])
+
 
 class TestComplexObject(TestCase):
     def test_1(self):
@@ -282,10 +293,6 @@ class TestComplexObject(TestCase):
                </layout>""")
         self.assertEqual(expected_str, xml_str)
         layout_rt = X.Deserialize(Layout, xml, 'layout')
-
-
-
-
 
 
 if __name__ == '__main__':
