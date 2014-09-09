@@ -139,10 +139,10 @@ class TestNumpyRecordStructured(TestCase, TestNumpyBase):
                  <rect><width>42</width><height>100</height></rect>
                  <rect><width>99</width><height>12</height></rect>
                </rects>""")
-        self.assertEquals(expected_xml, to_unicode(xml_elt))
+        self.assertEqual(expected_xml, to_unicode(xml_elt))
         vals_rt = self.td.extract_from(xml_elt, 'rects')
-        self.assertEquals(vals.dtype, vals_rt.dtype)
-        self.assertEquals(vals.shape, vals_rt.shape)
+        self.assertEqual(vals.dtype, vals_rt.dtype)
+        self.assertEqual(vals.shape, vals_rt.shape)
         self.assertTrue(np.all(vals_rt == vals))
 
 class TestNumpyRecordStructuredConvenience(TestNumpyRecordStructured):
@@ -155,12 +155,12 @@ class TestDescriptors(TestCase):
 
     def do_tests(self, descriptor_elt, exp_tag):
         val = 42
-        self.assertEquals(exp_tag, descriptor_elt.tag)
-        self.assertEquals(val, descriptor_elt.value_from(self.rect))
+        self.assertEqual(exp_tag, descriptor_elt.tag)
+        self.assertEqual(val, descriptor_elt.value_from(self.rect))
         xml_elt = descriptor_elt.xml_element(self.rect)
-        self.assertEquals('<%s>%d</%s>' % (exp_tag, val, exp_tag), to_unicode(xml_elt))
+        self.assertEqual('<%s>%d</%s>' % (exp_tag, val, exp_tag), to_unicode(xml_elt))
         round_trip_val = descriptor_elt.extract_from(xml_elt)
-        self.assertEquals(val, round_trip_val)
+        self.assertEqual(val, round_trip_val)
 
     def test_from_pair(self):
         self.do_tests(X.ElementDescriptor.new_from_tuple(('width', X.Atomic(int))),
@@ -278,7 +278,7 @@ class TestComplexObject(TestCase):
                    </rect>
                  </components>
                </layout>""")
-        self.assertEquals(expected_str, xml_str)
+        self.assertEqual(expected_str, xml_str)
         layout_rt = X.Deserialize(Layout, xml, 'layout')
 
 
