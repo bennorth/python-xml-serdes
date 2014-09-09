@@ -1,8 +1,5 @@
 from collections import namedtuple
 
-import sys
-sys.path.append('..')
-
 import unittest
 from unittest import TestCase
 
