@@ -17,6 +17,11 @@ try:
 except NameError:
     etree_encoding = str
 
+# 'assertRaisesRegexp' is deprecated in Python3, but its replacement,
+# 'assertRaisesRegex', does not exist in Python2.  Grr.
+if not hasattr(TestCase, 'assertRaisesRegex'):
+    TestCase.assertRaisesRegex = TestCase.assertRaisesRegexp
+
 def to_unicode(elt):
     return etree.tostring(elt, encoding = etree_encoding)
 
@@ -59,7 +64,7 @@ class TestRectangleEquality(TestCase):
 
 class TestInstanceTypes(TestCase):
     def test_bad_construction(self):
-        with self.assertRaisesRegexp(ValueError, 'has no XML_Descriptor'):
+        with self.assertRaisesRegex(ValueError, 'has no XML_Descriptor'):
             bad_instance = X.Instance(BareRectangle)
 
     def test_1(self):
@@ -74,20 +79,20 @@ class TestInstanceTypes(TestCase):
     def test_bad_xml_wrong_n_children(self):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      'expecting 2 children but got 3'):
             bad_rect = td.extract_from(bad_xml, 'rect')
 
     def test_bad_xml_wrong_tag(self):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      'expected tag "width" but got "a"'):
             bad_rect = td.extract_from(bad_xml, 'rect')
 
 class TestNumpyBase:
     def bad_value_1(self, x, regexp):
-        with self.assertRaisesRegexp(ValueError, regexp):
+        with self.assertRaisesRegex(ValueError, regexp):
             bad_elt = self.td.xml_element(x, 'values')
 
     def test_bad_values(self):
@@ -175,7 +180,7 @@ class TestDescriptors(TestCase):
                       'wd')
 
     def test_bad_construction(self):
-        with self.assertRaisesRegexp(ValueError, 'length'):
+        with self.assertRaisesRegex(ValueError, 'length'):
             de = X.ElementDescriptor.new_from_tuple((1, 2, 3, 4))
         with self.assertRaises(TypeError):
             de = X.ElementDescriptor.new_from_tuple(42)
@@ -203,12 +208,12 @@ class TestObject(TestCase):
 
     def test_bad_n_children(self):
         bad_xml = etree.fromstring('<rect><width>99</width></rect>')
-        with self.assertRaisesRegexp(ValueError, 'expecting 2 children but got 1'):
+        with self.assertRaisesRegex(ValueError, 'expecting 2 children but got 1'):
             bad_rect = X.Deserialize(Rectangle, bad_xml, 'rect')
 
     def test_bad_root_tag(self):
         bad_xml = etree.fromstring(expected_rect_xml(42, 100))
-        with self.assertRaisesRegexp(ValueError, 'expected tag .* but got'):
+        with self.assertRaisesRegex(ValueError, 'expected tag .* but got'):
             bad_rect = X.Deserialize(Rectangle, bad_xml, 'rectangle')
 
 
