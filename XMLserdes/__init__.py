@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from collections import namedtuple
 from operator import attrgetter
 
@@ -426,8 +428,8 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
     ...                     (128, 128, 128),
     ...                     (255, 0, 255)],
     ...                    dtype = ColourDType)
-    >>> print etree.tostring(colour_vector_td.xml_element(colours, 'colours'),
-    ...                      pretty_print = True).rstrip()
+    >>> print(etree.tostring(colour_vector_td.xml_element(colours, 'colours'),
+    ...                      pretty_print = True).rstrip())
     <colours>
       <colour>
         <red>20</red>
@@ -452,9 +454,9 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
     ...          <colour><red>0</red><green>192</green><blue>0</blue></colour>
     ...        </greens>''')
     >>> extracted_colours = colour_vector_td.extract_from(xml_elt, 'greens')
-    >>> print extracted_colours
+    >>> print(extracted_colours)
     [(0, 64, 0) (0, 192, 0)]
-    >>> print extracted_colours.dtype
+    >>> print(extracted_colours.dtype)
     [('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
     """
     def __init__(self, dtype, contained_tag):
