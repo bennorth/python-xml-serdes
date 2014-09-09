@@ -544,3 +544,27 @@ def Deserialize(cls, elt, expected_tag):
 
     instance_td = Instance(cls)
     return instance_td.extract_from(elt, expected_tag)
+
+def NamedTuple(name, xml_descriptor):
+    """
+    Define a class extended from :class:`collections.namedtuple` having
+    fields matching those defined in ``xml_descriptor``.  The
+    'extension' to the namedtuple class consists in setting its
+    ``XML_Descriptor`` attribute to the given ``xml_descriptor``.
+
+    :param str name: the ``__name__`` of the defined class
+
+    :type xml_descriptor: instance of :class:`XMLserdes.Descriptor`
+    :param xml_descriptor: list of field definitions
+
+    The field names of the resulting class are taken from the ``tag``
+    fields of the individual :class:`XMLserdes.ElementDescriptor`
+    instances within ``xml_descriptor``, and so the ``value_from`` field
+    of each element-descriptor must be (equivalent to)
+    ``attrgetter(tag)``.  This restriction might be lifted in future.
+    """
+
+    field_names = [ed.tag for ed in xml_descriptor.children]
+    cls = namedtuple(name, field_names)
+    cls.XML_Descriptor = xml_descriptor
+    return cls
