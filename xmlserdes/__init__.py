@@ -67,15 +67,15 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_
         Serialize, into an XML element, the relevant property from the given object.
 
         >>> descr = ElementDescriptor.new_from_tuple(('width', Atomic(int)))
-        >>> shape = namedtuple('Shape', 'width')(42)
-        >>> etree.tostring(descr.xml_element(shape))
-        '<width>42</width>'
+        >>> shape = collections.namedtuple('Shape', 'width')(42)
+        >>> print(xmlserdes.utils.str_from_xml_elt(descr.xml_element(shape)))
+        <width>42</width>
 
         >>> descr_different_tag = ElementDescriptor.new_from_tuple(('shape-width',
         ...                                                         'width',
         ...                                                         Atomic(int)))
-        >>> etree.tostring(descr_different_tag.xml_element(shape))
-        '<shape-width>42</shape-width>'
+        >>> print(xmlserdes.utils.str_from_xml_elt(descr_different_tag.xml_element(shape)))
+        <shape-width>42</shape-width>
         """
         return self.type_descr.xml_element(self.value_from(obj), self.tag)
 
@@ -198,8 +198,8 @@ class Atomic(TypeDescriptor):
 
     Serializing an integer into an XML element:
 
-    >>> etree.tostring(atomic_type_descriptor.xml_element(42, 'answer'))
-    '<answer>42</answer>'
+    >>> print(xmlserdes.utils.str_from_xml_elt(atomic_type_descriptor.xml_element(42, 'answer')))
+    <answer>42</answer>
 
     Deserializing an integer from an XML element:
 
@@ -246,8 +246,8 @@ class List(TypeDescriptor):
 
     Serializing a list of integers into an XML element:
 
-    >>> etree.tostring(list_of_ints_td.xml_element([42, 123, 99], 'list-of-answers'))
-    '<list-of-answers><answer>42</answer><answer>123</answer><answer>99</answer></list-of-answers>'
+    >>> print(xmlserdes.utils.str_from_xml_elt(list_of_ints_td.xml_element([42, 123, 99], 'list-of-answers')))
+    <list-of-answers><answer>42</answer><answer>123</answer><answer>99</answer></list-of-answers>
 
     Deserializing a list of integers from an XML element:
 
@@ -290,8 +290,7 @@ class Instance(TypeDescriptor):
 
     Define class and augment it with ``XML_Descriptor`` attribute:
 
-    >>> from collections import namedtuple
-    >>> Rectangle = namedtuple('Rectangle', 'wd ht')
+    >>> Rectangle = collections.namedtuple('Rectangle', 'wd ht')
     >>> Rectangle.XML_Descriptor = SerDesDescriptor([('wd', Atomic(int)),
     ...                                              ('ht', Atomic(int))])
 
@@ -302,8 +301,8 @@ class Instance(TypeDescriptor):
     Serialize instance of the ``Rectangle`` class:
 
     >>> r = Rectangle(210, 297)
-    >>> etree.tostring(rectangle_td.xml_element(r, 'rect'))
-    '<rect><wd>210</wd><ht>297</ht></rect>'
+    >>> print(xmlserdes.utils.str_from_xml_elt(rectangle_td.xml_element(r, 'rect')))
+    <rect><wd>210</wd><ht>297</ht></rect>
 
     Deserialize instance:
 
@@ -378,8 +377,8 @@ class NumpyAtomicVector(NumpyVectorBase):
     Serialize a vector:
 
     >>> v = np.arange(4, dtype = np.uint16)
-    >>> etree.tostring(vector_td.xml_element(v, 'values'))
-    '<values>0,1,2,3</values>'
+    >>> print(xmlserdes.utils.str_from_xml_elt(vector_td.xml_element(v, 'values')))
+    <values>0,1,2,3</values>
 
     Deserialize a vector:
 
@@ -434,8 +433,9 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
     ...                     (128, 128, 128),
     ...                     (255, 0, 255)],
     ...                    dtype = ColourDType)
-    >>> print(etree.tostring(colour_vector_td.xml_element(colours, 'colours'),
-    ...                      pretty_print = True).rstrip())
+    >>> print(xmlserdes.utils.str_from_xml_elt(
+    ...           colour_vector_td.xml_element(colours, 'colours'),
+    ...           pretty_print = True).rstrip())
     <colours>
       <colour>
         <red>20</red>

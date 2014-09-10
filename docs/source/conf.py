@@ -37,6 +37,7 @@ extensions = [
 
 doctest_global_setup = '''
 from xmlserdes import *
+import xmlserdes.utils
 import collections'''
 
 
