@@ -59,6 +59,31 @@ class TestListTypes(object):
         assert val_round_trip == val
 
 
+class TestNestedListTypes(object):
+    def test_verbose(self):
+        td = X.List(X.List(X.Atomic(int), 'wd'), 'stripe-group')
+        self._test_type_descriptor(td)
+
+    def test_terse(self):
+        td = make_TD([[int, 'wd'], 'stripe-group'])
+        self._test_type_descriptor(td)
+
+    def _test_type_descriptor(self, td):
+        groups = [[1, 2], [3, 4, 5]]
+
+        elt = td.xml_element(groups, 'stripe-groups')
+
+        exp_txt = ('<stripe-groups>%s</stripe-groups>'
+                   % ''.join(('<stripe-group>%s</stripe-group>'
+                              % ''.join('<wd>%d</wd>' % x for x in grp))
+                             for grp in groups))
+
+        assert exp_txt == to_unicode(elt)
+
+        groups_round_trip = td.extract_from(elt, 'stripe-groups')
+        assert groups == groups_round_trip
+
+
 class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
     pass
 
