@@ -149,6 +149,59 @@ class TypeDescriptor(object):
     See those classes' individual docstrings for more details.
     """
 
+    atomic_types_python = [int, float, str]
+    atomic_types_numpy = [np.int8, np.int16, np.int32, np.int64,
+                          np.uint8, np.uint16, np.uint32, np.uint64,
+                          np.float32, np.float64]
+    atomic_types = atomic_types_python + atomic_types_numpy
+
+    @classmethod
+    def from_terse(cls, descr):
+        if descr in cls.atomic_types:
+            return Atomic(descr)
+
+        if isinstance(descr, list):
+            if len(descr) != 2:
+                raise ValueError(
+                    'list descriptor: expecting 2 elements but got %d' % len(descr))
+            contained_descr, tag = descr
+            return List(cls.from_terse(contained_descr), tag)
+
+        if isinstance(descr, tuple):
+            if len(descr) == 0:
+                raise ValueError('empty tuple descriptor')
+
+            if descr[0] is not np.ndarray:
+                raise ValueError('tuple descriptor must have numpy.ndarray as first element')
+
+            if len(descr) == 2:
+                # Atomic vector
+                contained_atomic_type = descr[1]
+                if contained_atomic_type not in cls.atomic_types_numpy:
+                    raise ValueError(
+                        '2-tuple descriptor: expecting atomic numpy type as second element'
+                        + ' but got "%s"' % contained_atomic_type.__name__)
+                return NumpyAtomicVector(contained_atomic_type)
+
+            if len(descr) == 3:
+                contained_dtype, tag = descr[1:]
+                if not isinstance(contained_dtype, np.dtype):
+                    raise ValueError('3-tuple descriptor must have numpy dtype as second element')
+                return NumpyRecordVectorStructured(contained_dtype, tag)
+
+            raise ValueError('tuple descriptor: expecting 2 or 3 elements but got %d'
+                             % len(descr))
+
+        # Otherwise, 'descr' should be a type which has its own descriptor.
+        if isinstance(descr, type):
+            if not hasattr(descr, 'XML_Descriptor'):
+                raise ValueError('non-atomic type descriptor: no "XML_Descriptor" attribute in "%s"'
+                                 % descr.__name__)
+
+            return Instance(descr)
+
+        raise ValueError('unhandled terse descriptor of type %s' % type(descr).__name__)
+
     def verify_tag(self, elt, expected_tag):
         if elt.tag != expected_tag:
             raise ValueError('expected tag "%s" but got "%s"'

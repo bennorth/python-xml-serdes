@@ -8,6 +8,8 @@ from lxml import etree
 import numpy as np
 import xmlserdes as X
 
+make_TD = X.TypeDescriptor.from_terse
+
 import re
 
 try:
@@ -21,8 +23,11 @@ def to_unicode(elt):
 
 
 class TestAtomicTypes(object):
-    def test_1(self):
+    def test_verbose(self):
         self._test_type_descriptor(X.Atomic)
+
+    def test_terse(self):
+        self._test_type_descriptor(make_TD)
 
     def _test_type_descriptor(self, td_func):
         for tp, val, exp_txt in [(int, 42, '42'),
@@ -38,8 +43,12 @@ class TestAtomicTypes(object):
 
 
 class TestListTypes(object):
-    def test_1(self):
+    def test_verbose(self):
         td = X.List(X.Atomic(int), 'wd')
+        self._test_type_descriptor(td)
+
+    def test_terse(self):
+        td = make_TD([int, 'wd'])
         self._test_type_descriptor(td)
 
     def _test_type_descriptor(self, td):
@@ -68,12 +77,22 @@ class TestRectangleEquality(object):
 
 
 class TestInstanceTypes(object):
-    def test_bad_construction(self):
+    def test_bad_construction_verbose(self):
         with pytest.raises_regexp(ValueError, 'has no XML_Descriptor'):
             X.Instance(BareRectangle)
 
-    def test_1(self):
+    def test_bad_construction_terse(self):
+        with pytest.raises_regexp(ValueError, 'no "XML_Descriptor" attribute'):
+            make_TD(BareRectangle)
+        with pytest.raises_regexp(ValueError, 'unhandled terse descriptor'):
+            make_TD(lambda x: x)
+
+    def test_verbose(self):
         td = X.Instance(Rectangle)
+        self._test_type_descriptor(td)
+
+    def test_terse(self):
+        td = make_TD(Rectangle)
         self._test_type_descriptor(td)
 
     def _test_type_descriptor(self, td):
@@ -119,8 +138,13 @@ class TestNumpyAtomic(_TestNumpyBase):
         assert xs_round_trip.shape == xs.shape
         assert np.all(xs_round_trip == xs)
 
-    def test_round_trips(self):
+    def test_round_trips_verbose(self):
         self._test_round_trips(X.NumpyAtomicVector)
+
+    def test_round_trips_terse(self):
+        def td_from_dtype(dtype):
+            return make_TD((np.ndarray, dtype))
+        self._test_round_trips(td_from_dtype)
 
     def _test_round_trips(self, td_func):
         for dtype in [np.uint8, np.uint16, np.uint32, np.uint64,
@@ -153,8 +177,12 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         self.td = X.NumpyRecordVectorStructured(RectangleDType, 'rect')
         self.vals = np.array([(42, 100), (99, 12)], dtype=RectangleDType)
 
-    def test_1(self):
+    def test_verbose(self):
         self._test_type_descriptor(self.td)
+
+    def test_terse(self):
+        td = make_TD((np.ndarray, RectangleDType, 'rect'))
+        self._test_type_descriptor(td)
 
     def _test_type_descriptor(self, td):
         xml_elt = td.xml_element(self.vals, 'rects')
