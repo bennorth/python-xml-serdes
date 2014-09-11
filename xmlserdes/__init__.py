@@ -16,30 +16,12 @@ from lxml import etree
 
 import xmlserdes.utils
 
-class Descriptor(collections.namedtuple('_Descriptor', 'children')):
-    """
-    Representation of a list of object-property/sub-XML-element
-    mappings.  Used to represent how instances of a particular class
-    should be de/serialized from/to the contents of an XML element.
-
-    :ivar children: list of children, each as a
-        :class:`xmlserdes.ElementDescriptor` instance
-
-    Most conveniently constructed via the
-    :func:`xmlserdes.SerDesDescriptor` function.
-    """
-
-    # TODO: Add 'ctor_name' slot
-    @classmethod
-    def new_from_abbreviated_args(cls, *args):
-        raw_descriptor = cls._make(args)
-        return raw_descriptor._replace(children=list(map(ElementDescriptor.new_from_tuple,
-                                                         raw_descriptor.children)))
-
 
 def SerDesDescriptor(children):
     """
-    Convenience function for constructing an instance of :class:`xmlserdes.Descriptor`.
+    Convenience function for constructing a list of
+    :class:`xmlserdes.ElementDescriptor` instances from a list of
+    abbreviated tuples.
 
     :param children: descriptions of property/sub-element mappings; each
         should be a tuple suitable for passing to
@@ -47,10 +29,10 @@ def SerDesDescriptor(children):
 
     :type children: iterable of tuples
 
-    :return: New instance of :class:`xmlserdes.Descriptor`.
+    :return: New list of instances of :class:`xmlserdes.ElementDescriptor`.
     """
 
-    return Descriptor.new_from_abbreviated_args(children)
+    return list(map(ElementDescriptor.new_from_tuple, children))
 
 
 
@@ -94,7 +76,7 @@ def namedtuple(name, xml_descriptor):
 
     :param str name: the ``__name__`` of the defined class
 
-    :type xml_descriptor: instance of :class:`xmlserdes.Descriptor`
+    :type xml_descriptor: list of :class:`xmlserdes.ElementDescriptor` instances
     :param xml_descriptor: list of field definitions
 
     The field names of the resulting class are taken from the ``tag``
@@ -104,7 +86,7 @@ def namedtuple(name, xml_descriptor):
     ``attrgetter(tag)``.  This restriction might be lifted in future.
     """
 
-    field_names = [ed.tag for ed in xml_descriptor.children]
+    field_names = [ed.tag for ed in xml_descriptor]
     cls = collections.namedtuple(name, field_names)
     cls.xml_descriptor = xml_descriptor
     return cls

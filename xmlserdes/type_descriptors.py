@@ -211,7 +211,8 @@ class Instance(TypeDescriptor):
     a 'complex' class having an 'XML descriptor'.
 
     :param cls: class whose instances are to be de/serialized; must have
-        attribute named ``xml_descriptor`` of type :class:`xmlserdes.Descriptor`
+        attribute named ``xml_descriptor`` which is a list of instances
+        of :class:`xmlserdes.ElementDescriptor`
 
     .. note:: Possible to-do is allow separate passing-in of descriptor
         rather than requiring it to be an attribute of the to-be-serialized
@@ -248,7 +249,7 @@ class Instance(TypeDescriptor):
 
     def xml_element(self, obj, tag):
         elt = etree.Element(tag)
-        for child in self.cls.xml_descriptor.children:
+        for child in self.cls.xml_descriptor:
             child_elt = child.xml_element(obj)
             elt.append(child_elt)
         return elt
@@ -256,14 +257,14 @@ class Instance(TypeDescriptor):
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
         descr = self.cls.xml_descriptor
-        if len(elt) != len(descr.children):
+        if len(elt) != len(descr):
             raise ValueError('expecting %d children but got %d'
-                             % (len(descr.children), len(elt)))
+                             % (len(descr), len(elt)))
 
         # TODO: Allow alternative constructors
         ctor = self.cls
         ctor_args = [descr_elt.extract_from(child_elt)
-                     for child_elt, descr_elt in zip(elt, descr.children)]
+                     for child_elt, descr_elt in zip(elt, descr)]
 
         return ctor(*ctor_args)
 

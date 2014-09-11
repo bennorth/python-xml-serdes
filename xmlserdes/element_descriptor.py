@@ -37,8 +37,6 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_
             return obj
         return TypeDescriptor.from_terse(obj)
 
-    # TODO Better names.  'SimpleDescriptor', 'CompoundDescriptor'? Sth to indicate
-    # that Descriptor (below) knows how to construct a class from the tuple?  If it does.
     @classmethod
     def new_from_tuple(cls, tup):
         """
