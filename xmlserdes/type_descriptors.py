@@ -70,8 +70,8 @@ class TypeDescriptor(object):
 
         # Otherwise, 'descr' should be a type which has its own descriptor.
         if isinstance(descr, type):
-            if not hasattr(descr, 'XML_Descriptor'):
-                raise ValueError('non-atomic type descriptor: no "XML_Descriptor" attribute in "%s"'
+            if not hasattr(descr, 'xml_descriptor'):
+                raise ValueError('non-atomic type descriptor: no "xml_descriptor" attribute in "%s"'
                                  % descr.__name__)
 
             return Instance(descr)
@@ -211,16 +211,16 @@ class Instance(TypeDescriptor):
     a 'complex' class having an 'XML descriptor'.
 
     :param cls: class whose instances are to be de/serialized; must have
-        attribute named ``XML_Descriptor`` of type :class:`xmlserdes.Descriptor`
+        attribute named ``xml_descriptor`` of type :class:`xmlserdes.Descriptor`
 
     .. note:: Possible to-do is allow separate passing-in of descriptor
         rather than requiring it to be an attribute of the to-be-serialized
         class.
 
-    Define class and augment it with ``XML_Descriptor`` attribute:
+    Define class and augment it with ``xml_descriptor`` attribute:
 
     >>> Rectangle = collections.namedtuple('Rectangle', 'wd ht')
-    >>> Rectangle.XML_Descriptor = xmlserdes.SerDesDescriptor([('wd', xmlserdes.Atomic(int)),
+    >>> Rectangle.xml_descriptor = xmlserdes.SerDesDescriptor([('wd', xmlserdes.Atomic(int)),
     ...                                                        ('ht', xmlserdes.Atomic(int))])
 
     Define type-descriptor to handle de/serialization:
@@ -241,21 +241,21 @@ class Instance(TypeDescriptor):
     """
 
     def __init__(self, cls):
-        if not hasattr(cls, 'XML_Descriptor'):
-            raise ValueError('class "%s" has no XML_Descriptor' % cls.__name__)
+        if not hasattr(cls, 'xml_descriptor'):
+            raise ValueError('class "%s" has no xml_descriptor' % cls.__name__)
 
         self.cls = cls
 
     def xml_element(self, obj, tag):
         elt = etree.Element(tag)
-        for child in self.cls.XML_Descriptor.children:
+        for child in self.cls.xml_descriptor.children:
             child_elt = child.xml_element(obj)
             elt.append(child_elt)
         return elt
 
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
-        descr = self.cls.XML_Descriptor
+        descr = self.cls.xml_descriptor
         if len(elt) != len(descr.children):
             raise ValueError('expecting %d children but got %d'
                              % (len(descr.children), len(elt)))

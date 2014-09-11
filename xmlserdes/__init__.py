@@ -60,7 +60,7 @@ def serialize(obj, tag):
     Entry point function to serialize a Python object to an XML element.
 
     :param obj: Python object to serialize
-    :type obj: instance of class having ``XML_Descriptor`` attribute
+    :type obj: instance of class having ``xml_descriptor`` attribute
 
     :return: XML element, as instance of :class:`etree.Element`.
     """
@@ -90,7 +90,7 @@ def namedtuple(name, xml_descriptor):
     Define a class extended from :class:`collections.namedtuple` having
     fields matching those defined in ``xml_descriptor``.  The
     'extension' to the namedtuple class consists in setting its
-    ``XML_Descriptor`` attribute to the given ``xml_descriptor``.
+    ``xml_descriptor`` attribute to the given ``xml_descriptor``.
 
     :param str name: the ``__name__`` of the defined class
 
@@ -106,5 +106,5 @@ def namedtuple(name, xml_descriptor):
 
     field_names = [ed.tag for ed in xml_descriptor.children]
     cls = collections.namedtuple(name, field_names)
-    cls.XML_Descriptor = xml_descriptor
+    cls.xml_descriptor = xml_descriptor
     return cls

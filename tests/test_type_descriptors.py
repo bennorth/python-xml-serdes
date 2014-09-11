@@ -89,7 +89,7 @@ class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
 
 
 class Rectangle(collections.namedtuple('BareRectangle', 'width height')):
-    XML_Descriptor = X.SerDesDescriptor([('width', X.Atomic(int)),
+    xml_descriptor = X.SerDesDescriptor([('width', X.Atomic(int)),
                                          ('height', X.Atomic(int))])
 
 
@@ -103,11 +103,11 @@ class TestRectangleEquality(object):
 
 class TestInstanceTypes(object):
     def test_bad_construction_verbose(self):
-        with pytest.raises_regexp(ValueError, 'has no XML_Descriptor'):
+        with pytest.raises_regexp(ValueError, 'has no xml_descriptor'):
             X.Instance(BareRectangle)
 
     def test_bad_construction_terse(self):
-        with pytest.raises_regexp(ValueError, 'no "XML_Descriptor" attribute'):
+        with pytest.raises_regexp(ValueError, 'no "xml_descriptor" attribute'):
             make_TD(BareRectangle)
         with pytest.raises_regexp(ValueError, 'unhandled terse descriptor'):
             make_TD(lambda x: x)
@@ -291,7 +291,7 @@ class TestObject(object):
 
 
 class Layout(collections.namedtuple('Layout_', 'colour cornerprops stripes ids shape components')):
-    XML_Descriptor = X.SerDesDescriptor(
+    xml_descriptor = X.SerDesDescriptor(
         [('colour', X.Atomic(str)),
          ('corner-properties', 'cornerprops', X.List(X.List(X.Atomic(str), 'prop'), 'corner')),
          ('stripes', X.List(X.Atomic(str), 'stripe-colour')),
