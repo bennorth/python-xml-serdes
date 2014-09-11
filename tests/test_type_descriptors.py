@@ -22,11 +22,14 @@ def to_unicode(elt):
 
 class TestAtomicTypes(object):
     def test_1(self):
+        self._test_type_descriptor(X.Atomic)
+
+    def _test_type_descriptor(self, td_func):
         for tp, val, exp_txt in [(int, 42, '42'),
                                  (float, 3.5, '3.5'),
                                  (str, '3 < 5', '3 &lt; 5'),
                                  (np.uint8, np.uint8(42), '42')]:
-            td = X.Atomic(tp)
+            td = td_func(tp)
             elt = td.xml_element(val, 'foo')
             assert to_unicode(elt) == '<foo>%s</foo>' % exp_txt
             val_round_trip = td.extract_from(elt, 'foo')
@@ -36,8 +39,11 @@ class TestAtomicTypes(object):
 
 class TestListTypes(object):
     def test_1(self):
-        val = [42, 100, 99, 123]
         td = X.List(X.Atomic(int), 'wd')
+        self._test_type_descriptor(td)
+
+    def _test_type_descriptor(self, td):
+        val = [42, 100, 99, 123]
         elt = td.xml_element(val, 'widths')
         assert to_unicode(elt) == '<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val)
         val_round_trip = td.extract_from(elt, 'widths')
@@ -68,6 +74,9 @@ class TestInstanceTypes(object):
 
     def test_1(self):
         td = X.Instance(Rectangle)
+        self._test_type_descriptor(td)
+
+    def _test_type_descriptor(self, td):
         rect = Rectangle(42, 100)
         elt = td.xml_element(rect, 'rect')
         assert to_unicode(elt) == expected_rect_xml(42, 100)
@@ -104,19 +113,22 @@ class TestNumpyAtomic(_TestNumpyBase):
     def setup_method(self, method):
         self.td = X.NumpyAtomicVector(np.int32)
 
-    def round_trip_1(self, dtype):
-        xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
-        td = X.NumpyAtomicVector(dtype)
+    def round_trip_1(self, xs, td):
         elt = td.xml_element(xs, 'values')
         xs_round_trip = td.extract_from(elt, 'values')
         assert xs_round_trip.shape == xs.shape
         assert np.all(xs_round_trip == xs)
 
     def test_round_trips(self):
+        self._test_round_trips(X.NumpyAtomicVector)
+
+    def _test_round_trips(self, td_func):
         for dtype in [np.uint8, np.uint16, np.uint32, np.uint64,
                       np.int8, np.int16, np.int32, np.int64,
                       np.float32, np.float64]:
-            self.round_trip_1(dtype)
+            #
+            xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
+            self.round_trip_1(xs, td_func(dtype))
 
     def test_content(self):
         xs = np.array([32, 42, 100, 99, -100], dtype=np.int32)
@@ -139,24 +151,28 @@ def remove_whitespace(s):
 class TestNumpyRecordStructured(_TestNumpyBase):
     def setup_method(self, method):
         self.td = X.NumpyRecordVectorStructured(RectangleDType, 'rect')
+        self.vals = np.array([(42, 100), (99, 12)], dtype=RectangleDType)
 
     def test_1(self):
-        vals = np.array([(42, 100), (99, 12)], dtype=RectangleDType)
-        xml_elt = self.td.xml_element(vals, 'rects')
+        self._test_type_descriptor(self.td)
+
+    def _test_type_descriptor(self, td):
+        xml_elt = td.xml_element(self.vals, 'rects')
         expected_xml = remove_whitespace(
             """<rects>
                  <rect><width>42</width><height>100</height></rect>
                  <rect><width>99</width><height>12</height></rect>
                </rects>""")
         assert to_unicode(xml_elt) == expected_xml
-        vals_rt = self.td.extract_from(xml_elt, 'rects')
-        assert vals_rt.dtype == vals.dtype
-        assert vals_rt.shape == vals.shape
-        assert np.all(vals_rt == vals)
+        vals_rt = td.extract_from(xml_elt, 'rects')
+        assert vals_rt.dtype == self.vals.dtype
+        assert vals_rt.shape == self.vals.shape
+        assert np.all(vals_rt == self.vals)
 
 
 class TestNumpyRecordStructuredConvenience(TestNumpyRecordStructured):
     def setup_method(self, method):
+        TestNumpyRecordStructured.setup_method(self, method)
         self.td = X.NumpyVector(RectangleDType, 'rect')
 
 
