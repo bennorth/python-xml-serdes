@@ -83,6 +83,35 @@ class TestNamedTuple(object):
         assert c1 == c
 
 
+class Pattern(XMLSerializableNamedTuple):
+    xml_descriptor = [('size', int),
+                      ('circles', [Circle, 'circle'])]
+    xml_default_tag = 'pattern'
+
+class TestNestedNamedTuple(object):
+    @staticmethod
+    def expected_xml(tag):
+        return ('<{0}>'
+                + '<size>33</size>'
+                + '<circles>'
+                + '<circle><radius>10</radius><colour>blue</colour></circle>'
+                + '<circle><radius>12</radius><colour>red</colour></circle>'
+                + '</circles>'
+                + '</{0}>').format(tag)
+
+    @pytest.mark.parametrize(
+        'tag,tag_for_expected',
+        [(None, 'pattern'), ('circle-picture', 'circle-picture')],
+        ids=['default-tag', 'explicit-tag'])
+    #
+    def test_round_trip(self, tag, tag_for_expected):
+        p = Pattern(33, [Circle(10, 'blue'), Circle(12, 'red')])
+        p_xml = p.as_xml(tag)
+        assert str_from_xml_elt(p_xml) == self.expected_xml(tag_for_expected)
+        p1 = Pattern.from_xml(p_xml, tag_for_expected)
+        assert p1 == p
+
+
 class Ellipse(XMLSerializableNamedTuple):
     xml_descriptor = [('minor-radius', 'radius0', np.uint16),
                       ('major-radius', 'radius1', np.uint16),
