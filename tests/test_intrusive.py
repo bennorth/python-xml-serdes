@@ -161,9 +161,9 @@ class TestNamedTupleDifferentTags(object):
 class TestBadNamedTupleConstruction(object):
     def test_bad_construction(self):
         with pytest.raises_regexp(ValueError, 'must be simple'):
-            foo_cls = self.build_bad_class()
+            foo_cls = self.build_bad_class_wrong_value_from_slot()
 
-    def build_bad_class(self):
+    def build_bad_class_wrong_value_from_slot(self):
         class Foo(XMLSerializableNamedTuple):
             xml_descriptor = [('foo', lambda x: x.foo, str)]
         return Foo
