@@ -72,7 +72,7 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
 
         namedtuple_name = '_namedtuple_' + cls_name
         namedtuple_cls = collections.namedtuple(namedtuple_name,
-                                                list(xml_cls.slot_name_from_tag_name.keys()))
+                                                list(xml_cls.slot_name_from_tag_name.values()))
 
         cls_dict.pop('xml_descriptor')
         return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls) + bases, cls_dict)

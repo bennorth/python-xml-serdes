@@ -81,3 +81,46 @@ class TestNamedTuple(object):
         assert str_from_xml_elt(c_xml) == self.expected_xml(tag_for_expected)
         c1 = Circle.from_xml(c_xml, tag_for_expected)
         assert c1 == c
+
+
+class Ellipse(XMLSerializableNamedTuple):
+    xml_descriptor = [('minor-radius', 'radius0', np.uint16),
+                      ('major-radius', 'radius1', np.uint16),
+                      ('colour', str)]
+    xml_default_tag = 'ellipse'
+
+
+class TestNamedTupleDifferentTags(object):
+    @classmethod
+    def setup_class(cls):
+        cls.e = Ellipse(42, 99, 'red')
+
+    @staticmethod
+    def expected_xml(tag):
+        return ('<{0}>'
+                + '<minor-radius>42</minor-radius>'
+                + '<major-radius>99</major-radius>'
+                + '<colour>red</colour>'
+                + '</{0}>').format(tag)
+
+    def test_attributes(self):
+        assert self.e.radius0 == 42
+        assert self.e.radius1 == 99
+        assert self.e.colour == 'red'
+
+    def test_indexing(self):
+        assert self.e[0] == 42
+        assert self.e[1] == 99
+        assert self.e[2] == 'red'
+
+    @pytest.mark.parametrize(
+        'tag,tag_for_expected',
+        [(None, 'ellipse'), ('oval', 'oval')],
+        ids=['default-tag', 'explicit-tag'])
+    #
+    def test_round_trip(self, tag, tag_for_expected):
+        e = Ellipse(42, 99, 'red')
+        e_xml = e.as_xml(tag)
+        assert str_from_xml_elt(e_xml) == self.expected_xml(tag_for_expected)
+        e1 = Ellipse.from_xml(e_xml, tag_for_expected)
+        assert e1 == e
