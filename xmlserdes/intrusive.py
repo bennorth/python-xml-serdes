@@ -8,9 +8,6 @@ from xmlserdes.type_descriptors import Instance
 class XMLSerializableMeta(type):
     @classmethod
     def _expand(meta, xml_descriptor):
-        if xml_descriptor is None:
-            return None
-
         return list(map(ElementDescriptor.new_from_tuple, xml_descriptor))
 
     @classmethod
@@ -33,7 +30,7 @@ class XMLSerializableMeta(type):
 
 
 class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
-    xml_descriptor = None
+    xml_descriptor = []
 
     def as_xml(self, tag=None):
         tag = tag or self.xml_default_tag
@@ -78,7 +75,7 @@ class XMLSerializableNamedTupleMeta(type):
 
 
 class XMLSerializableNamedTuple(XMLSerializable):
-    xml_descriptor = None
+    xml_descriptor = []
 
     @classmethod
     def from_xml_dict(cls, ordered_dict):
