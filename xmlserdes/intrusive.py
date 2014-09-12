@@ -12,8 +12,10 @@ class XMLSerializableMeta(type):
 
     @classmethod
     def build_map_as_ordered_dict(meta, xml_descriptor):
-        # Work-in-progress
-        return None
+        return collections.OrderedDict(
+            (elt_descr.tag, elt_descr.value_slot)
+            for elt_descr in xml_descriptor
+            if elt_descr.value_slot is not None)
 
     def __new__(meta, cls_name, bases, cls_dict):
         xml_descriptor = meta._expand(cls_dict['xml_descriptor'])
@@ -56,33 +58,35 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
 
 
-########################################################################
-# Work-in-progress beyond this point.
-########################################################################
-
-class XMLSerializableNamedTupleMeta(type):
+class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
     def __new__(meta, cls_name, bases, cls_dict):
-        namedtuple_base = collections.namedtuple('_' + cls_name,
-                                                 [])
-                                                 #[field_names from xml_descriptor])
+        super_new = super(XMLSerializableNamedTupleMeta, meta).__new__
+        xml_name = '_XML_' + cls_name
+        xml_cls_dict = {'xml_descriptor': cls_dict['xml_descriptor']}
+        xml_cls = super_new(meta, xml_name, (), xml_cls_dict)
 
-        # Check all slots are value_from strings
+        descr = xml_cls.xml_descriptor
 
-        # Might make sense to require no other bases besides XMLSerializableNamedTuple?
-        bases.insert(0, namedtuple_base)
+        if len(xml_cls.slot_name_from_tag_name) != len(descr):
+            raise ValueError('invalid xml_descriptor: all "value_from"s must be simple attributes')
 
-        return super(XMLSerializableNamedTupleMeta, meta).__new__(meta, cls_name, bases, cls_dict)
+        namedtuple_name = '_namedtuple_' + cls_name
+        namedtuple_cls = collections.namedtuple(namedtuple_name,
+                                                list(xml_cls.slot_name_from_tag_name.keys()))
+
+        cls_dict.pop('xml_descriptor')
+        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls) + bases, cls_dict)
 
 
-class XMLSerializableNamedTuple(XMLSerializable):
+class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta,
+                                                   XMLSerializable)):
     xml_descriptor = []
 
     @classmethod
     def from_xml_dict(cls, ordered_dict):
-        # Keys of ordered_dict are xml tag names.
-        if ordered_dict.keys() != cls.slot_name_from_tag_name.keys():
+        if list(ordered_dict.keys()) != list(cls.slot_name_from_tag_name.keys()):
             raise ValueError('tags in wrong order or wrong n. tags or sth')
-        obj = cls(ordered_dict.values())
+        return cls._make(ordered_dict.values())
 
 
 """

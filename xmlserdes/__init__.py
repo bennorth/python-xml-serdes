@@ -8,7 +8,7 @@ from xmlserdes.type_descriptors import \
 
 from xmlserdes.element_descriptor import ElementDescriptor
 
-from xmlserdes.intrusive import XMLSerializable
+from xmlserdes.intrusive import XMLSerializable, XMLSerializableNamedTuple
 
 import collections
 from operator import attrgetter
