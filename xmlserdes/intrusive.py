@@ -87,13 +87,3 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
         if list(ordered_dict.keys()) != list(cls.slot_name_from_tag_name.keys()):
             raise ValueError('tags in wrong order or wrong n. tags or sth')
         return cls._make(ordered_dict.values())
-
-
-"""
-  [('OpeningClosingRAMSelect', 'i2'), # Strings interpreted as numpy dtype codes? Avoids 'import numpy'
-   ('StartAddress', np.uint16), # Or this still works
-   ('ThresholdValue', (np.ndarray, np.int32)), # ndim is 1 by default or only support 1-dml?
-   ('Rectangles', (np.ndarray, RectDType, 'rect')), # ndim is 1 by default or only support 1-dml?
-   ('Rectangle', Rectangle), # Check at class construction time that Rectangle is derived from our magic base class
-   ('ThresholdValue', (np.ndarray, np.int32, 2))] # comma- then semicolon-separated?  or dimension tags?
-"""
