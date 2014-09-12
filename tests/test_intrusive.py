@@ -17,8 +17,10 @@ class Rectangle(XMLSerializable):
         return self.width == other.width and self.height == other.height
 
     @classmethod
-    def from_xml_dict(cls):
-        pass
+    def from_xml_dict(cls, dict):
+        if list(dict.keys()) != ['width', 'height']:
+            raise ValueError('wrong tags')
+        return cls(*dict.values())
 
 
 class TestRectangle(object):
@@ -37,6 +39,9 @@ class TestRectangle(object):
         [(None, 'rect'), ('rectangle', 'rectangle')],
         ids=['default-tag', 'explicit-tag'])
     #
-    def test_serialization(self, tag, tag_for_expected):
+    def test_round_trip(self, tag, tag_for_expected):
         r = Rectangle(42, 100)
-        assert str_from_xml_elt(r.as_xml(tag)) == self.expected_xml(tag_for_expected)
+        r_xml = r.as_xml(tag)
+        assert str_from_xml_elt(r_xml) == self.expected_xml(tag_for_expected)
+        r1 = Rectangle.from_xml(r_xml, tag_for_expected)
+        assert r1 == r

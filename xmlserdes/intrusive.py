@@ -1,5 +1,7 @@
 import six
 
+import collections
+
 from xmlserdes.element_descriptor import ElementDescriptor
 from xmlserdes.type_descriptors import Instance
 
@@ -38,8 +40,6 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         instance_td = Instance(self.__class__) # TODO: Cache this t.d. in class?
         return instance_td.xml_element(self, tag)
 
-    # Work-in-progress:
-    #
     @classmethod
     def from_xml(cls, xml_elt, expected_tag):
         ordered_dict = cls._ordered_dict_from_xml(xml_elt)
@@ -48,7 +48,14 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
     @classmethod
     def _ordered_dict_from_xml(cls, xml_elt):
-        return collections.OrderedDict()
+        descr = cls.xml_descriptor
+        if len(xml_elt) != len(descr):
+            raise ValueError('expecting %d children but got %d'
+                             % (len(descr), len(elt)))
+
+        return collections.OrderedDict(
+            (child_elt.tag, descr_elt.extract_from(child_elt))
+            for child_elt, descr_elt in zip(xml_elt, descr))
 
 
 
