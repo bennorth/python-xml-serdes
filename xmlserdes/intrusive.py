@@ -70,8 +70,7 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         if len(xml_cls.slot_name_from_tag_name) != len(descr):
             raise ValueError('invalid xml_descriptor: all "value_from"s must be simple attributes')
 
-        namedtuple_name = '_namedtuple_' + cls_name
-        namedtuple_cls = collections.namedtuple(namedtuple_name,
+        namedtuple_cls = collections.namedtuple(cls_name,
                                                 list(xml_cls.slot_name_from_tag_name.values()))
 
         cls_dict.pop('xml_descriptor')

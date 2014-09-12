@@ -142,6 +142,9 @@ class TestNamedTupleDifferentTags(object):
         assert self.e[1] == 99
         assert self.e[2] == 'red'
 
+    def test_str(self):
+        assert str(self.e) == "Ellipse(radius0=42, radius1=99, colour='red')"
+
     @pytest.mark.parametrize(
         'tag,tag_for_expected',
         [(None, 'ellipse'), ('oval', 'oval')],
