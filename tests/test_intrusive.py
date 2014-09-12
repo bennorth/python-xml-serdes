@@ -22,6 +22,12 @@ class Rectangle(XMLSerializable):
 
 
 class TestRectangle(object):
+    def test_equality(self):
+        r0 = Rectangle(10, 20)
+        r1 = Rectangle(10, 20)
+        assert r0 is not r1
+        assert r0 == r1
+
     @staticmethod
     def expected_xml(tag):
         return '<{0}><width>42</width><height>100</height></{0}>'.format(tag)
