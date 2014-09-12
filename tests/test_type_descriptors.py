@@ -41,6 +41,24 @@ class TestAtomicTypes(object):
             assert type(val_round_trip) is tp
             assert val_round_trip == val
 
+    @pytest.mark.parametrize(
+        'dtype_str',
+        ['i1', 'i2', 'i4', 'u1', 'u2', 'u4'])
+    #
+    def test_terse_string_descriptors(self, dtype_str):
+        td = make_TD(dtype_str)
+        tp = np.dtype(dtype_str).type
+
+        elt = td.xml_element(19, 'foo')
+        assert '<foo>19</foo>' == to_unicode(elt)
+        val_round_trip = td.extract_from(elt, 'foo')
+        assert tp is type(val_round_trip)
+        assert val_round_trip == 19
+
+    def test_bad_terse_string_descriptors(self):
+        with pytest.raises_regexp(TypeError, 'data type .* not understood'):
+            bad_td = make_TD('not-a-real-dtype-code')
+
 
 class TestListTypes(object):
     @pytest.mark.parametrize('td',
