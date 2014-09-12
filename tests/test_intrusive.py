@@ -153,3 +153,14 @@ class TestNamedTupleDifferentTags(object):
         assert str_from_xml_elt(e_xml) == self.expected_xml(tag_for_expected)
         e1 = Ellipse.from_xml(e_xml, tag_for_expected)
         assert e1 == e
+
+
+class TestBadNamedTupleConstruction(object):
+    def test_bad_construction(self):
+        with pytest.raises_regexp(ValueError, 'must be simple'):
+            foo_cls = self.build_bad_class()
+
+    def build_bad_class(self):
+        class Foo(XMLSerializableNamedTuple):
+            xml_descriptor = [('foo', lambda x: x.foo, str)]
+        return Foo
