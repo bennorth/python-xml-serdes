@@ -225,17 +225,18 @@ class TestDescriptors(object):
         self.rect = BareRectangle(42, 100)
 
     @pytest.mark.parametrize(
-        'descriptor_tup,exp_tag',
-        [(('width', X.Atomic(int)), 'width'),
-         (('wd', 'width', X.Atomic(int)), 'wd'),
-         (('wd', (lambda x: x.width), X.Atomic(int)), 'wd')],
+        'descriptor_tup,exp_tag,exp_vslot',
+        [(('width', X.Atomic(int)), 'width', 'width'),
+         (('wd', 'width', X.Atomic(int)), 'wd', 'width'),
+         (('wd', (lambda x: x.width), X.Atomic(int)), 'wd', None)],
         ids=['pair', 'triple-attr-name', 'triple-function'])
     #
-    def test_tuple_construction(self, descriptor_tup, exp_tag):
+    def test_tuple_construction(self, descriptor_tup, exp_tag, exp_vslot):
         descriptor_elt = X.ElementDescriptor.new_from_tuple(descriptor_tup)
         val = 42
         assert descriptor_elt.tag == exp_tag
         assert descriptor_elt.value_from(self.rect) == val
+        assert descriptor_elt.value_slot == exp_vslot
         xml_elt = descriptor_elt.xml_element(self.rect)
         assert to_unicode(xml_elt) == '<%s>%d</%s>' % (exp_tag, val, exp_tag)
         round_trip_val = descriptor_elt.extract_from(xml_elt)

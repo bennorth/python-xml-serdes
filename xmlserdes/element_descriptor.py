@@ -6,7 +6,8 @@ from lxml import etree
 import xmlserdes
 from xmlserdes.type_descriptors import TypeDescriptor
 
-class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
+class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
+                                               'tag value_from value_slot type_descr')):
     """
     Object which represents the mapping between an XML element and a
     property of a Python object, together with the native Python type of
@@ -60,12 +61,14 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_
 
         if len(tup) == 2:
             tag, td = tup
-            return cls(tag, operator.attrgetter(tag), cls._ensure_TypeDescriptor(td))
+            return cls(tag, operator.attrgetter(tag), tag, cls._ensure_TypeDescriptor(td))
         elif len(tup) == 3:
             tag, vf, td = tup
+            vslot = None
             if isinstance(vf, str):
+                vslot = vf
                 vf = operator.attrgetter(vf)
-            return cls(tag, vf, cls._ensure_TypeDescriptor(td))
+            return cls(tag, vf, vslot, cls._ensure_TypeDescriptor(td))
         else:
             raise ValueError('bad tuple length')
 
