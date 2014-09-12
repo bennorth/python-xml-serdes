@@ -60,6 +60,9 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
 class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
     def __new__(meta, cls_name, bases, cls_dict):
+        if 'xml_descriptor' not in cls_dict:
+            raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
+
         super_new = super(XMLSerializableNamedTupleMeta, meta).__new__
         xml_name = '_XML_' + cls_name
         xml_cls_dict = {'xml_descriptor': cls_dict['xml_descriptor']}
