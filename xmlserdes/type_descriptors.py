@@ -36,6 +36,8 @@ class TypeDescriptor(object):
         if descr in cls.atomic_types:
             return Atomic(descr)
 
+        # TODO: Allow string to mean numpy dtypes via dtype(s).type
+
         if isinstance(descr, list):
             if len(descr) != 2:
                 raise ValueError(
