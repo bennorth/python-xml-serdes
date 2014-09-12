@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import pytest
+
 from xmlserdes import XMLSerializable
 from xmlserdes.utils import str_from_xml_elt
 
@@ -24,7 +26,11 @@ class TestRectangle(object):
     def expected_xml(tag):
         return '<{0}><width>42</width><height>100</height></{0}>'.format(tag)
 
-    def test_serialization(self):
+    @pytest.mark.parametrize(
+        'tag,tag_for_expected',
+        [(None, 'rect'), ('rectangle', 'rectangle')],
+        ids=['default-tag', 'explicit-tag'])
+    #
+    def test_serialization(self, tag, tag_for_expected):
         r = Rectangle(42, 100)
-        assert str_from_xml_elt(r.as_xml()) == self.expected_xml('rect')
-        assert str_from_xml_elt(r.as_xml('rectangle')) == self.expected_xml('rectangle')
+        assert str_from_xml_elt(r.as_xml(tag)) == self.expected_xml(tag_for_expected)

@@ -2,7 +2,7 @@
 
 import pytest
 
-import collections
+import collections, itertools
 
 from lxml import etree
 import numpy as np
@@ -21,15 +21,15 @@ except NameError:
 def to_unicode(elt):
     return etree.tostring(elt, encoding=etree_encoding)
 
+def list_product(*args):
+    return list(itertools.product(*args))
 
 class TestAtomicTypes(object):
-    def test_verbose(self):
-        self._test_type_descriptor(X.Atomic)
-
-    def test_terse(self):
-        self._test_type_descriptor(make_TD)
-
-    def _test_type_descriptor(self, td_func):
+    @pytest.mark.parametrize('td_func',
+                             [X.Atomic, make_TD],
+                             ids=['verbose', 'terse'])
+    #
+    def test_type_descriptor(self, td_func):
         for tp, val, exp_txt in [(int, 42, '42'),
                                  (float, 3.5, '3.5'),
                                  (str, '3 < 5', '3 &lt; 5'),
@@ -43,15 +43,12 @@ class TestAtomicTypes(object):
 
 
 class TestListTypes(object):
-    def test_verbose(self):
-        td = X.List(X.Atomic(int), 'wd')
-        self._test_type_descriptor(td)
-
-    def test_terse(self):
-        td = make_TD([int, 'wd'])
-        self._test_type_descriptor(td)
-
-    def _test_type_descriptor(self, td):
+    @pytest.mark.parametrize('td',
+                             [X.List(X.Atomic(int), 'wd'),
+                              make_TD([int, 'wd'])],
+                             ids=['verbose', 'terse'])
+    #
+    def test_type_descriptor(self, td):
         val = [42, 100, 99, 123]
         elt = td.xml_element(val, 'widths')
         assert to_unicode(elt) == '<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val)
@@ -60,15 +57,12 @@ class TestListTypes(object):
 
 
 class TestNestedListTypes(object):
-    def test_verbose(self):
-        td = X.List(X.List(X.Atomic(int), 'wd'), 'stripe-group')
-        self._test_type_descriptor(td)
-
-    def test_terse(self):
-        td = make_TD([[int, 'wd'], 'stripe-group'])
-        self._test_type_descriptor(td)
-
-    def _test_type_descriptor(self, td):
+    @pytest.mark.parametrize('td',
+                             [X.List(X.List(X.Atomic(int), 'wd'), 'stripe-group'),
+                              make_TD([[int, 'wd'], 'stripe-group'])],
+                             ids=['verbose', 'terse'])
+    #
+    def test_type_descriptor(self, td):
         groups = [[1, 2], [3, 4, 5]]
 
         elt = td.xml_element(groups, 'stripe-groups')
@@ -112,15 +106,12 @@ class TestInstanceTypes(object):
         with pytest.raises_regexp(ValueError, 'unhandled terse descriptor'):
             make_TD(lambda x: x)
 
-    def test_verbose(self):
-        td = X.Instance(Rectangle)
-        self._test_type_descriptor(td)
-
-    def test_terse(self):
-        td = make_TD(Rectangle)
-        self._test_type_descriptor(td)
-
-    def _test_type_descriptor(self, td):
+    @pytest.mark.parametrize('td',
+                             [X.Instance(Rectangle),
+                              make_TD(Rectangle)],
+                             ids=['verbose', 'terse'])
+    #
+    def test_type_descriptor(self, td):
         rect = Rectangle(42, 100)
         elt = td.xml_element(rect, 'rect')
         assert to_unicode(elt) == expected_rect_xml(42, 100)
@@ -128,29 +119,30 @@ class TestInstanceTypes(object):
         rect_round_trip = td.extract_from(elt, 'rect')
         assert rect_round_trip == rect
 
-    def test_bad_xml_wrong_n_children(self):
+    @pytest.mark.parametrize(
+        'xml_str,err_re',
+        [('<rect><a>42</a><b>100</b><c>123</c></rect>', 'expecting 2 children but got 3'),
+         ('<rect><a>42</a><b>100</b></rect>', 'expected tag "width" but got "a"')],
+        ids=['wrong-n-children', 'wrong-tag'])
+    #
+    def test_bad_xml(self, xml_str, err_re):
         td = X.Instance(Rectangle)
-        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
-        with pytest.raises_regexp(ValueError, 'expecting 2 children but got 3'):
-            td.extract_from(bad_xml, 'rect')
-
-    def test_bad_xml_wrong_tag(self):
-        td = X.Instance(Rectangle)
-        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
-        with pytest.raises_regexp(ValueError,
-                                  'expected tag "width" but got "a"'):
+        bad_xml = etree.fromstring(xml_str)
+        with pytest.raises_regexp(ValueError, err_re):
             td.extract_from(bad_xml, 'rect')
 
 
 class _TestNumpyBase(object):
-    def bad_value_1(self, x, regexp):
+    @pytest.mark.parametrize(
+        'x,regexp',
+        [('hello', 'not ndarray'),
+         (np.array([[1, 2], [3, 4]]), 'not 1-dimensional'),
+         (np.zeros((12,), dtype=np.float32), 'expecting dtype')],
+        ids=['string','multi-dml','wrong-dtype'])
+    #
+    def test_bad_value(self, x, regexp):
         with pytest.raises_regexp(ValueError, regexp):
             self.td.xml_element(x, 'values')
-
-    def test_bad_values(self):
-        self.bad_value_1('hello', 'not ndarray')
-        self.bad_value_1(np.array([[1, 2], [3, 4]]), 'not 1-dimensional')
-        self.bad_value_1(np.zeros((12,), dtype=np.float32), 'expecting dtype')
 
 
 class TestNumpyAtomic(_TestNumpyBase):
@@ -163,21 +155,21 @@ class TestNumpyAtomic(_TestNumpyBase):
         assert xs_round_trip.shape == xs.shape
         assert np.all(xs_round_trip == xs)
 
-    def test_round_trips_verbose(self):
-        self._test_round_trips(X.NumpyAtomicVector)
-
-    def test_round_trips_terse(self):
-        def td_from_dtype(dtype):
-            return make_TD((np.ndarray, dtype))
-        self._test_round_trips(td_from_dtype)
-
-    def _test_round_trips(self, td_func):
-        for dtype in [np.uint8, np.uint16, np.uint32, np.uint64,
+    dtypes_to_test = [np.uint8, np.uint16, np.uint32, np.uint64,
                       np.int8, np.int16, np.int32, np.int64,
-                      np.float32, np.float64]:
-            #
-            xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
-            self.round_trip_1(xs, td_func(dtype))
+                      np.float32, np.float64]
+
+    @pytest.mark.parametrize(
+        'dtype,td_func',
+        list_product(dtypes_to_test,
+                     [X.NumpyAtomicVector, lambda dt: make_TD((np.ndarray, dt))]),
+        ids=['-'.join(flds)
+             for flds in list_product([dt.__name__ for dt in dtypes_to_test],
+                                      ['verbose', 'terse'])])
+    #
+    def test_round_trips(self, dtype, td_func):
+        xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
+        self.round_trip_1(xs, td_func(dtype))
 
     def test_content(self):
         xs = np.array([32, 42, 100, 99, -100], dtype=np.int32)
@@ -198,18 +190,17 @@ def remove_whitespace(s):
 
 
 class TestNumpyRecordStructured(_TestNumpyBase):
+    type_descr = X.NumpyRecordVectorStructured(RectangleDType, 'rect')
+
     def setup_method(self, method):
-        self.td = X.NumpyRecordVectorStructured(RectangleDType, 'rect')
+        self.td = TestNumpyRecordStructured.type_descr
         self.vals = np.array([(42, 100), (99, 12)], dtype=RectangleDType)
 
-    def test_verbose(self):
-        self._test_type_descriptor(self.td)
-
-    def test_terse(self):
-        td = make_TD((np.ndarray, RectangleDType, 'rect'))
-        self._test_type_descriptor(td)
-
-    def _test_type_descriptor(self, td):
+    @pytest.mark.parametrize('td',
+                             [type_descr, make_TD((np.ndarray, RectangleDType, 'rect'))],
+                             ids=['verbose', 'terse'])
+    #
+    def test_type_descriptor(self, td):
         xml_elt = td.xml_element(self.vals, 'rects')
         expected_xml = remove_whitespace(
             """<rects>
@@ -233,7 +224,15 @@ class TestDescriptors(object):
     def setup_method(self, method):
         self.rect = BareRectangle(42, 100)
 
-    def do_tests(self, descriptor_elt, exp_tag):
+    @pytest.mark.parametrize(
+        'descriptor_tup,exp_tag',
+        [(('width', X.Atomic(int)), 'width'),
+         (('wd', 'width', X.Atomic(int)), 'wd'),
+         (('wd', (lambda x: x.width), X.Atomic(int)), 'wd')],
+        ids=['pair', 'triple-attr-name', 'triple-function'])
+    #
+    def test_tuple_construction(self, descriptor_tup, exp_tag):
+        descriptor_elt = X.ElementDescriptor.new_from_tuple(descriptor_tup)
         val = 42
         assert descriptor_elt.tag == exp_tag
         assert descriptor_elt.value_from(self.rect) == val
@@ -242,26 +241,15 @@ class TestDescriptors(object):
         round_trip_val = descriptor_elt.extract_from(xml_elt)
         assert round_trip_val == val
 
-    def test_from_pair(self):
-        self.do_tests(X.ElementDescriptor.new_from_tuple(('width', X.Atomic(int))),
-                      'width')
-
-    def test_from_triple_attr_name(self):
-        self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', 'width', X.Atomic(int))),
-                      'wd')
-
-    def test_from_triple_function(self):
-        def getwd(x):
-            return x.width
-
-        self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', getwd, X.Atomic(int))),
-                      'wd')
-
-    def test_bad_construction(self):
-        with pytest.raises_regexp(ValueError, 'length'):
-            X.ElementDescriptor.new_from_tuple((1, 2, 3, 4))
-        with pytest.raises(TypeError):
-            X.ElementDescriptor.new_from_tuple(42)
+    @pytest.mark.parametrize(
+        'bad_arg,exc_tp,exc_re',
+        [((1, 2, 3, 4), ValueError, 'length'),
+         (42, TypeError, 'object .* has no len')],
+        ids=['wrong-length', 'wrong-type'])
+    #
+    def test_bad_construction(self, bad_arg, exc_tp, exc_re):
+        with pytest.raises_regexp(exc_tp, exc_re):
+            X.ElementDescriptor.new_from_tuple(bad_arg)
 
 
 def expected_rect_xml(w, h):
@@ -279,15 +267,16 @@ class TestObject(object):
         rect_round_trip = X.deserialize(Rectangle, serialized_xml, 'rect')
         assert rect_round_trip == self.rect
 
-    def test_bad_n_children(self):
-        bad_xml = etree.fromstring('<rect><width>99</width></rect>')
-        with pytest.raises_regexp(ValueError, 'expecting 2 children but got 1'):
-            X.deserialize(Rectangle, bad_xml, 'rect')
-
-    def test_bad_root_tag(self):
-        bad_xml = etree.fromstring(expected_rect_xml(42, 100))
-        with pytest.raises_regexp(ValueError, 'expected tag .* but got'):
-            X.deserialize(Rectangle, bad_xml, 'rectangle')
+    @pytest.mark.parametrize(
+        'xml_str,des_tag,exc_re',
+        [('<rect><width>99</width></rect>', 'rect', 'expecting 2 children but got 1'),
+         (expected_rect_xml(42, 100), 'rectangle', 'expected tag .* but got')],
+        ids=['wrong-n-children', 'wrong-tag'])
+    #
+    def test_bad_input(self, xml_str, des_tag, exc_re):
+        bad_xml = etree.fromstring(xml_str)
+        with pytest.raises_regexp(ValueError, exc_re):
+            X.deserialize(Rectangle, bad_xml, des_tag)
 
 
 class Layout(collections.namedtuple('Layout_', 'colour cornerprops stripes ids shape components')):
