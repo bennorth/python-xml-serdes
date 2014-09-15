@@ -40,10 +40,11 @@ class TypeDescriptor(object):
             return Atomic(np.dtype(descr).type)
 
         if isinstance(descr, list):
-            if len(descr) != 2:
+            if len(descr) == 2:
+                contained_descr, tag = descr
+            else:
                 raise ValueError(
                     'list descriptor: expecting 2 elements but got %d' % len(descr))
-            contained_descr, tag = descr
             return List(cls.from_terse(contained_descr), tag)
 
         if isinstance(descr, tuple):
