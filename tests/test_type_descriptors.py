@@ -250,14 +250,14 @@ class TestDescriptors(object):
         ids=['pair', 'triple-attr-name', 'triple-function'])
     #
     def test_tuple_construction(self, descriptor_tup, exp_tag, exp_vslot):
-        descriptor_elt = X.ElementDescriptor.new_from_tuple(descriptor_tup)
+        elt_descriptor = X.ElementDescriptor.new_from_tuple(descriptor_tup)
         val = 42
-        assert descriptor_elt.tag == exp_tag
-        assert descriptor_elt.value_from(self.rect) == val
-        assert descriptor_elt.value_slot == exp_vslot
-        xml_elt = descriptor_elt.xml_element(self.rect)
+        assert elt_descriptor.tag == exp_tag
+        assert elt_descriptor.value_from(self.rect) == val
+        assert elt_descriptor.value_slot == exp_vslot
+        xml_elt = elt_descriptor.xml_element(self.rect)
         assert to_unicode(xml_elt) == '<%s>%d</%s>' % (exp_tag, val, exp_tag)
-        round_trip_val = descriptor_elt.extract_from(xml_elt)
+        round_trip_val = elt_descriptor.extract_from(xml_elt)
         assert round_trip_val == val
 
     @pytest.mark.parametrize(
