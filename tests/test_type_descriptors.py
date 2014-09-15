@@ -60,6 +60,10 @@ class TestAtomicTypes(object):
             bad_td = make_TD('not-a-real-dtype-code')
 
 
+class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
+    pass
+
+
 class TestListTypes(object):
     @pytest.mark.parametrize('td',
                              [X.List(X.Atomic(int), 'wd'),
@@ -94,10 +98,6 @@ class TestNestedListTypes(object):
 
         groups_round_trip = td.extract_from(elt, 'stripe-groups')
         assert groups == groups_round_trip
-
-
-class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
-    pass
 
 
 class Rectangle(collections.namedtuple('BareRectangle', 'width height')):
