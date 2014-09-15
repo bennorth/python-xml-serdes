@@ -40,11 +40,17 @@ class TypeDescriptor(object):
             return Atomic(np.dtype(descr).type)
 
         if isinstance(descr, list):
-            if len(descr) == 2:
+            if len(descr) == 1:
+                contained_descr = descr[0]
+                if not hasattr(contained_descr, 'xml_default_tag'):
+                    raise ValueError('1-elt list: type "%s" has no "xml_default_tag"'
+                                     % contained_descr.__name__)
+                tag = contained_descr.xml_default_tag
+            elif len(descr) == 2:
                 contained_descr, tag = descr
             else:
                 raise ValueError(
-                    'list descriptor: expecting 2 elements but got %d' % len(descr))
+                    'list descriptor: expecting 1 or 2 elements but got %d' % len(descr))
             return List(cls.from_terse(contained_descr), tag)
 
         if isinstance(descr, tuple):

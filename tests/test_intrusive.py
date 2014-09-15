@@ -112,6 +112,24 @@ class TestNestedNamedTuple(object):
         assert p1 == p
 
 
+class RectangleCollection(XMLSerializableNamedTuple):
+    xml_descriptor = [('creator', str),
+                      ('rectangles', [Rectangle])]
+
+def TestListImplicitTag(object):
+    def test_rectangles(self):
+        rc = RectangleCollection('Arthur Jackson',
+                                 [Rectangle(12, 34), Rectangle(56, 78)])
+        exp_txt = ('<rectangle-collection>'
+                   + '<creator>%s</creator>'
+                   + '<rectangles>%s</rectangles>'
+                   + '</rectangle-collection>'
+                   % (rc.creator,
+                      ''.join('<rect><width>%d</width><height>%d</height></rect>' % (r.width, r.height)
+                              for r in rc.rectangles)))
+        assert str_from_xml_elt(rc.as_xml('rectangle-collection')) == exp_txt
+
+
 class Ellipse(XMLSerializableNamedTuple):
     xml_descriptor = [('minor-radius', 'radius0', np.uint16),
                       ('major-radius', 'radius1', np.uint16),

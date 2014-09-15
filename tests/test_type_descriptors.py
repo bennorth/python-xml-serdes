@@ -77,6 +77,16 @@ class TestListTypes(object):
         val_round_trip = td.extract_from(elt, 'widths')
         assert val_round_trip == val
 
+    @pytest.mark.parametrize('list_descr,exc_re',
+                             [([1, 2, 3], 'expecting 1 or 2 elements'),
+                              ([], 'expecting 1 or 2 elements'),
+                              ([BareRectangle], '1-elt list: .* has no "xml_default_tag"')],
+                             ids=['three-elt', 'empty', 'no-default-tag'])
+    #
+    def test_bad_construction(self, list_descr, exc_re):
+        with pytest.raises_regexp(ValueError, exc_re):
+            bad_td = make_TD(list_descr)
+
 
 class TestNestedListTypes(object):
     @pytest.mark.parametrize('td',
