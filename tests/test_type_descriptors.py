@@ -7,19 +7,11 @@ import collections, itertools
 from lxml import etree
 import numpy as np
 import xmlserdes as X
+import xmlserdes.utils as XU
 
 make_TD = X.TypeDescriptor.from_terse
 
 import re
-
-try:
-    etree_encoding = unicode
-except NameError:
-    etree_encoding = str
-
-
-def to_unicode(elt):
-    return etree.tostring(elt, encoding=etree_encoding)
 
 def list_product(*args):
     return list(itertools.product(*args))
@@ -36,7 +28,7 @@ class TestAtomicTypes(object):
                                  (np.uint8, np.uint8(42), '42')]:
             td = td_func(tp)
             elt = td.xml_element(val, 'foo')
-            assert to_unicode(elt) == '<foo>%s</foo>' % exp_txt
+            assert XU.str_from_xml_elt(elt) == '<foo>%s</foo>' % exp_txt
             val_round_trip = td.extract_from(elt, 'foo')
             assert type(val_round_trip) is tp
             assert val_round_trip == val
@@ -50,7 +42,7 @@ class TestAtomicTypes(object):
         tp = np.dtype(dtype_str).type
 
         elt = td.xml_element(19, 'foo')
-        assert '<foo>19</foo>' == to_unicode(elt)
+        assert '<foo>19</foo>' == XU.str_from_xml_elt(elt)
         val_round_trip = td.extract_from(elt, 'foo')
         assert tp is type(val_round_trip)
         assert val_round_trip == 19
@@ -73,7 +65,8 @@ class TestListTypes(object):
     def test_type_descriptor(self, td):
         val = [42, 100, 99, 123]
         elt = td.xml_element(val, 'widths')
-        assert to_unicode(elt) == '<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val)
+        assert XU.str_from_xml_elt(elt) == \
+               '<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val)
         val_round_trip = td.extract_from(elt, 'widths')
         assert val_round_trip == val
 
@@ -104,7 +97,7 @@ class TestNestedListTypes(object):
                               % ''.join('<wd>%d</wd>' % x for x in grp))
                              for grp in groups))
 
-        assert exp_txt == to_unicode(elt)
+        assert exp_txt == XU.str_from_xml_elt(elt)
 
         groups_round_trip = td.extract_from(elt, 'stripe-groups')
         assert groups == groups_round_trip
@@ -142,7 +135,7 @@ class TestInstanceTypes(object):
     def test_type_descriptor(self, td):
         rect = Rectangle(42, 100)
         elt = td.xml_element(rect, 'rect')
-        assert to_unicode(elt) == expected_rect_xml(42, 100)
+        assert XU.str_from_xml_elt(elt) == expected_rect_xml(42, 100)
 
         rect_round_trip = td.extract_from(elt, 'rect')
         assert rect_round_trip == rect
@@ -202,7 +195,7 @@ class TestNumpyAtomic(_TestNumpyBase):
     def test_content(self):
         xs = np.array([32, 42, 100, 99, -100], dtype=np.int32)
         elt = self.td.xml_element(xs, 'values')
-        assert to_unicode(elt) == '<values>32,42,100,99,-100</values>'
+        assert XU.str_from_xml_elt(elt) == '<values>32,42,100,99,-100</values>'
 
 
 class TestNumpyAtomicConvenience(TestNumpyAtomic):
@@ -235,7 +228,7 @@ class TestNumpyRecordStructured(_TestNumpyBase):
                  <rect><width>42</width><height>100</height></rect>
                  <rect><width>99</width><height>12</height></rect>
                </rects>""")
-        assert to_unicode(xml_elt) == expected_xml
+        assert XU.str_from_xml_elt(xml_elt) == expected_xml
         vals_rt = td.extract_from(xml_elt, 'rects')
         assert vals_rt.dtype == self.vals.dtype
         assert vals_rt.shape == self.vals.shape
@@ -266,7 +259,7 @@ class TestDescriptors(object):
         assert elt_descriptor.value_from(self.rect) == val
         assert elt_descriptor.value_slot == exp_vslot
         xml_elt = elt_descriptor.xml_element(self.rect)
-        assert to_unicode(xml_elt) == '<%s>%d</%s>' % (exp_tag, val, exp_tag)
+        assert XU.str_from_xml_elt(xml_elt) == '<%s>%d</%s>' % (exp_tag, val, exp_tag)
         round_trip_val = elt_descriptor.extract_from(xml_elt)
         assert round_trip_val == val
 
@@ -291,7 +284,7 @@ class TestObject(object):
 
     def test_1(self):
         serialized_xml = X.serialize(self.rect, 'rect')
-        assert to_unicode(serialized_xml) == expected_rect_xml(42, 123)
+        assert XU.str_from_xml_elt(serialized_xml) == expected_rect_xml(42, 123)
 
         rect_round_trip = X.deserialize(Rectangle, serialized_xml, 'rect')
         assert rect_round_trip == self.rect
@@ -330,7 +323,7 @@ class TestComplexObject(object):
                         Rectangle(210, 297),
                         np.array([(20, 30), (40, 50)], dtype=RectangleDType))
         xml = X.serialize(layout, 'layout')
-        xml_str = to_unicode(xml)
+        xml_str = XU.str_from_xml_elt(xml)
         expected_str = remove_whitespace(
             """<layout>
                  <colour>dark-blue</colour>
