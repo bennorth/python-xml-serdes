@@ -26,8 +26,6 @@ Classes and functions
    :members:
    :member-order: bysource
 
-.. autoclass:: xmlserdes.Descriptor
-
 .. autofunction:: xmlserdes.SerDesDescriptor
 
 .. autoclass:: xmlserdes.TypeDescriptor
