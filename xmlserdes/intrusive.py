@@ -5,6 +5,9 @@ import collections
 from xmlserdes.element_descriptor import ElementDescriptor
 from xmlserdes.type_descriptors import Instance
 
+import xmlserdes
+import xmlserdes.utils
+
 class XMLSerializableMeta(type):
     @classmethod
     def _expand(meta, xml_descriptor):
@@ -32,15 +35,37 @@ class XMLSerializableMeta(type):
 
 
 class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
+    """
+    Base class for types which become serializable to XML via instance
+    method ``as_xml``, and deserializable from XML via class method
+    ``from_xml``.  XML behaviour is specified via an ``xml_descriptor``
+    class attribute (of the derived class), which is a list of terse
+    type-descriptor expressions --- see
+    :meth:`xmlserdes.TypeDescriptor.from_terse` for details.
+    """
+
     xml_descriptor = []
 
     def as_xml(self, tag=None):
+        """
+        Return an XML element representing ``self``.  The element has
+        tag ``tag``, or if that is omitted (or ``None``), the
+        ``xml_default_tag`` attribute of ``self``'s class.
+        """
+
         tag = tag or self.xml_default_tag
         instance_td = Instance(self.__class__) # TODO: Cache this t.d. in class?
         return instance_td.xml_element(self, tag)
 
     @classmethod
     def from_xml(cls, xml_elt, expected_tag):
+        """
+        Return a new instance of ``cls`` by deserializing the given XML
+        element, which must have the given expected tag.  The real work
+        is done by a class method ``from_xml_dict``, which the derived
+        class must provide.
+        """
+
         ordered_dict = cls._ordered_dict_from_xml(xml_elt)
         # Might throw exception if class doesn't care about deserialization:
         return cls.from_xml_dict(ordered_dict)
@@ -82,6 +107,24 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
 
 class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta,
                                                    XMLSerializable)):
+    """
+    Base class for types which are essentially named tuples with the
+    field-names taken from the ``xml_descriptor``.
+
+    >>> class Rectangle(xmlserdes.XMLSerializableNamedTuple):
+    ...     xml_default_tag = 'rect'
+    ...     xml_descriptor = [('wd', int), ('ht', int)]
+    >>> r = Rectangle(10, 20)
+    >>> print(r)
+    Rectangle(wd=10, ht=20)
+    >>> r.wd
+    10
+    >>> r.ht
+    20
+    >>> print(xmlserdes.utils.str_from_xml_elt(r.as_xml()))
+    <rect><wd>10</wd><ht>20</ht></rect>
+    """
+
     xml_descriptor = []
 
     @classmethod

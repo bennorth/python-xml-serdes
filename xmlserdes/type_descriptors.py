@@ -33,6 +33,100 @@ class TypeDescriptor(object):
 
     @classmethod
     def from_terse(cls, descr):
+        """
+        Method to construct an instance of
+        :class:`xmlserdes.TypeDescriptor` from a terse expression.  Many
+        types for the ``expression`` argument are supported:
+
+        atomic type object
+            A :class:`xmlserdes.Atomic` instance is created for that
+            type.  The list of known 'atomic' types is stored in
+            ``TypeDescriptor.atomic_types``.
+
+            >>> td = TypeDescriptor.from_terse(int)
+            >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(42, 'answer')))
+            <answer>42</answer>
+
+        string instance
+            A :class:`xmlserdes.Atomic` instance is created, where the
+            contained type is found by interpreting the given string as
+            a Numpy dtype code.
+
+            >>> td = TypeDescriptor.from_terse('i2')
+            >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(np.int16(42), 'answer')))
+            <answer>42</answer>
+
+        non-atomic type object
+            A :class:`xmlserdes.Instance` instance is created, where the
+            contained type is the given type.  The type must have an
+            ``xml_descriptor`` attribute.
+
+            >>> class Blob(xmlserdes.XMLSerializableNamedTuple):
+            ...     xml_descriptor = [('size', int)]
+            >>> td = TypeDescriptor.from_terse(Blob)
+            >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(Blob(42), 'blob')))
+            <blob><size>42</size></blob>
+
+            (This example uses the terse type-descriptor format to
+            specify the XML behaviour of the one field of ``Blob``.)
+
+        list instance
+            A :class:`xmlserdes.List` instance is created.
+
+            The given list must have either one or two elements.
+
+            If two elements, they are taken as the contained type and
+            contained tag:
+
+            >>> td = TypeDescriptor.from_terse([int, 'ans'])
+            >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element([42, 99], 'answers')))
+            <answers><ans>42</ans><ans>99</ans></answers>
+
+            If one element, it must be a type having an
+            ``xml_default_tag`` attribute, which is used as the
+            contained tag:
+
+            >>> class Blob(xmlserdes.XMLSerializableNamedTuple):
+            ...     xml_default_tag = 'blob'
+            ...     xml_descriptor = [('size', int)]
+            >>> td = TypeDescriptor.from_terse([Blob])
+            >>> blobs = [Blob(42), Blob(99)]
+            >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(blobs, 'blobs')))
+            <blobs><blob><size>42</size></blob><blob><size>99</size></blob></blobs>
+
+        tuple instance
+            Depending on the tuple length, either a
+            :class:`xmlserdes.NumpyAtomicVector` or a
+            :class:`xmlserdes.NumpyRecordVectorStructured` is created.
+            In all cases, the first element of the tuple must be the
+            Numpy.ndarray type object
+
+            two-element tuple
+                The second tuple element must be an atomic Numpy dtype,
+                and a :class:`xmlserdes.NumpyAtomicVector` for that
+                dtype is returned.
+
+                >>> td = TypeDescriptor.from_terse((np.ndarray, np.int32))
+                >>> xs = np.array([1, 2, 3], dtype = np.int32)
+                >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(xs, 'answers')))
+                <answers>1,2,3</answers>
+
+            three-element tuple
+                The second element must be a record dtype, and the third
+                element must be a string naming the contained elements.  A
+                :class:`xmlserdes.NumpyRecordVectorStructured` is created.
+
+                This example uses very short tag names to keep the output
+                of a reasonable length:
+
+                >>> Rect = np.dtype([('w', np.uint16), ('h', np.uint16)])
+                >>> td = TypeDescriptor.from_terse((np.ndarray, Rect, 'r'))
+                >>> rects = np.array([(10, 20), (3, 4)], dtype = Rect)
+                >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(rects, 'rs')))
+                <rs><r><w>10</w><h>20</h></r><r><w>3</w><h>4</h></r></rs>
+
+        """
+
         if descr in cls.atomic_types:
             return Atomic(descr)
 
