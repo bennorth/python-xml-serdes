@@ -6,6 +6,7 @@ from xmlserdes import XMLSerializable, XMLSerializableNamedTuple
 from xmlserdes.utils import str_from_xml_elt
 
 import numpy as np
+from lxml import etree
 
 class Rectangle(XMLSerializable):
     xml_descriptor = [('width', int), ('height', int)]
@@ -196,3 +197,10 @@ class TestBadNamedTupleConstruction(object):
     def test_bad_construction(self, class_fun, exc_re):
         with pytest.raises_regexp(ValueError, exc_re):
             foo_cls = class_fun()
+
+
+class TestBadMethodUsage(object):
+    def test_wrong_n_children(self):
+        bad_xml = etree.fromstring('<rect><a>1</a><b>1</b><c>1</c></rect>')
+        with pytest.raises_regexp(ValueError, 'expecting 2 children but got 3'):
+            obj = Rectangle.from_xml(bad_xml, 'rect')

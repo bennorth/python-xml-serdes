@@ -75,7 +75,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         descr = cls.xml_descriptor
         if len(xml_elt) != len(descr):
             raise ValueError('expecting %d children but got %d'
-                             % (len(descr), len(elt)))
+                             % (len(descr), len(xml_elt)))
 
         return collections.OrderedDict(
             (child_elt.tag, descr_elt.extract_from(child_elt))
