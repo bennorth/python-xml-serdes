@@ -6,6 +6,7 @@ from lxml import etree
 import xmlserdes
 from xmlserdes.type_descriptors import TypeDescriptor
 
+
 class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
                                                'tag value_from value_slot type_descr')):
     """
@@ -99,5 +100,3 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         99
         """
         return self.type_descr.extract_from(elt, self.tag)
-
-

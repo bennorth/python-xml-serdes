@@ -8,6 +8,7 @@ from xmlserdes.type_descriptors import Instance
 import xmlserdes
 import xmlserdes.utils
 
+
 class XMLSerializableMeta(type):
     @classmethod
     def _expand(meta, xml_descriptor):
@@ -54,7 +55,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         """
 
         tag = tag or self.xml_default_tag
-        instance_td = Instance(self.__class__) # TODO: Cache this t.d. in class?
+        instance_td = Instance(self.__class__)  # TODO: Cache this t.d. in class?
         return instance_td.xml_element(self, tag)
 
     @classmethod
@@ -84,7 +85,6 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         return collections.OrderedDict(
             (child_elt.tag, descr_elt.extract_from(child_elt))
             for child_elt, descr_elt in zip(xml_elt, descr))
-
 
 
 class XMLSerializableNamedTupleMeta(XMLSerializableMeta):

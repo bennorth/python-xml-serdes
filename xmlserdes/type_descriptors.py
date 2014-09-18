@@ -7,6 +7,7 @@ import xmlserdes
 
 import six
 
+
 class TypeDescriptor(six.with_metaclass(ABCMeta)):
     """
     Instances of classes derived from :class:`xmlserdes.TypeDescriptor` support
@@ -190,7 +191,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             raise ValueError('expected tag "%s" but got "%s"'
                              % (expected_tag, elt.tag))
 
-    @abstractmethod # pragma: no cover
+    @abstractmethod  # pragma: no cover
     def xml_element(self, obj, tag):
         """
         Return an XML element, with the given tag, corresponding to the
@@ -204,7 +205,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
 
-    @abstractmethod # pragma: no cover
+    @abstractmethod  # pragma: no cover
     def extract_from(self, elt, expected_tag):
         """
         Extract and return an object from the given XML element.  The
@@ -282,7 +283,8 @@ class List(TypeDescriptor):
 
     Serializing a list of integers into an XML element:
 
-    >>> print(xmlserdes.utils.str_from_xml_elt(list_of_ints_td.xml_element([42, 123, 99], 'list-of-answers')))
+    >>> print(xmlserdes.utils.str_from_xml_elt(
+    ...     list_of_ints_td.xml_element([42, 123, 99], 'list-of-answers')))
     <list-of-answers><answer>42</answer><answer>123</answer><answer>99</answer></list-of-answers>
 
     Deserializing a list of integers from an XML element:

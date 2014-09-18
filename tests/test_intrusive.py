@@ -9,6 +9,7 @@ from collections import OrderedDict
 import numpy as np
 from lxml import etree
 
+
 class Rectangle(XMLSerializable):
     xml_descriptor = [('width', int), ('height', int)]
     xml_default_tag = 'rect'
@@ -90,6 +91,7 @@ class Pattern(XMLSerializableNamedTuple):
                       ('circles', [Circle, 'circle'])]
     xml_default_tag = 'pattern'
 
+
 class TestNestedNamedTuple(object):
     @staticmethod
     def expected_xml(tag):
@@ -118,6 +120,7 @@ class RectangleCollection(XMLSerializableNamedTuple):
     xml_descriptor = [('creator', str),
                       ('rectangles', [Rectangle])]
 
+
 def TestListImplicitTag(object):
     def test_rectangles(self):
         rc = RectangleCollection('Arthur Jackson',
@@ -127,7 +130,8 @@ def TestListImplicitTag(object):
                    + '<rectangles>%s</rectangles>'
                    + '</rectangle-collection>'
                    % (rc.creator,
-                      ''.join('<rect><width>%d</width><height>%d</height></rect>' % (r.width, r.height)
+                      ''.join('<rect><width>%d</width><height>%d</height></rect>'
+                              % (r.width, r.height)
                               for r in rc.rectangles)))
         assert str_from_xml_elt(rc.as_xml('rectangle-collection')) == exp_txt
 

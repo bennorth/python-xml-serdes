@@ -6,6 +6,7 @@ import xmlserdes.utils as XmlUtils
 
 import lxml.etree
 
+
 class TestToUnicode(object):
     def test_empty_element(self):
         elt = lxml.etree.Element('foo')

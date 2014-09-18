@@ -2,7 +2,8 @@
 
 import pytest
 
-import collections, itertools
+import collections
+import itertools
 
 from lxml import etree
 import numpy as np
@@ -13,8 +14,10 @@ make_TD = X.TypeDescriptor.from_terse
 
 import re
 
+
 def list_product(*args):
     return list(itertools.product(*args))
+
 
 class TestAtomicTypes(object):
     @pytest.mark.parametrize('td_func',
@@ -159,7 +162,7 @@ class _TestNumpyBase(object):
         [('hello', 'not ndarray'),
          (np.array([[1, 2], [3, 4]]), 'not 1-dimensional'),
          (np.zeros((12,), dtype=np.float32), 'expecting dtype')],
-        ids=['string','multi-dml','wrong-dtype'])
+        ids=['string', 'multi-dml', 'wrong-dtype'])
     #
     def test_bad_value(self, x, regexp):
         with pytest.raises_regexp(ValueError, regexp):
@@ -384,6 +387,7 @@ class TestComplexObject(object):
                </layout>""")
         assert xml_str == expected_str
         X.deserialize(Layout, xml, 'layout')
+
 
 class TestTerseErrorInputs(object):
     @pytest.mark.parametrize(

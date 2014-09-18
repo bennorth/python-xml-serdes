@@ -3,8 +3,8 @@
 from __future__ import print_function
 
 from xmlserdes.type_descriptors import \
-     TypeDescriptor, Atomic, List, Instance, \
-     NumpyAtomicVector, NumpyRecordVectorStructured, NumpyVector
+    TypeDescriptor, Atomic, List, Instance, \
+    NumpyAtomicVector, NumpyRecordVectorStructured, NumpyVector
 
 from xmlserdes.element_descriptor import ElementDescriptor
 
@@ -35,8 +35,6 @@ def SerDesDescriptor(children):
     """
 
     return list(map(ElementDescriptor.new_from_tuple, children))
-
-
 
 
 def serialize(obj, tag):
