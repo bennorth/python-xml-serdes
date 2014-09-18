@@ -370,3 +370,17 @@ class TestComplexObject(object):
                </layout>""")
         assert xml_str == expected_str
         X.deserialize(Layout, xml, 'layout')
+
+class TestTerseErrorInputs(object):
+    @pytest.mark.parametrize(
+        'bad_tup,exc_re',
+        [((), 'empty tuple'),
+         ((42, 'hello', 'world'), 'numpy.ndarray as first'),
+         ((np.ndarray, BareRectangle), 'atomic numpy type as second'),
+         ((np.ndarray, 'foo', 'bar'), 'numpy dtype as second'),
+         ((np.ndarray, 2, 3, 4), 'expecting 2 or 3 elements but got 4')],
+        ids=['empty', 'wrong-first-elt', '2-elt-not-dtype', '3-elt-not-dtype', 'wrong-length'])
+    #
+    def test_numpy_descriptor(self, bad_tup, exc_re):
+        with pytest.raises_regexp(ValueError, exc_re):
+            bad_td = make_TD(bad_tup)
