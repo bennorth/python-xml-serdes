@@ -5,6 +5,7 @@ import pytest
 from xmlserdes import XMLSerializable, XMLSerializableNamedTuple
 from xmlserdes.utils import str_from_xml_elt
 
+from collections import OrderedDict
 import numpy as np
 from lxml import etree
 
@@ -204,6 +205,21 @@ class TestBadMethodUsage(object):
         bad_xml = etree.fromstring('<rect><a>1</a><b>1</b><c>1</c></rect>')
         with pytest.raises_regexp(ValueError, 'expecting 2 children but got 3'):
             obj = Rectangle.from_xml(bad_xml, 'rect')
+
+    @pytest.mark.parametrize(
+        'bad_dict_items,exc_re',
+        [([('a', 1), ('b', 2), ('c', 3)],
+          'expected 2 children but got 3'),
+         ([('a', 1), ('b', 2)],
+          'unexpected tags: 2 differ;.* "radius" .* "a" at posn 0')],
+        ids=['wrong-n-children', 'wrong-tags'])
+    #
+    def test_bad_ordered_dict(self, bad_dict_items, exc_re):
+        # Shouldn't occur in normal use because from_xml() checks on
+        # construction of the dictionary that tags are as expected.
+        bad_dict = OrderedDict(bad_dict_items)
+        with pytest.raises_regexp(ValueError, exc_re):
+            obj = Circle.from_xml_dict(bad_dict)
 
     def test_wrong_top_level_tag(self):
         bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
