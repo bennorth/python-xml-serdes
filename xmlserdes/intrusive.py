@@ -66,6 +66,10 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         class must provide.
         """
 
+        if xml_elt.tag != expected_tag:
+            raise ValueError('expected tag "%s" but got "%s"'
+                             % (expected_tag, xml_elt.tag))
+
         ordered_dict = cls._ordered_dict_from_xml(xml_elt)
         # Might throw exception if class doesn't care about deserialization:
         return cls.from_xml_dict(ordered_dict)

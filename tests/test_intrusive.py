@@ -204,3 +204,8 @@ class TestBadMethodUsage(object):
         bad_xml = etree.fromstring('<rect><a>1</a><b>1</b><c>1</c></rect>')
         with pytest.raises_regexp(ValueError, 'expecting 2 children but got 3'):
             obj = Rectangle.from_xml(bad_xml, 'rect')
+
+    def test_wrong_top_level_tag(self):
+        bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
+        with pytest.raises_regexp(ValueError, 'expected tag "rect" but got "rectangle"'):
+            obj = Rectangle.from_xml(bad_xml, 'rect')
