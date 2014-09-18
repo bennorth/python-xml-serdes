@@ -1,10 +1,13 @@
 import collections
+from abc import ABCMeta, abstractmethod
 import numpy as np
 from lxml import etree
 
 import xmlserdes
 
-class TypeDescriptor(object):
+import six
+
+class TypeDescriptor(six.with_metaclass(ABCMeta)):
     """
     Instances of classes derived from :class:`xmlserdes.TypeDescriptor` support
     two operations on objects of a particular type:
@@ -187,6 +190,7 @@ class TypeDescriptor(object):
             raise ValueError('expected tag "%s" but got "%s"'
                              % (expected_tag, elt.tag))
 
+    @abstractmethod
     def xml_element(self, obj, tag):
         """
         Return an XML element, with the given tag, corresponding to the
@@ -199,8 +203,8 @@ class TypeDescriptor(object):
 
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
-        raise NotImplementedError()
 
+    @abstractmethod
     def extract_from(self, elt, expected_tag):
         """
         Extract and return an object from the given XML element.  The
@@ -213,7 +217,6 @@ class TypeDescriptor(object):
         :type expected_tag: str
         :rtype: depends on concrete subclass of ``TypeDescriptor``
         """
-        raise NotImplementedError()
 
 
 class Atomic(TypeDescriptor):
