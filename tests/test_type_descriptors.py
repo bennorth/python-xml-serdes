@@ -74,8 +74,8 @@ class TestListTypes(object):
         assert val_round_trip == val
 
     @pytest.mark.parametrize('list_descr,exc_re',
-                             [([1, 2, 3], 'expecting 1 or 2 elements'),
-                              ([], 'expecting 1 or 2 elements'),
+                             [([1, 2, 3], 'expected 1 or 2 elements'),
+                              ([], 'expected 1 or 2 elements'),
                               ([BareRectangle], '1-elt list: .* has no "xml_default_tag"')],
                              ids=['three-elt', 'empty', 'no-default-tag'])
     #
@@ -145,7 +145,7 @@ class TestInstanceTypes(object):
 
     @pytest.mark.parametrize(
         'xml_str,err_re',
-        [('<rect><a>42</a><b>100</b><c>123</c></rect>', 'expecting 2 children but got 3'),
+        [('<rect><a>42</a><b>100</b><c>123</c></rect>', 'expected 2 children but got 3'),
          ('<rect><a>42</a><b>100</b></rect>', 'expected tag "width" but got "a"')],
         ids=['wrong-n-children', 'wrong-tag'])
     #
@@ -161,7 +161,7 @@ class _TestNumpyBase(object):
         'x,regexp',
         [('hello', 'not ndarray'),
          (np.array([[1, 2], [3, 4]]), 'not 1-dimensional'),
-         (np.zeros((12,), dtype=np.float32), 'expecting dtype')],
+         (np.zeros((12,), dtype=np.float32), 'expected dtype')],
         ids=['string', 'multi-dml', 'wrong-dtype'])
     #
     def test_bad_value(self, x, regexp):
@@ -308,7 +308,7 @@ class TestObject(object):
 
     @pytest.mark.parametrize(
         'xml_str,des_tag,exc_re',
-        [('<rect><width>99</width></rect>', 'rect', 'expecting 2 children but got 1'),
+        [('<rect><width>99</width></rect>', 'rect', 'expected 2 children but got 1'),
          (expected_rect_xml(42, 100), 'rectangle', 'expected tag .* but got')],
         ids=['wrong-n-children', 'wrong-tag'])
     #
@@ -396,7 +396,7 @@ class TestTerseErrorInputs(object):
          ((42, 'hello', 'world'), 'numpy.ndarray as first'),
          ((np.ndarray, BareRectangle), 'atomic numpy type as second'),
          ((np.ndarray, 'foo', 'bar'), 'numpy dtype as second'),
-         ((np.ndarray, 2, 3, 4), 'expecting 2 or 3 elements but got 4')],
+         ((np.ndarray, 2, 3, 4), 'expected 2 or 3 elements but got 4')],
         ids=['empty', 'wrong-first-elt', '2-elt-not-dtype', '3-elt-not-dtype', 'wrong-length'])
     #
     def test_numpy_descriptor(self, bad_tup, exc_re):

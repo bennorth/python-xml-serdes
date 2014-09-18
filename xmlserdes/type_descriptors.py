@@ -148,7 +148,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                 contained_descr, tag = descr
             else:
                 raise ValueError(
-                    'list descriptor: expecting 1 or 2 elements but got %d' % len(descr))
+                    'list descriptor: expected 1 or 2 elements but got %d' % len(descr))
             return List(cls.from_terse(contained_descr), tag)
 
         if isinstance(descr, tuple):
@@ -163,7 +163,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                 contained_atomic_type = descr[1]
                 if contained_atomic_type not in cls.atomic_types_numpy:
                     raise ValueError(
-                        '2-tuple descriptor: expecting atomic numpy type as second element'
+                        '2-tuple descriptor: expected atomic numpy type as second element'
                         + ' but got "%s"' % contained_atomic_type.__name__)
                 return NumpyAtomicVector(contained_atomic_type)
 
@@ -173,7 +173,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                     raise ValueError('3-tuple descriptor must have numpy dtype as second element')
                 return NumpyRecordVectorStructured(contained_dtype, tag)
 
-            raise ValueError('tuple descriptor: expecting 2 or 3 elements but got %d'
+            raise ValueError('tuple descriptor: expected 2 or 3 elements but got %d'
                              % len(descr))
 
         # Otherwise, 'descr' should be a type which has its own descriptor.
@@ -367,7 +367,7 @@ class Instance(TypeDescriptor):
         self.verify_tag(elt, expected_tag)
         descr = self.cls.xml_descriptor
         if len(elt) != len(descr):
-            raise ValueError('expecting %d children but got %d'
+            raise ValueError('expected %d children but got %d'
                              % (len(descr), len(elt)))
 
         # TODO: Allow alternative constructors
@@ -385,7 +385,7 @@ class NumpyVectorBase(TypeDescriptor):
         if obj.ndim != 1:
             raise ValueError('ndarray not 1-dimensional')
         if obj.dtype != self.dtype:
-            raise ValueError('expecting dtype "%s" but got "%s"'
+            raise ValueError('expected dtype "%s" but got "%s"'
                              % (obj.dtype, self.dtype))
 
         elt = etree.Element(tag)

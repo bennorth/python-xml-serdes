@@ -79,7 +79,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     def _ordered_dict_from_xml(cls, xml_elt):
         descr = cls.xml_descriptor
         if len(xml_elt) != len(descr):
-            raise ValueError('expecting %d children but got %d'
+            raise ValueError('expected %d children but got %d'
                              % (len(descr), len(xml_elt)))
 
         return collections.OrderedDict(

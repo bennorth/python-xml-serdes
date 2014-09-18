@@ -207,7 +207,7 @@ class TestBadNamedTupleConstruction(object):
 class TestBadMethodUsage(object):
     def test_wrong_n_children(self):
         bad_xml = etree.fromstring('<rect><a>1</a><b>1</b><c>1</c></rect>')
-        with pytest.raises_regexp(ValueError, 'expecting 2 children but got 3'):
+        with pytest.raises_regexp(ValueError, 'expected 2 children but got 3'):
             obj = Rectangle.from_xml(bad_xml, 'rect')
 
     @pytest.mark.parametrize(
