@@ -190,7 +190,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             raise ValueError('expected tag "%s" but got "%s"'
                              % (expected_tag, elt.tag))
 
-    @abstractmethod
+    @abstractmethod # pragma: no cover
     def xml_element(self, obj, tag):
         """
         Return an XML element, with the given tag, corresponding to the
@@ -204,7 +204,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
 
-    @abstractmethod
+    @abstractmethod # pragma: no cover
     def extract_from(self, elt, expected_tag):
         """
         Extract and return an object from the given XML element.  The
