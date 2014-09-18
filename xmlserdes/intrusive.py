@@ -132,7 +132,7 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     xml_descriptor = []
 
     @classmethod
-    def from_xml_dict(cls, ordered_dict):
+    def _verify_children(cls, ordered_dict):
         tags_got = list(ordered_dict.keys())
         tags_exp = list(cls.slot_name_from_tag_name.keys())
         if tags_got != tags_exp:
@@ -147,4 +147,8 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
             raise ValueError(('unexpected tags: %d differ; first diff:'
                               + ' expected "%s" but got "%s" at posn %d')
                              % (len(differing_tags), first_diff[1], first_diff[2], first_diff[0]))
+
+    @classmethod
+    def from_xml_dict(cls, ordered_dict):
+        cls._verify_children(ordered_dict)
         return cls._make(ordered_dict.values())
