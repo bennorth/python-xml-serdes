@@ -54,6 +54,32 @@ class TestAtomicTypes(object):
         with pytest.raises_regexp(TypeError, 'data type .* not understood'):
             bad_td = make_TD('not-a-real-dtype-code')
 
+    def test_bool(self):
+        td = make_TD(bool)
+
+        elt = td.xml_element(True, 'foo')
+        assert XU.str_from_xml_elt(elt) == '<foo>true</foo>'
+        assert td.extract_from(elt, 'foo') is True
+
+        elt = td.xml_element(False, 'foo')
+        assert XU.str_from_xml_elt(elt) == '<foo>false</foo>'
+        assert td.extract_from(elt, 'foo') is False
+
+    def test_bool_bad_serialize_values(self):
+        td = make_TD(bool)
+
+        with pytest.raises_regexp(ValueError, 'expected True or False but got "42"'):
+            bad_elt = td.xml_element(42, 'foo')
+
+    def test_bool_bad_deserialize_values(self):
+        td = make_TD(bool)
+
+        with pytest.raises_regexp(ValueError,
+                                  'expected text "true" or "false" but got "banana"'):
+            #
+            bad_xml = etree.fromstring('<foo>banana</foo>')
+            bad_bool = td.extract_from(bad_xml, 'foo')
+
 
 class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
     pass

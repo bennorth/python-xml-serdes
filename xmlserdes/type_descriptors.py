@@ -51,6 +51,13 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(42, 'answer')))
             <answer>42</answer>
 
+        bool type object
+            An instance of :class:`xmlserdes.AtomicBool` is created.
+
+            >>> td = TypeDescriptor.from_terse(bool)
+            >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(False, 'is-blue')))
+            <is-blue>false</is-blue>
+
         string instance
             A :class:`xmlserdes.Atomic` instance is created, where the
             contained type is found by interpreting the given string as
@@ -133,6 +140,9 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
         if descr in cls.atomic_types:
             return Atomic(descr)
+
+        if descr is bool:
+            return AtomicBool()
 
         if isinstance(descr, str):
             return Atomic(np.dtype(descr).type)
@@ -263,6 +273,53 @@ class Atomic(TypeDescriptor):
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
         return self.inner_type(elt.text)
+
+
+class AtomicBool(TypeDescriptor):
+    """
+    A special-case :class:`xmlserdes.TypeDescriptor` for handling atomic
+    Boolean values.  The Python value ``True`` is serialized as the
+    string ``true`` (note the case difference), and similarly for the
+    value ``False``.
+
+    When serializing, only the actual bool values True or False are
+    valid.
+
+    >>> bool_type_descriptor = xmlserdes.AtomicBool()
+    >>> print(xmlserdes.utils.str_from_xml_elt(bool_type_descriptor.xml_element(True, 'answer')))
+    <answer>true</answer>
+    >>> xml_elt = etree.fromstring('<is-heavy>true</is-heavy>')
+    >>> bool_type_descriptor.extract_from(xml_elt, 'is-heavy')
+    True
+    >>> bad_xml_elt = etree.fromstring('<is-heavy>dark-orange</is-heavy>')
+    >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
+    Traceback (most recent call last):
+        ...
+    ValueError: expected text "true" or "false" but got "dark-orange" for bool
+    >>> bool_type_descriptor.xml_element(42, 'meaning')
+    Traceback (most recent call last):
+        ...
+    ValueError: expected True or False but got "42" for bool
+    """
+
+    def xml_element(self, obj, tag):
+        elt = etree.Element(tag)
+        if obj is True:
+            elt.text = 'true'
+        elif obj is False:
+            elt.text = 'false'
+        else:
+            raise ValueError('expected True or False but got "%s" for bool' % obj)
+        return elt
+
+    def extract_from(self, elt, expected_tag):
+        self.verify_tag(elt, expected_tag)
+        text = elt.text
+        if text == 'true':
+            return True
+        if text == 'false':
+            return False
+        raise ValueError('expected text "true" or "false" but got "%s" for bool' % text)
 
 
 class List(TypeDescriptor):
