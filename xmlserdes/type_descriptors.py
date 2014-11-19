@@ -413,6 +413,7 @@ class Instance(TypeDescriptor):
 
         self.cls = cls
         self.xml_descriptor = cls.xml_descriptor
+        self.constructor = cls
 
     def xml_element(self, obj, tag):
         elt = etree.Element(tag)
@@ -428,8 +429,7 @@ class Instance(TypeDescriptor):
             raise ValueError('expected %d children but got %d'
                              % (len(descr), len(elt)))
 
-        # TODO: Allow alternative constructors
-        ctor = self.cls
+        ctor = self.constructor
         ctor_args = [descr_elt.extract_from(child_elt)
                      for child_elt, descr_elt in zip(elt, descr)]
 
