@@ -265,6 +265,7 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         assert vals_rt.shape == self.vals.shape
         assert np.all(vals_rt == self.vals)
 
+    @pytest.mark.xfail
     @pytest.mark.parametrize(
         'bad_inner_str,exc_re',
         [('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
@@ -317,7 +318,6 @@ class TestNumpyRecordStructuredNested(object):
     vals = np.array([((420, 100), (42, 10)), ((430, 110), (43, 11))],
                     dtype=RectanglePairDType)
 
-    @pytest.mark.xfail
     def test_round_trip(self):
         xml_elt = self.type_descr.xml_element(self.vals, 'rect-pairs')
         expected_xml = remove_whitespace(

@@ -118,7 +118,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                 and a :class:`xmlserdes.NumpyAtomicVector` for that
                 dtype is returned.
 
-                >>> td = TypeDescriptor.from_terse((np.ndarray, np.int32))
+                >>> td = xmlserdes.TypeDescriptor.from_terse((np.ndarray, np.int32))
                 >>> xs = np.array([1, 2, 3], dtype = np.int32)
                 >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(xs, 'answers')))
                 <answers>1,2,3</answers>
@@ -132,7 +132,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                 of a reasonable length:
 
                 >>> Rect = np.dtype([('w', np.uint16), ('h', np.uint16)])
-                >>> td = TypeDescriptor.from_terse((np.ndarray, Rect, 'r'))
+                >>> td = xmlserdes.TypeDescriptor.from_terse((np.ndarray, Rect, 'r'))
                 >>> rects = np.array([(10, 20), (3, 4)], dtype = Rect)
                 >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(rects, 'rs')))
                 <rs><r><w>10</w><h>20</h></r><r><w>3</w><h>4</h></r></rs>
@@ -519,7 +519,7 @@ class DTypeScalar(Instance):
         return np.array(args, dtype=self.dtype)
 
 
-class NumpyRecordVectorStructured(NumpyVectorBase):
+class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     """
     A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is a
@@ -547,7 +547,7 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
 
     Define type-descriptor for it:
 
-    >>> colour_vector_td = NumpyRecordVectorStructured(ColourDType, 'colour')
+    >>> colour_vector_td = xmlserdes.NumpyRecordVectorStructured(ColourDType, 'colour')
 
     Serialize a vector:
 
@@ -589,38 +589,15 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
     """
     def __init__(self, dtype, contained_tag):
         self.dtype = dtype
-        self.n_fields = len(dtype)
-        self.type_ctors = [dtype.fields[n][0].type for n in dtype.names]
-        self.contained_tag = contained_tag
+        List.__init__(self, DTypeScalar(dtype), contained_tag)
 
-    def entry_element(self, x):
-        elt = etree.Element(self.contained_tag)
-        for n, v in zip(self.dtype.names, x):
-            # TODO: Allow different XML tags vs names of dtype fields.
-            field_elt = etree.SubElement(elt, n)
-            field_elt.text = repr(v)
-        return elt
+    def xml_element(self, obj, tag):
+        self.assert_valid(obj)
+        return List.xml_element(self, obj, tag)
 
-    def populate_element(self, elt, xs):
-        for record in xs:
-            elt.append(self.entry_element(record))
-
-    def extract_entry_element(self, subelt):
-        if len(subelt) != self.n_fields:
-            raise ValueError('expected %d sub-elements but got %d'
-                             % (self.n_fields, len(subelt)))
-
-        values = [None] * self.n_fields
-        for i, field_name in enumerate(self.dtype.names):
-            child = subelt[i]
-            if child.tag != field_name:
-                raise ValueError('expected tag "%s" but got "%s" for child %d'
-                                 % (field_name, child.tag, i))
-            values[i] = self.type_ctors[i](child.text)
-        return tuple(values)
-
-    def extract_elements_list(self, elt):
-        return list(map(self.extract_entry_element, elt))
+    def extract_from(self, elt, expected_tag):
+        elts = List.extract_from(self, elt, expected_tag)
+        return np.array(elts, dtype=self.dtype)
 
 
 def NumpyVector(dtype, contained_tag=None):
@@ -636,12 +613,12 @@ def NumpyVector(dtype, contained_tag=None):
     :class:`xmlserdes.NumpyAtomicVector`.
 
     >>> import numpy as np
-    >>> int_vector_td = NumpyVector(np.int32)
+    >>> int_vector_td = xmlserdes.NumpyVector(np.int32)
 
     >>> ColourDType = np.dtype([('red', np.uint8),
     ...                         ('green', np.uint8),
     ...                         ('blue', np.uint8)])
-    >>> colour_vector_td = NumpyVector(ColourDType, 'colour')
+    >>> colour_vector_td = xmlserdes.NumpyVector(ColourDType, 'colour')
 
     """
 
