@@ -519,7 +519,8 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
 
     >>> colour_scalar_td = xmlserdes.DTypeScalar(ColourDType)
 
-    Serialize a scalar:
+    Serialize a scalar (the ``[()]`` construct extracts a scalar element
+    from the 0-dimensional array):
 
     >>> colour = np.array((20, 40, 50), dtype = ColourDType)[()]
     >>> print(xmlserdes.utils.str_from_xml_elt(
@@ -548,7 +549,8 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
 
     >>> pattern_scalar_td = xmlserdes.DTypeScalar(PatternDType)
 
-    Serialize a scalar:
+    Serialize a scalar (the ``[()]`` construct extracts a scalar element
+    from the 0-dimensional array):
 
     >>> pattern = np.array(((120, 140, 150), (20, 40, 50)), dtype = PatternDType)[()]
     >>> print(xmlserdes.utils.str_from_xml_elt(
