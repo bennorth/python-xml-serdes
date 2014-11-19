@@ -600,8 +600,8 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     """
     A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is a
-    Numpy record type.  The record-type's fields can be scalar atomic
-    types or custom ``dtype``s in turn.
+    Numpy record type.  The record-type's fields can be of scalar atomic
+    type or custom ``dtype`` in turn.
 
     The XML representation has one sub-element per element of the
     vector.  Each of those sub-elements has sub-sub-elements
