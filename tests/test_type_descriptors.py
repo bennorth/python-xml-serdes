@@ -234,6 +234,8 @@ class TestNumpyAtomicConvenience(TestNumpyAtomic):
 
 RectangleDType = np.dtype([('width', np.int32), ('height', np.int32)])
 
+RectanglePairDType = np.dtype([('big', RectangleDType), ('small', RectangleDType)])
+
 
 def remove_whitespace(s):
     return re.sub(r'\s+', '', s)
@@ -276,6 +278,32 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         bad_xml = etree.fromstring(bad_str)
         with pytest.raises_regexp(ValueError, exc_re):
             bad_rect = self.td.extract_from(bad_xml, 'rect')
+
+
+class TestNumpyRecordStructuredNested(object):
+    type_descr = X.NumpyRecordVectorStructured(RectanglePairDType, 'rect-pair')
+    vals = np.array([((420, 100), (42, 10)), ((430, 110), (43, 11))],
+                    dtype=RectanglePairDType)
+
+    @pytest.mark.xfail
+    def test_round_trip(self):
+        xml_elt = self.type_descr.xml_element(self.vals, 'rect-pairs')
+        expected_xml = remove_whitespace(
+            """<rect-pairs>
+                 <rect-pair>
+                     <big><width>420</width><height>100</height></big>
+                     <small><width>42</width><height>10</height></small>
+                 </rect-pair>
+                 <rect-pair>
+                     <big><width>430</width><height>110</height></big>
+                     <small><width>43</width><height>11</height></small>
+                 </rect-pair>
+               </rect-pairs>""")
+        assert expected_xml == XU.str_from_xml_elt(xml_elt)
+        vals_rt = self.type_descr.extract_from(xml_elt, 'rect-pairs')
+        assert vals_rt.dtype == self.vals.dtype
+        assert vals_rt.shape == self.vals.shape
+        assert np.all(vals_rt == self.vals)
 
 
 class TestNumpyRecordStructuredConvenience(TestNumpyRecordStructured):
