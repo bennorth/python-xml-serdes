@@ -493,6 +493,81 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
 
 
 class DTypeScalar(Instance):
+    """
+    A :class:`xmlserdes.TypeDescriptor` for handling Numpy scalars of
+    custom dtype.
+
+    The XML representation has one sub-element per field of the dtype.
+    Atomic-type fields are represented as their ``repr``;
+    structured-dtype fields are represented with children corresponding
+    to their fields, and so on.
+
+    .. note:: Currently the XML tags for the fields of each record are
+      the same as the field names of the ``dtype``.  Possible to-do is to
+      allow a mapping between these two sets of names.
+
+    :param dtype: Numpy record ``dtype`` of the vector
+
+    Define record ``dtype`` whose fields are all atomic types:
+
+    >>> import numpy as np
+    >>> ColourDType = np.dtype([('red', np.uint8),
+    ...                         ('green', np.uint8),
+    ...                         ('blue', np.uint8)])
+
+    Define type-descriptor for a scalar instance of it:
+
+    >>> colour_scalar_td = xmlserdes.DTypeScalar(ColourDType)
+
+    Serialize a scalar:
+
+    >>> colour = np.array((20, 40, 50), dtype = ColourDType)
+    >>> print(xmlserdes.utils.str_from_xml_elt(
+    ...           colour_scalar_td.xml_element(colour, 'colour'),
+    ...           pretty_print = True).rstrip())
+    <colour>
+      <red>20</red>
+      <green>40</green>
+      <blue>50</blue>
+    </colour>
+
+    >>> xml_elt = etree.fromstring(
+    ... '<green><red>0</red><green>64</green><blue>0</blue></green>')
+    >>> extracted_colour = colour_scalar_td.extract_from(xml_elt, 'green')
+    >>> print(extracted_colour)
+    (0, 64, 0)
+    >>> print(extracted_colour.dtype)
+    [('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
+
+    Define a record ``dtype`` with nested custom field:
+
+    >>> PatternDType = np.dtype([('background', ColourDType),
+    ...                          ('foreground', ColourDType)])
+
+    Define type-descriptor for a scalar instance of it:
+
+    >>> pattern_scalar_td = xmlserdes.DTypeScalar(PatternDType)
+
+    Serialize a scalar:
+
+    >>> pattern = np.array(((120, 140, 150), (20, 40, 50)), dtype = PatternDType)
+    >>> print(xmlserdes.utils.str_from_xml_elt(
+    ...           pattern_scalar_td.xml_element(pattern, 'pattern'),
+    ...           pretty_print = True).rstrip())
+    <pattern>
+      <background>
+        <red>120</red>
+        <green>140</green>
+        <blue>150</blue>
+      </background>
+      <foreground>
+        <red>20</red>
+        <green>40</green>
+        <blue>50</blue>
+      </foreground>
+    </pattern>
+    """
+
     @staticmethod
     def type_descriptor_from_dtype(dtype):
         if dtype in Instance.atomic_types_numpy:
