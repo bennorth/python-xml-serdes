@@ -1,4 +1,5 @@
 import collections
+import operator
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from lxml import etree
@@ -491,6 +492,27 @@ class NumpyAtomicVector(NumpyVectorBase):
     def extract_elements_list(self, elt):
         s_elts = elt.text.split(',')
         return list(map(self.dtype, s_elts))
+
+
+class DTypeScalar(Instance):
+    @staticmethod
+    def type_descriptor_from_dtype(dtype):
+        if dtype in Instance.atomic_types_numpy:
+            return Atomic(dtype.type)
+        else:
+            return DTypeScalar(dtype)
+
+    def __init__(self, dtype):
+        self.dtype = dtype
+        self.xml_descriptor = [
+            xmlserdes.ElementDescriptor.new_from_tuple(
+              (nm,
+               operator.itemgetter(nm),
+               self.type_descriptor_from_dtype(dtype.fields[nm][0])))
+            for nm in dtype.names]
+
+    def constructor(self, *args):
+        return np.array(args, dtype=self.dtype)
 
 
 class NumpyRecordVectorStructured(NumpyVectorBase):

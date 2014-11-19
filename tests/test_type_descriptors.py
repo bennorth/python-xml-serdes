@@ -280,6 +280,38 @@ class TestNumpyRecordStructured(_TestNumpyBase):
             bad_rect = self.td.extract_from(bad_xml, 'rect')
 
 
+class TestNumpyDTypeScalar(object):
+    atomics_td = X.DTypeScalar(RectangleDType)
+    atomics_val = np.array((42, 100), dtype=RectangleDType)
+    atomics_exp = '<rect><width>42</width><height>100</height></rect>'
+
+    nested_td = X.DTypeScalar(RectanglePairDType)
+    nested_val = np.array(((42, 100), (4, 10)), dtype=RectanglePairDType)
+    nested_exp = remove_whitespace(
+        """<rect-pair>
+               <big><width>42</width><height>100</height></big>
+               <small><width>4</width><height>10</height></small>
+           </rect-pair>""")
+
+    @pytest.mark.parametrize(
+        'type_descr,val,exp_xml,tag',
+        [(atomics_td, atomics_val, atomics_exp, 'rect'),
+         (nested_td, nested_val, nested_exp, 'rect-pair')],
+        ids=['atomics', 'nested'])
+    #
+    def test_round_trip(self, type_descr, val, exp_xml, tag):
+        assert val.shape == ()
+
+        xml_elt = type_descr.xml_element(val, tag)
+        assert XU.str_from_xml_elt(xml_elt) == exp_xml
+
+        val_rt = type_descr.extract_from(xml_elt, tag)
+        assert type(val_rt) == np.ndarray
+        assert val_rt.dtype == val.dtype
+        assert val_rt.shape == val.shape
+        assert val_rt == val
+
+
 class TestNumpyRecordStructuredNested(object):
     type_descr = X.NumpyRecordVectorStructured(RectanglePairDType, 'rect-pair')
     vals = np.array([((420, 100), (42, 10)), ((430, 110), (43, 11))],
