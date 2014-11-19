@@ -311,6 +311,20 @@ class TestNumpyDTypeScalar(object):
         assert val_rt.shape == val.shape
         assert val_rt == val
 
+    ColourDType = np.dtype([('r', np.uint8), ('g', np.uint8), ('b', np.uint8)])
+    @pytest.mark.parametrize(
+        'x,regexp',
+        [('hello', 'not numpy scalar'),
+         (np.array([1, 2]), 'not numpy scalar'),
+         (np.array([[1, 2], [3, 4]]), 'not numpy scalar'),
+         (np.array((12,), dtype=np.float32)[()], 'not numpy scalar'),
+         (np.array((10, 20, 30), dtype=ColourDType)[()], 'expected dtype')],
+        ids=['string', 'vector', 'multi-dml', 'wrong-dtype-atomic', 'wrong-dtype-structured'])
+    #
+    def test_bad_value(self, x, regexp):
+        with pytest.raises_regexp(ValueError, regexp):
+            self.atomics_td.xml_element(x, 'values')
+
 
 class TestNumpyRecordStructuredNested(object):
     type_descr = X.NumpyRecordVectorStructured(RectanglePairDType, 'rect-pair')

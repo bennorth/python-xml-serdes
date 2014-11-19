@@ -492,7 +492,7 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
         return np.array(elements_list, dtype=self.dtype)
 
 
-class DTypeScalar(Instance):
+class DTypeScalar(Instance, NumpyValidityAssertionMixin):
     """
     A :class:`xmlserdes.TypeDescriptor` for handling Numpy scalars of
     custom dtype.
@@ -583,6 +583,10 @@ class DTypeScalar(Instance):
                operator.itemgetter(nm),
                self.type_descriptor_from_dtype(dtype.fields[nm][0])))
             for nm in dtype.names]
+
+    def xml_element(self, obj, tag):
+        self.assert_valid(obj, np.void, 'numpy scalar', 0)
+        return Instance.xml_element(self, obj, tag)
 
     def constructor(self, *args):
         return np.array(args, dtype=self.dtype)
