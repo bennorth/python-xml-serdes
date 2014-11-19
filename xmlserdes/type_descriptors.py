@@ -437,7 +437,7 @@ class Instance(TypeDescriptor):
 
 
 class NumpyVectorBase(TypeDescriptor):
-    def xml_element(self, obj, tag):
+    def assert_valid(self, obj):
         if not isinstance(obj, np.ndarray):
             raise ValueError('object not ndarray')
         if obj.ndim != 1:
@@ -446,6 +446,8 @@ class NumpyVectorBase(TypeDescriptor):
             raise ValueError('expected dtype "%s" but got "%s"'
                              % (obj.dtype, self.dtype))
 
+    def xml_element(self, obj, tag):
+        self.assert_valid(obj)
         elt = etree.Element(tag)
         self.populate_element(elt, obj)
         return elt
