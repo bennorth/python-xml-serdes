@@ -439,11 +439,11 @@ class Instance(TypeDescriptor):
 
 
 class NumpyValidityAssertionMixin(object):
-    def assert_valid(self, obj):
-        if not isinstance(obj, np.ndarray):
-            raise ValueError('object not ndarray')
-        if obj.ndim != 1:
-            raise ValueError('ndarray not 1-dimensional')
+    def assert_valid(self, obj, exp_type, exp_type_label, exp_ndim):
+        if not isinstance(obj, exp_type):
+            raise ValueError('object not %s' % exp_type_label)
+        if obj.ndim != exp_ndim:
+            raise ValueError('ndarray not %d-dimensional' % exp_ndim)
         if obj.dtype != self.dtype:
             raise ValueError('expected dtype "%s" but got "%s"'
                              % (obj.dtype, self.dtype))
@@ -480,7 +480,7 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
         self.dtype = dtype
 
     def xml_element(self, obj, tag):
-        self.assert_valid(obj)
+        self.assert_valid(obj, np.ndarray, 'ndarray', 1)
         elt = etree.Element(tag)
         elt.text = ','.join(map(repr, obj))
         return elt
@@ -697,7 +697,7 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
         List.__init__(self, DTypeScalar(dtype), contained_tag)
 
     def xml_element(self, obj, tag):
-        self.assert_valid(obj)
+        self.assert_valid(obj, np.ndarray, 'ndarray', 1)
         return List.xml_element(self, obj, tag)
 
     def extract_from(self, elt, expected_tag):
