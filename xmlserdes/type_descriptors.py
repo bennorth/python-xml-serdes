@@ -482,20 +482,14 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
     def xml_element(self, obj, tag):
         self.assert_valid(obj)
         elt = etree.Element(tag)
-        self.populate_element(elt, obj)
+        elt.text = ','.join(map(repr, obj))
         return elt
 
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
-        elements_list = self.extract_elements_list(elt)
-        return np.array(elements_list, dtype=self.dtype)
-
-    def populate_element(self, elt, xs):
-        elt.text = ','.join(map(repr, xs))
-
-    def extract_elements_list(self, elt):
         s_elts = elt.text.split(',')
-        return list(map(self.dtype, s_elts))
+        elements_list = list(map(self.dtype, s_elts))
+        return np.array(elements_list, dtype=self.dtype)
 
 
 class DTypeScalar(Instance):
