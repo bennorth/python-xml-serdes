@@ -436,7 +436,7 @@ class Instance(TypeDescriptor):
         return ctor(*ctor_args)
 
 
-class NumpyVectorBase(TypeDescriptor):
+class NumpyValidityAssertionMixin(object):
     def assert_valid(self, obj):
         if not isinstance(obj, np.ndarray):
             raise ValueError('object not ndarray')
@@ -446,6 +446,8 @@ class NumpyVectorBase(TypeDescriptor):
             raise ValueError('expected dtype "%s" but got "%s"'
                              % (obj.dtype, self.dtype))
 
+
+class NumpyVectorBase(TypeDescriptor, NumpyValidityAssertionMixin):
     def xml_element(self, obj, tag):
         self.assert_valid(obj)
         elt = etree.Element(tag)
