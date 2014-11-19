@@ -40,6 +40,7 @@ Classes and functions
 .. autoclass:: xmlserdes.Atomic
 .. autoclass:: xmlserdes.List
 .. autoclass:: xmlserdes.Instance
+.. autoclass:: xmlserdes.DTypeScalar
 .. autoclass:: xmlserdes.NumpyAtomicVector
 .. autoclass:: xmlserdes.NumpyRecordVectorStructured
 
