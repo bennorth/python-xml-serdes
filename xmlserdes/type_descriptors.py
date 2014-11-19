@@ -411,7 +411,6 @@ class Instance(TypeDescriptor):
         if not hasattr(cls, 'xml_descriptor'):
             raise ValueError('class "%s" has no xml_descriptor' % cls.__name__)
 
-        self.cls = cls
         self.xml_descriptor = cls.xml_descriptor
         self.constructor = cls
 
