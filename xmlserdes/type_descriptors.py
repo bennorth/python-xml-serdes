@@ -521,7 +521,7 @@ class DTypeScalar(Instance):
 
     Serialize a scalar:
 
-    >>> colour = np.array((20, 40, 50), dtype = ColourDType)
+    >>> colour = np.array((20, 40, 50), dtype = ColourDType)[()]
     >>> print(xmlserdes.utils.str_from_xml_elt(
     ...           colour_scalar_td.xml_element(colour, 'colour'),
     ...           pretty_print = True).rstrip())
@@ -550,7 +550,7 @@ class DTypeScalar(Instance):
 
     Serialize a scalar:
 
-    >>> pattern = np.array(((120, 140, 150), (20, 40, 50)), dtype = PatternDType)
+    >>> pattern = np.array(((120, 140, 150), (20, 40, 50)), dtype = PatternDType)[()]
     >>> print(xmlserdes.utils.str_from_xml_elt(
     ...           pattern_scalar_td.xml_element(pattern, 'pattern'),
     ...           pretty_print = True).rstrip())

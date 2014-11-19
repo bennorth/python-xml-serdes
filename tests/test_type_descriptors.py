@@ -282,11 +282,11 @@ class TestNumpyRecordStructured(_TestNumpyBase):
 
 class TestNumpyDTypeScalar(object):
     atomics_td = X.DTypeScalar(RectangleDType)
-    atomics_val = np.array((42, 100), dtype=RectangleDType)
+    atomics_val = np.array((42, 100), dtype=RectangleDType)[()]
     atomics_exp = '<rect><width>42</width><height>100</height></rect>'
 
     nested_td = X.DTypeScalar(RectanglePairDType)
-    nested_val = np.array(((42, 100), (4, 10)), dtype=RectanglePairDType)
+    nested_val = np.array(((42, 100), (4, 10)), dtype=RectanglePairDType)[()]
     nested_exp = remove_whitespace(
         """<rect-pair>
                <big><width>42</width><height>100</height></big>
