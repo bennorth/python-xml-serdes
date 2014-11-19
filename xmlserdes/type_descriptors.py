@@ -594,8 +594,8 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     """
     A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is a
-    Numpy record type.  Currently, the record-type's fields must all be
-    scalar atomic types.
+    Numpy record type.  The record-type's fields can be scalar atomic
+    types or custom ``dtype``s in turn.
 
     The XML representation has one sub-element per element of the
     vector.  Each of those sub-elements has sub-sub-elements
@@ -657,6 +657,40 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     [(0, 64, 0) (0, 192, 0)]
     >>> print(extracted_colours.dtype)
     [('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
+
+    Custom ``dtype`` one of whose fields is non-atomic:
+
+    >>> StripeDType = np.dtype([('colour', ColourDType), ('width', np.uint16)])
+
+    Type-descriptor for vector of such elements:
+
+    >>> stripe_vector_td = xmlserdes.NumpyRecordVectorStructured(StripeDType, 'stripe')
+
+    Serialize a vector:
+
+    >>> stripes = np.array([((20, 30, 40), 100), ((120, 130, 140), 200)],
+    ...                    dtype = StripeDType)
+    >>> print(xmlserdes.utils.str_from_xml_elt(
+    ...           stripe_vector_td.xml_element(stripes, 'stripes'),
+    ...           pretty_print = True).rstrip())
+    <stripes>
+      <stripe>
+        <colour>
+          <red>20</red>
+          <green>30</green>
+          <blue>40</blue>
+        </colour>
+        <width>100</width>
+      </stripe>
+      <stripe>
+        <colour>
+          <red>120</red>
+          <green>130</green>
+          <blue>140</blue>
+        </colour>
+        <width>200</width>
+      </stripe>
+    </stripes>
     """
     def __init__(self, dtype, contained_tag):
         self.dtype = dtype
