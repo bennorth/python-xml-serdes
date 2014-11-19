@@ -422,12 +422,14 @@ class Instance(TypeDescriptor):
             elt.append(child_elt)
         return elt
 
+    components_label = 'children'
+
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
         descr = self.xml_descriptor
         if len(elt) != len(descr):
-            raise ValueError('expected %d children but got %d'
-                             % (len(descr), len(elt)))
+            raise ValueError('expected %d %s but got %d'
+                             % (len(descr), self.components_label, len(elt)))
 
         ctor = self.constructor
         ctor_args = [descr_elt.extract_from(child_elt)
@@ -517,6 +519,8 @@ class DTypeScalar(Instance):
 
     def constructor(self, *args):
         return np.array(args, dtype=self.dtype)
+
+    components_label = 'sub-elements'
 
 
 class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
