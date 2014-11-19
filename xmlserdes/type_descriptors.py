@@ -449,20 +449,7 @@ class NumpyValidityAssertionMixin(object):
                              % (obj.dtype, self.dtype))
 
 
-class NumpyVectorBase(TypeDescriptor, NumpyValidityAssertionMixin):
-    def xml_element(self, obj, tag):
-        self.assert_valid(obj)
-        elt = etree.Element(tag)
-        self.populate_element(elt, obj)
-        return elt
-
-    def extract_from(self, elt, expected_tag):
-        self.verify_tag(elt, expected_tag)
-        elements_list = self.extract_elements_list(elt)
-        return np.array(elements_list, dtype=self.dtype)
-
-
-class NumpyAtomicVector(NumpyVectorBase):
+class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
     """
     A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is an
@@ -491,6 +478,17 @@ class NumpyAtomicVector(NumpyVectorBase):
     """
     def __init__(self, dtype):
         self.dtype = dtype
+
+    def xml_element(self, obj, tag):
+        self.assert_valid(obj)
+        elt = etree.Element(tag)
+        self.populate_element(elt, obj)
+        return elt
+
+    def extract_from(self, elt, expected_tag):
+        self.verify_tag(elt, expected_tag)
+        elements_list = self.extract_elements_list(elt)
+        return np.array(elements_list, dtype=self.dtype)
 
     def populate_element(self, elt, xs):
         elt.text = ','.join(map(repr, xs))
