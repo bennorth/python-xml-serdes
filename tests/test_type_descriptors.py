@@ -265,13 +265,13 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         assert vals_rt.shape == self.vals.shape
         assert np.all(vals_rt == self.vals)
 
-    @pytest.mark.xfail
     @pytest.mark.parametrize(
         'bad_inner_str,exc_re',
-        [('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
-          'expected 2 sub-elements but got 3'),
+        [pytest.mark.xfail(
+             ('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
+              'expected 2 sub-elements but got 3')),
          ('<rect><wd>42</wd><ht>100</ht></rect>',
-          'expected tag "width" but got "wd" for child 0')],
+          'expected tag "width" but got "wd"')],
         ids=['wrong-n-elts', 'wrong-child-tag'])
     #
     def test_bad_xml(self, bad_inner_str, exc_re):
