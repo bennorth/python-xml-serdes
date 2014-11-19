@@ -412,17 +412,18 @@ class Instance(TypeDescriptor):
             raise ValueError('class "%s" has no xml_descriptor' % cls.__name__)
 
         self.cls = cls
+        self.xml_descriptor = cls.xml_descriptor
 
     def xml_element(self, obj, tag):
         elt = etree.Element(tag)
-        for child in self.cls.xml_descriptor:
+        for child in self.xml_descriptor:
             child_elt = child.xml_element(obj)
             elt.append(child_elt)
         return elt
 
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
-        descr = self.cls.xml_descriptor
+        descr = self.xml_descriptor
         if len(elt) != len(descr):
             raise ValueError('expected %d children but got %d'
                              % (len(descr), len(elt)))
