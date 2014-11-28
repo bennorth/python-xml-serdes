@@ -211,14 +211,14 @@ class TestBadNamedTupleConstruction(object):
     #
     def test_bad_construction(self, class_fun, exc_re):
         with pytest.raises_regexp(ValueError, exc_re):
-            foo_cls = class_fun()
+            class_fun()
 
 
 class TestBadMethodUsage(object):
     def test_wrong_n_children(self):
         bad_xml = etree.fromstring('<rect><a>1</a><b>1</b><c>1</c></rect>')
         with pytest.raises_regexp(ValueError, 'expected 2 children but got 3'):
-            obj = Rectangle.from_xml(bad_xml, 'rect')
+            Rectangle.from_xml(bad_xml, 'rect')
 
     @pytest.mark.parametrize(
         'bad_dict_items,exc_re',
@@ -233,9 +233,9 @@ class TestBadMethodUsage(object):
         # construction of the dictionary that tags are as expected.
         bad_dict = OrderedDict(bad_dict_items)
         with pytest.raises_regexp(ValueError, exc_re):
-            obj = Circle.from_xml_dict(bad_dict)
+            Circle.from_xml_dict(bad_dict)
 
     def test_wrong_top_level_tag(self):
         bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
         with pytest.raises_regexp(ValueError, 'expected tag "rect" but got "rectangle"'):
-            obj = Rectangle.from_xml(bad_xml, 'rect')
+            Rectangle.from_xml(bad_xml, 'rect')

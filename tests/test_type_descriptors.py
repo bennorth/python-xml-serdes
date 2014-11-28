@@ -52,7 +52,7 @@ class TestAtomicTypes(object):
 
     def test_bad_terse_string_descriptors(self):
         with pytest.raises_regexp(TypeError, 'data type .* not understood'):
-            bad_td = make_TD('not-a-real-dtype-code')
+            make_TD('not-a-real-dtype-code')
 
     def test_bool(self):
         td = make_TD(bool)
@@ -69,7 +69,7 @@ class TestAtomicTypes(object):
         td = make_TD(bool)
 
         with pytest.raises_regexp(ValueError, 'expected True or False but got "42"'):
-            bad_elt = td.xml_element(42, 'foo')
+            td.xml_element(42, 'foo')
 
     def test_bool_bad_deserialize_values(self):
         td = make_TD(bool)
@@ -78,7 +78,7 @@ class TestAtomicTypes(object):
                                   'expected text "true" or "false" but got "banana"'):
             #
             bad_xml = etree.fromstring('<foo>banana</foo>')
-            bad_bool = td.extract_from(bad_xml, 'foo')
+            td.extract_from(bad_xml, 'foo')
 
 
 class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
@@ -107,7 +107,7 @@ class TestListTypes(object):
     #
     def test_bad_construction(self, list_descr, exc_re):
         with pytest.raises_regexp(ValueError, exc_re):
-            bad_td = make_TD(list_descr)
+            make_TD(list_descr)
 
 
 class TestNestedListTypes(object):
@@ -277,7 +277,7 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         bad_str = '<rect>%s</rect>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
         with pytest.raises_regexp(ValueError, exc_re):
-            bad_rect = self.td.extract_from(bad_xml, 'rect')
+            self.td.extract_from(bad_xml, 'rect')
 
 
 class TestNumpyDTypeScalar(object):
@@ -312,6 +312,7 @@ class TestNumpyDTypeScalar(object):
         assert val_rt == val
 
     ColourDType = np.dtype([('r', np.uint8), ('g', np.uint8), ('b', np.uint8)])
+
     @pytest.mark.parametrize(
         'x,regexp',
         [('hello', 'not numpy scalar'),
@@ -500,4 +501,4 @@ class TestTerseErrorInputs(object):
     #
     def test_numpy_descriptor(self, bad_tup, exc_re):
         with pytest.raises_regexp(ValueError, exc_re):
-            bad_td = make_TD(bad_tup)
+            make_TD(bad_tup)

@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import collections
 import operator
 
-from lxml import etree
+from lxml import etree  # noqa
+import xmlserdes  # noqa
 
-import xmlserdes
 from xmlserdes.type_descriptors import TypeDescriptor
 
 

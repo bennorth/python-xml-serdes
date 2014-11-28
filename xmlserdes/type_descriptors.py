@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import collections
 import operator
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from lxml import etree
 
 import xmlserdes
+
+import collections  # noqa
 
 import six
 
@@ -583,10 +584,10 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
         self.dtype = dtype
         self.xml_descriptor = [
             xmlserdes.ElementDescriptor.new_from_tuple(
-              (nm,
-               operator.itemgetter(nm),
-               self.type_descriptor_from_dtype(dtype.fields[nm][0])))
-            for nm in dtype.names]
+                (nm, operator.itemgetter(nm), self.type_descriptor_from_dtype(dtype.fields[nm][0]))
+            )
+            for nm in dtype.names
+        ]
 
     def xml_element(self, obj, tag):
         self.assert_valid(obj, np.void, 'numpy scalar', 0)
