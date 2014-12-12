@@ -187,8 +187,7 @@ class _TestNumpyBase(object):
         'x,regexp',
         [('hello', 'not ndarray'),
          (np.array([[1, 2], [3, 4]]), 'not 1-dimensional'),
-         pytest.mark.xfail(reason='error message has dtypes swapped')(
-             (np.zeros((12,), dtype=np.float32), 'expected dtype .* but got "float32"'))],
+         (np.zeros((12,), dtype=np.float32), 'expected dtype .* but got "float32"')],
         ids=['string', 'multi-dml', 'wrong-dtype'])
     #
     def test_bad_value(self, x, regexp):

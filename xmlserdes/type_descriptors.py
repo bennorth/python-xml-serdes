@@ -449,7 +449,7 @@ class NumpyValidityAssertionMixin(object):
             raise ValueError('ndarray not %d-dimensional' % exp_ndim)
         if obj.dtype != self.dtype:
             raise ValueError('expected dtype "%s" but got "%s"'
-                             % (obj.dtype, self.dtype))
+                             % (self.dtype, obj.dtype))
 
 
 class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
