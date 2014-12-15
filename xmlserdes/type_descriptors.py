@@ -382,7 +382,10 @@ class List(TypeDescriptor):
     def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
         for obj_elt in obj:
-            elt.append(self.contained_descriptor.xml_element(obj_elt, self.contained_tag, _xpath))
+            elt.append(self.contained_descriptor.xml_element(
+                obj_elt,
+                self.contained_tag,
+                _xpath))
         return elt
 
     def child_xpath_component(self, i_0b):
