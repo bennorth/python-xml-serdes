@@ -205,7 +205,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         if elt.tag != expected_tag:
             raise XMLSerDesError('expected tag "%s" but got "%s"'
                                  % (expected_tag, elt.tag),
-                                 xpath=_xpath)
+                                 xpath=_xpath[:-1])
 
     @abstractmethod  # pragma: no cover
     def xml_element(self, obj, tag, _xpath=[]):
@@ -233,6 +233,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         :type expected_tag: str
         :rtype: depends on concrete subclass of ``TypeDescriptor``
         """
+        _xpath = _xpath or [expected_tag]
         self.verify_tag(elt, expected_tag, _xpath)
         return self._extract_from(elt, expected_tag, _xpath)
 
@@ -308,7 +309,7 @@ class AtomicBool(TypeDescriptor):
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
     Traceback (most recent call last):
         ...
-    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "red" for bool at /
+    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "red" for bool at /is-heavy
     >>> bool_type_descriptor.xml_element(42, 'meaning')
     Traceback (most recent call last):
         ...
