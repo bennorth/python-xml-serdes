@@ -275,10 +275,10 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         ids=['wrong-n-elts', 'wrong-child-tag'])
     #
     def test_bad_xml(self, bad_inner_str, exc_re):
-        bad_str = '<rect>%s</rect>' % bad_inner_str
+        bad_str = '<rectangles>%s</rectangles>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
-        with pytest.raises_regexp(XMLSerDesError, exc_re, ['rect', 'rect[1]']):
-            self.td.extract_from(bad_xml, 'rect')
+        with pytest.raises_regexp(XMLSerDesError, exc_re, ['rectangles', 'rect[1]']):
+            self.td.extract_from(bad_xml, 'rectangles')
 
 
 class TestNumpyDTypeScalar(object):
