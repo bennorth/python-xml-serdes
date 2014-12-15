@@ -7,6 +7,7 @@ from xmlserdes.type_descriptors import Instance
 
 import xmlserdes
 import xmlserdes.utils
+from xmlserdes.errors import XMLSerDesError
 
 
 class XMLSerializableMeta(type):
@@ -76,8 +77,8 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         """
 
         if xml_elt.tag != expected_tag:
-            raise ValueError('expected tag "%s" but got "%s"'
-                             % (expected_tag, xml_elt.tag))
+            raise XMLSerDesError('expected tag "%s" but got "%s"'
+                                 % (expected_tag, xml_elt.tag))
 
         ordered_dict = cls._ordered_dict_from_xml(xml_elt)
         # Might throw exception if class doesn't care about deserialization:
@@ -87,8 +88,8 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     def _ordered_dict_from_xml(cls, xml_elt):
         descr = cls.xml_descriptor
         if len(xml_elt) != len(descr):
-            raise ValueError('expected %d children but got %d'
-                             % (len(descr), len(xml_elt)))
+            raise XMLSerDesError('expected %d children but got %d'
+                                 % (len(descr), len(xml_elt)))
 
         return collections.OrderedDict(
             (child_elt.tag, descr_elt.extract_from(child_elt))
@@ -145,16 +146,17 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
         tags_exp = list(cls.slot_name_from_tag_name.keys())
         if tags_got != tags_exp:
             if len(tags_got) != len(tags_exp):
-                raise ValueError('expected %d children but got %d'
-                                 % (len(tags_exp), len(tags_got)))
+                raise XMLSerDesError('expected %d children but got %d'
+                                     % (len(tags_exp), len(tags_got)))
             differing_tags = [
                 (idx, expected, got)
                 for (idx, (expected, got)) in enumerate(zip(tags_exp, tags_got))
                 if expected != got]
             first_diff = differing_tags[0]
-            raise ValueError(('unexpected tags: %d differ; first diff:'
-                              + ' expected "%s" but got "%s" at posn %d')
-                             % (len(differing_tags), first_diff[1], first_diff[2], first_diff[0]))
+            raise XMLSerDesError(('unexpected tags: %d differ; first diff:'
+                                  + ' expected "%s" but got "%s" at posn %d')
+                                 % (len(differing_tags),
+                                    first_diff[1], first_diff[2], first_diff[0]))
 
     @classmethod
     def from_xml_dict(cls, ordered_dict):

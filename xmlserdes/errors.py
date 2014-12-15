@@ -1,0 +1,2 @@
+class XMLSerDesError(ValueError):
+    pass
