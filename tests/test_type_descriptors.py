@@ -267,17 +267,19 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         assert np.all(vals_rt == self.vals)
 
     @pytest.mark.parametrize(
-        'bad_inner_str,exc_re',
+        'bad_inner_str,exc_re,exp_xpath',
         [('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
-          'expected 2 sub-elements but got 3'),
+          'expected 2 sub-elements but got 3',
+          ['rectangles', 'rect[1]']),
          ('<rect><wd>42</wd><ht>100</ht></rect>',
-          'expected tag "width" but got "wd"')],
+          'expected tag "width" but got "wd"',
+          ['rectangles', 'rect[1]'])],
         ids=['wrong-n-elts', 'wrong-child-tag'])
     #
-    def test_bad_xml(self, bad_inner_str, exc_re):
+    def test_bad_xml(self, bad_inner_str, exc_re, exp_xpath):
         bad_str = '<rectangles>%s</rectangles>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
-        with pytest.raises_regexp(XMLSerDesError, exc_re, ['rectangles', 'rect[1]']):
+        with pytest.raises_regexp(XMLSerDesError, exc_re, exp_xpath):
             self.td.extract_from(bad_xml, 'rectangles')
 
 
