@@ -6,6 +6,7 @@ import numpy as np
 from lxml import etree
 
 import xmlserdes
+from xmlserdes.errors import XMLSerDesError
 
 import collections  # noqa
 
@@ -202,8 +203,8 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
     def verify_tag(self, elt, expected_tag):
         if elt.tag != expected_tag:
-            raise ValueError('expected tag "%s" but got "%s"'
-                             % (expected_tag, elt.tag))
+            raise XMLSerDesError('expected tag "%s" but got "%s"'
+                                 % (expected_tag, elt.tag))
 
     @abstractmethod  # pragma: no cover
     def xml_element(self, obj, tag):
@@ -223,8 +224,8 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
     def extract_from(self, elt, expected_tag):
         """
         Extract and return an object from the given XML element.  The
-        tag of ``elt`` should be the given expected tag, otherwise a
-        ``ValueError`` is raised.
+        tag of ``elt`` should be the given expected tag, otherwise an
+        ``XMLSerDesError`` is raised.
 
         :param elt: XML element
         :type elt: :class:`etree.Element`
@@ -263,7 +264,7 @@ class Atomic(TypeDescriptor):
     >>> atomic_type_descriptor.extract_from(xml_elt, 'length')
     Traceback (most recent call last):
         ...
-    ValueError: expected tag "length" but got "weight"
+    xmlserdes.errors.XMLSerDesError: expected tag "length" but got "weight"
     """
 
     def __init__(self, inner_type):
@@ -299,11 +300,11 @@ class AtomicBool(TypeDescriptor):
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
     Traceback (most recent call last):
         ...
-    ValueError: expected text "true" or "false" but got "dark-orange" for bool
+    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "dark-orange" for bool
     >>> bool_type_descriptor.xml_element(42, 'meaning')
     Traceback (most recent call last):
         ...
-    ValueError: expected True or False but got "42" for bool
+    xmlserdes.errors.XMLSerDesError: expected True or False but got "42" for bool
     """
 
     def xml_element(self, obj, tag):
@@ -313,7 +314,7 @@ class AtomicBool(TypeDescriptor):
         elif obj is False:
             elt.text = 'false'
         else:
-            raise ValueError('expected True or False but got "%s" for bool' % obj)
+            raise XMLSerDesError('expected True or False but got "%s" for bool' % obj)
         return elt
 
     def extract_from(self, elt, expected_tag):
@@ -323,7 +324,7 @@ class AtomicBool(TypeDescriptor):
             return True
         if text == 'false':
             return False
-        raise ValueError('expected text "true" or "false" but got "%s" for bool' % text)
+        raise XMLSerDesError('expected text "true" or "false" but got "%s" for bool' % text)
 
 
 class List(TypeDescriptor):
@@ -431,8 +432,8 @@ class Instance(TypeDescriptor):
         self.verify_tag(elt, expected_tag)
         descr = self.xml_descriptor
         if len(elt) != len(descr):
-            raise ValueError('expected %d %s but got %d'
-                             % (len(descr), self.components_label, len(elt)))
+            raise XMLSerDesError('expected %d %s but got %d'
+                                 % (len(descr), self.components_label, len(elt)))
 
         ctor = self.constructor
         ctor_args = [descr_elt.extract_from(child_elt)
@@ -444,12 +445,12 @@ class Instance(TypeDescriptor):
 class NumpyValidityAssertionMixin(object):
     def assert_valid(self, obj, exp_type, exp_type_label, exp_ndim):
         if not isinstance(obj, exp_type):
-            raise ValueError('object not %s' % exp_type_label)
+            raise XMLSerDesError('object not %s' % exp_type_label)
         if obj.ndim != exp_ndim:
-            raise ValueError('ndarray not %d-dimensional' % exp_ndim)
+            raise XMLSerDesError('ndarray not %d-dimensional' % exp_ndim)
         if obj.dtype != self.dtype:
-            raise ValueError('expected dtype "%s" but got "%s"'
-                             % (self.dtype, obj.dtype))
+            raise XMLSerDesError('expected dtype "%s" but got "%s"'
+                                 % (self.dtype, obj.dtype))
 
 
 class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
