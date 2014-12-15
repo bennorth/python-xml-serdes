@@ -265,7 +265,7 @@ class Atomic(TypeDescriptor):
     >>> atomic_type_descriptor.extract_from(xml_elt, 'length')
     Traceback (most recent call last):
         ...
-    xmlserdes.errors.XMLSerDesError: expected tag "length" but got "weight"
+    xmlserdes.errors.XMLSerDesError: expected tag "length" but got "weight" at /
     """
 
     def __init__(self, inner_type):
@@ -301,11 +301,11 @@ class AtomicBool(TypeDescriptor):
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
     Traceback (most recent call last):
         ...
-    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "dark-orange" for bool
+    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "dark-orange" for bool at /
     >>> bool_type_descriptor.xml_element(42, 'meaning')
     Traceback (most recent call last):
         ...
-    xmlserdes.errors.XMLSerDesError: expected True or False but got "42" for bool
+    xmlserdes.errors.XMLSerDesError: expected True or False but got "42" for bool at /
     """
 
     def xml_element(self, obj, tag, _xpath=[]):
