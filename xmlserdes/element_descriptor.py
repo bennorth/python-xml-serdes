@@ -90,7 +90,7 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         >>> print(xmlserdes.utils.str_from_xml_elt(descr_different_tag.xml_element(shape)))
         <shape-width>42</shape-width>
         """
-        return self.type_descr.xml_element(self.value_from(obj), self.tag)
+        return self.type_descr.xml_element(self.value_from(obj), self.tag, _xpath)
 
     def extract_from(self, elt, _xpath=[]):
         """

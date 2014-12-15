@@ -57,7 +57,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
         tag = tag or self.xml_default_tag
         instance_td = Instance(self.__class__)  # TODO: Cache this t.d. in class?
-        return instance_td.xml_element(self, tag)
+        return instance_td.xml_element(self, tag, [tag])
 
     def as_xml_str(self, tag=None, **kwargs):
         """
