@@ -279,3 +279,30 @@ class TestDeepError(object):
                                   'expected tag "colour" but got "size"',
                                   ['building', 'rooms', 'room[2]', 'chairs', 'chair[3]']):
             Building.from_xml(bad_xml, 'building')
+
+    def test_as_xml(self):
+        class Chair(XMLSerializableNamedTuple):
+            xml_default_tag = 'chair'
+            xml_descriptor = [('dimensions', (np.ndarray, np.int16))]
+
+        class Room(XMLSerializableNamedTuple):
+            xml_default_tag = 'room'
+            xml_descriptor = [('chairs', [Chair])]
+
+        class Building(XMLSerializableNamedTuple):
+            xml_default_tag = 'building'
+            xml_descriptor = [('rooms', [Room])]
+
+        chairs = [Chair(np.array([1, 2, 3], dtype=np.int16)),
+                  Chair(np.array([4, 5, 6], dtype=np.int16))]
+
+        building = Building([Room(chairs),
+                             Room(chairs + [Chair(np.array([100, 200, 300], dtype=np.int32))])])
+
+        with pytest.raises_regexp(XMLSerDesError,
+                                  'expected dtype .*int16.* but got "int32"',
+                                  ['building',
+                                   'rooms', 'room[2]',
+                                   'chairs', 'chair[3]',
+                                   'dimensions']):
+            building.as_xml()
