@@ -11,9 +11,10 @@ def pytest_namespace():
 
 
 class raises_regexp(object):
-    def __init__(self, expected_exception, regexp):
+    def __init__(self, expected_exception, regexp, xpath=None):
         self.exception = expected_exception
         self.regexp = regexp
+        self.xpath = xpath
         self.excinfo = None
 
     def __enter__(self):
@@ -35,5 +36,11 @@ class raises_regexp(object):
         if not re.search(self.regexp, str(exc_val)):
             pytest.fail('Pattern "{0}" not found in "{1}"'.format(self.regexp,
                                                                   str(exc_val)))
+
+        if self.xpath is not None:
+            if not hasattr(exc_val, 'xpath'):
+                pytest.fail('No xpath attribute found in "{0}"'.format(str(exc_val)))
+            if exc_val.xpath != self.xpath:
+                pytest.fail('Xpath is "{0}" instead of "{1}"'.format(exc_val.xpath, self.xpath))
 
         return True
