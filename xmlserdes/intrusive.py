@@ -79,7 +79,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         if xml_elt.tag != expected_tag:
             raise XMLSerDesError('expected tag "%s" but got "%s"'
                                  % (expected_tag, xml_elt.tag),
-                                 xpath=[])
+                                 xpath=_xpath)
 
         ordered_dict = cls._ordered_dict_from_xml(xml_elt, _xpath)
         # Might throw exception if class doesn't care about deserialization:
@@ -91,7 +91,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         if len(xml_elt) != len(descr):
             raise XMLSerDesError('expected %d children but got %d'
                                  % (len(descr), len(xml_elt)),
-                                 xpath=[])
+                                 xpath=_xpath)
 
         return collections.OrderedDict(
             (child_elt.tag, descr_elt.extract_from(child_elt))
@@ -150,7 +150,7 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
             if len(tags_got) != len(tags_exp):
                 raise XMLSerDesError('expected %d children but got %d'
                                      % (len(tags_exp), len(tags_got)),
-                                     xpath=[])
+                                     xpath=_xpath)
             differing_tags = [
                 (idx, expected, got)
                 for (idx, (expected, got)) in enumerate(zip(tags_exp, tags_got))
@@ -160,7 +160,7 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
                                   + ' expected "%s" but got "%s" at posn %d')
                                  % (len(differing_tags),
                                     first_diff[1], first_diff[2], first_diff[0]),
-                                 xpath=[])
+                                 xpath=_xpath)
 
     @classmethod
     def from_xml_dict(cls, ordered_dict, _xpath=[]):

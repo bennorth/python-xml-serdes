@@ -205,7 +205,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         if elt.tag != expected_tag:
             raise XMLSerDesError('expected tag "%s" but got "%s"'
                                  % (expected_tag, elt.tag),
-                                 xpath=[])
+                                 xpath=_xpath)
 
     @abstractmethod  # pragma: no cover
     def xml_element(self, obj, tag, _xpath=[]):
@@ -316,7 +316,7 @@ class AtomicBool(TypeDescriptor):
             elt.text = 'false'
         else:
             raise XMLSerDesError('expected True or False but got "%s" for bool' % obj,
-                                 xpath=[])
+                                 xpath=_xpath)
         return elt
 
     def extract_from(self, elt, expected_tag, _xpath=[]):
@@ -327,7 +327,7 @@ class AtomicBool(TypeDescriptor):
         if text == 'false':
             return False
         raise XMLSerDesError('expected text "true" or "false" but got "%s" for bool' % text,
-                             xpath=[])
+                             xpath=_xpath)
 
 
 class List(TypeDescriptor):
@@ -437,7 +437,7 @@ class Instance(TypeDescriptor):
         if len(elt) != len(descr):
             raise XMLSerDesError('expected %d %s but got %d'
                                  % (len(descr), self.components_label, len(elt)),
-                                 xpath=[])
+                                 xpath=_xpath)
 
         ctor = self.constructor
         ctor_args = [descr_elt.extract_from(child_elt, _xpath)
@@ -450,14 +450,14 @@ class NumpyValidityAssertionMixin(object):
     def assert_valid(self, obj, exp_type, exp_type_label, exp_ndim, _xpath):
         if not isinstance(obj, exp_type):
             raise XMLSerDesError('object not %s' % exp_type_label,
-                                 xpath=[])
+                                 xpath=_xpath)
         if obj.ndim != exp_ndim:
             raise XMLSerDesError('ndarray not %d-dimensional' % exp_ndim,
-                                 xpath=[])
+                                 xpath=_xpath)
         if obj.dtype != self.dtype:
             raise XMLSerDesError('expected dtype "%s" but got "%s"'
                                  % (self.dtype, obj.dtype),
-                                 xpath=[])
+                                 xpath=_xpath)
 
 
 class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
