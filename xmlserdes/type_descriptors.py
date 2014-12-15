@@ -233,6 +233,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         :type expected_tag: str
         :rtype: depends on concrete subclass of ``TypeDescriptor``
         """
+        self.verify_tag(elt, expected_tag, _xpath)
         return self._extract_from(elt, expected_tag, _xpath)
 
     @abstractmethod  # pragma: no cover
@@ -284,7 +285,6 @@ class Atomic(TypeDescriptor):
         return elt
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        self.verify_tag(elt, expected_tag, _xpath)
         return self.inner_type(elt.text)
 
 
@@ -327,7 +327,6 @@ class AtomicBool(TypeDescriptor):
         return elt
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        self.verify_tag(elt, expected_tag, _xpath)
         text = elt.text
         if text == 'true':
             return True
@@ -381,7 +380,6 @@ class List(TypeDescriptor):
         return elt
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        self.verify_tag(elt, expected_tag, _xpath)
         return [self.contained_descriptor.extract_from(child_elt, self.contained_tag, _xpath)
                 for child_elt in elt]
 
@@ -439,7 +437,6 @@ class Instance(TypeDescriptor):
     components_label = 'children'
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        self.verify_tag(elt, expected_tag, _xpath)
         descr = self.xml_descriptor
         if len(elt) != len(descr):
             raise XMLSerDesError('expected %d %s but got %d'
@@ -504,7 +501,6 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
         return elt
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        self.verify_tag(elt, expected_tag, _xpath)
         s_elts = elt.text.split(',')
         elements_list = list(map(self.dtype, s_elts))
         return np.array(elements_list, dtype=self.dtype)
