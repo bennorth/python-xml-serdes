@@ -76,7 +76,7 @@ class TestAtomicTypes(object):
         td = make_TD(bool)
 
         with pytest.raises_regexp(XMLSerDesError,
-                                  'expected text "true" or "false" but got "banana"'):
+                                  'expected "true" or "false" but got "banana"'):
             #
             bad_xml = etree.fromstring('<foo>banana</foo>')
             td.extract_from(bad_xml, 'foo')

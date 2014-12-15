@@ -309,7 +309,7 @@ class AtomicBool(TypeDescriptor):
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
     Traceback (most recent call last):
         ...
-    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "red" for bool at /is-heavy
+    xmlserdes.errors.XMLSerDesError: expected "true" or "false" but got "red" for bool at /is-heavy
     >>> bool_type_descriptor.xml_element(42, 'meaning')
     Traceback (most recent call last):
         ...
@@ -333,7 +333,7 @@ class AtomicBool(TypeDescriptor):
             return True
         if text == 'false':
             return False
-        raise XMLSerDesError('expected text "true" or "false" but got "%s" for bool' % text,
+        raise XMLSerDesError('expected "true" or "false" but got "%s" for bool' % text,
                              xpath=_xpath)
 
 
