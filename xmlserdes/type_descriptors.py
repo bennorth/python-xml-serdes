@@ -380,9 +380,14 @@ class List(TypeDescriptor):
             elt.append(self.contained_descriptor.xml_element(obj_elt, self.contained_tag, _xpath))
         return elt
 
+    def child_xpath_component(self, i_0b):
+        # '+1' is to convert to xpath's 1-based indexing:
+        return '%s[%d]' % (self.contained_tag, (i_0b + 1))
+
     def _extract_from(self, elt, expected_tag, _xpath):
-        return [self.contained_descriptor.extract_from(child_elt, self.contained_tag, _xpath)
-                for child_elt in elt]
+        return [self.contained_descriptor.extract_from(child_elt, self.contained_tag,
+                                                       _xpath + [self.child_xpath_component(i)])
+                for i, child_elt in enumerate(elt)]
 
 
 class Instance(TypeDescriptor):

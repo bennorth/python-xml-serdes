@@ -277,7 +277,7 @@ class TestNumpyRecordStructured(_TestNumpyBase):
     def test_bad_xml(self, bad_inner_str, exc_re):
         bad_str = '<rect>%s</rect>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
-        with pytest.raises_regexp(XMLSerDesError, exc_re, ['rect']):
+        with pytest.raises_regexp(XMLSerDesError, exc_re, ['rect', 'rect[1]']):
             self.td.extract_from(bad_xml, 'rect')
 
 
