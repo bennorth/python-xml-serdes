@@ -221,7 +221,6 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
 
-    @abstractmethod  # pragma: no cover
     def extract_from(self, elt, expected_tag, _xpath=[]):
         """
         Extract and return an object from the given XML element.  The
@@ -233,6 +232,14 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         :param expected_tag: tag which ``elt`` must have
         :type expected_tag: str
         :rtype: depends on concrete subclass of ``TypeDescriptor``
+        """
+        return self._extract_from(elt, expected_tag, _xpath)
+
+    @abstractmethod  # pragma: no cover
+    def _extract_from(self, elt, expected_tag, _xpath):
+        """
+        Internal method implementing extract_from() under the assumption
+        that the tag is as expected.
         """
 
 
@@ -276,7 +283,7 @@ class Atomic(TypeDescriptor):
         elt.text = str(obj)
         return elt
 
-    def extract_from(self, elt, expected_tag, _xpath=[]):
+    def _extract_from(self, elt, expected_tag, _xpath):
         self.verify_tag(elt, expected_tag, _xpath)
         return self.inner_type(elt.text)
 
@@ -319,7 +326,7 @@ class AtomicBool(TypeDescriptor):
                                  xpath=_xpath)
         return elt
 
-    def extract_from(self, elt, expected_tag, _xpath=[]):
+    def _extract_from(self, elt, expected_tag, _xpath):
         self.verify_tag(elt, expected_tag, _xpath)
         text = elt.text
         if text == 'true':
@@ -373,7 +380,7 @@ class List(TypeDescriptor):
             elt.append(self.contained_descriptor.xml_element(obj_elt, self.contained_tag, _xpath))
         return elt
 
-    def extract_from(self, elt, expected_tag, _xpath=[]):
+    def _extract_from(self, elt, expected_tag, _xpath):
         self.verify_tag(elt, expected_tag, _xpath)
         return [self.contained_descriptor.extract_from(child_elt, self.contained_tag, _xpath)
                 for child_elt in elt]
@@ -431,7 +438,7 @@ class Instance(TypeDescriptor):
 
     components_label = 'children'
 
-    def extract_from(self, elt, expected_tag, _xpath=[]):
+    def _extract_from(self, elt, expected_tag, _xpath):
         self.verify_tag(elt, expected_tag, _xpath)
         descr = self.xml_descriptor
         if len(elt) != len(descr):
@@ -496,7 +503,7 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
         elt.text = ','.join(map(repr, obj))
         return elt
 
-    def extract_from(self, elt, expected_tag, _xpath=[]):
+    def _extract_from(self, elt, expected_tag, _xpath):
         self.verify_tag(elt, expected_tag, _xpath)
         s_elts = elt.text.split(',')
         elements_list = list(map(self.dtype, s_elts))
@@ -717,8 +724,8 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
         self.assert_valid(obj, np.ndarray, 'ndarray', 1, _xpath)
         return List.xml_element(self, obj, tag, _xpath)
 
-    def extract_from(self, elt, expected_tag, _xpath=[]):
-        elts = List.extract_from(self, elt, expected_tag, _xpath)
+    def _extract_from(self, elt, expected_tag, _xpath):
+        elts = List._extract_from(self, elt, expected_tag, _xpath)
         return np.array(elts, dtype=self.dtype)
 
 
