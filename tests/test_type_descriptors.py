@@ -271,10 +271,15 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         [('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
           'expected 2 sub-elements but got 3',
           ['rectangles', 'rect[1]']),
+         ('<rect><width>42</width><height>100</height></rect>'
+          '<rect><width>42</width><height>100</height></rect>'
+          '<rect><width>42</width><height>100</height><depth>99</depth></rect>',
+          'expected 2 sub-elements but got 3',
+          ['rectangles', 'rect[3]']),
          ('<rect><wd>42</wd><ht>100</ht></rect>',
           'expected tag "width" but got "wd"',
           ['rectangles', 'rect[1]'])],
-        ids=['wrong-n-elts', 'wrong-child-tag'])
+        ids=['wrong-n-elts', 'wrong-n-elts-third-child', 'wrong-child-tag'])
     #
     def test_bad_xml(self, bad_inner_str, exc_re, exp_xpath):
         bad_str = '<rectangles>%s</rectangles>' % bad_inner_str
