@@ -68,7 +68,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         return xmlserdes.utils.str_from_xml_elt(self.as_xml(tag=tag), **kwargs)
 
     @classmethod
-    def from_xml(cls, xml_elt, expected_tag):
+    def from_xml(cls, xml_elt, expected_tag, _xpath=[]):
         """
         Return a new instance of ``cls`` by deserializing the given XML
         element, which must have the given expected tag.  The real work
@@ -81,12 +81,12 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
                                  % (expected_tag, xml_elt.tag),
                                  xpath=[])
 
-        ordered_dict = cls._ordered_dict_from_xml(xml_elt)
+        ordered_dict = cls._ordered_dict_from_xml(xml_elt, _xpath)
         # Might throw exception if class doesn't care about deserialization:
-        return cls.from_xml_dict(ordered_dict)
+        return cls.from_xml_dict(ordered_dict, _xpath)
 
     @classmethod
-    def _ordered_dict_from_xml(cls, xml_elt):
+    def _ordered_dict_from_xml(cls, xml_elt, _xpath):
         descr = cls.xml_descriptor
         if len(xml_elt) != len(descr):
             raise XMLSerDesError('expected %d children but got %d'
@@ -143,7 +143,7 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     xml_descriptor = []
 
     @classmethod
-    def _verify_children(cls, ordered_dict):
+    def _verify_children(cls, ordered_dict, _xpath):
         tags_got = list(ordered_dict.keys())
         tags_exp = list(cls.slot_name_from_tag_name.keys())
         if tags_got != tags_exp:
@@ -163,6 +163,6 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
                                  xpath=[])
 
     @classmethod
-    def from_xml_dict(cls, ordered_dict):
-        cls._verify_children(ordered_dict)
+    def from_xml_dict(cls, ordered_dict, _xpath=[]):
+        cls._verify_children(ordered_dict, _xpath)
         return cls._make(ordered_dict.values())
