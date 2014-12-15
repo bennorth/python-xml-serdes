@@ -445,7 +445,7 @@ class Instance(TypeDescriptor):
                                  xpath=_xpath)
 
         ctor = self.constructor
-        ctor_args = [descr_elt.extract_from(child_elt, _xpath)
+        ctor_args = [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
                      for child_elt, descr_elt in zip(elt, descr)]
 
         return ctor(*ctor_args)
