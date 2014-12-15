@@ -381,11 +381,11 @@ class List(TypeDescriptor):
 
     def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
-        for obj_elt in obj:
+        for i, obj_elt in enumerate(obj):
             elt.append(self.contained_descriptor.xml_element(
                 obj_elt,
                 self.contained_tag,
-                _xpath))
+                _xpath + [self.child_xpath_component(i)]))
         return elt
 
     def child_xpath_component(self, i_0b):
@@ -444,7 +444,7 @@ class Instance(TypeDescriptor):
     def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
         for child in self.xml_descriptor:
-            child_elt = child.xml_element(obj, _xpath)
+            child_elt = child.xml_element(obj, _xpath + [child.tag])
             elt.append(child_elt)
         return elt
 
