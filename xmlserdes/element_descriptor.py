@@ -75,7 +75,7 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         else:
             raise ValueError('bad tuple length')
 
-    def xml_element(self, obj):
+    def xml_element(self, obj, _xpath=[]):
         """
         Serialize, into an XML element, the relevant property from the given object.
 
@@ -92,7 +92,7 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         """
         return self.type_descr.xml_element(self.value_from(obj), self.tag)
 
-    def extract_from(self, elt):
+    def extract_from(self, elt, _xpath=[]):
         """
         Deserialize, from an XML element, a value of the relevant type.
 
@@ -101,4 +101,4 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         >>> descr.extract_from(xml_elt)
         99
         """
-        return self.type_descr.extract_from(elt, self.tag)
+        return self.type_descr.extract_from(elt, self.tag, _xpath)
