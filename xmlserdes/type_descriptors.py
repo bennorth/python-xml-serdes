@@ -286,7 +286,12 @@ class Atomic(TypeDescriptor):
         return elt
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        return self.inner_type(elt.text)
+        try:
+            return self.inner_type(elt.text)
+        except Exception as err:
+            raise XMLSerDesError('could not parse "%.100s" as "%s": %s'
+                                 % (elt.text, self.inner_type.__name__, str(err)),
+                                 xpath=_xpath)
 
 
 class AtomicBool(TypeDescriptor):
