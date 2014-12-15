@@ -81,6 +81,12 @@ class TestAtomicTypes(object):
             bad_xml = etree.fromstring('<foo>banana</foo>')
             td.extract_from(bad_xml, 'foo')
 
+    def test_int_bad_deserialize_values(self):
+        td = make_TD(int)
+        bad_xml = etree.fromstring('<foo>banana</foo>')
+        with pytest.raises_regexp(XMLSerDesError, 'could not parse "banana" as "int"', ['foo']):
+            td.extract_from(bad_xml, 'foo')
+
 
 class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
     pass
