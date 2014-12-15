@@ -4,6 +4,8 @@ import pytest
 
 from xmlserdes import XMLSerializable, XMLSerializableNamedTuple
 from xmlserdes.utils import str_from_xml_elt
+from xmlserdes.errors import XMLSerDesError
+
 
 from collections import OrderedDict
 import numpy as np
@@ -239,3 +241,41 @@ class TestBadMethodUsage(object):
         bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
         with pytest.raises_regexp(ValueError, 'expected tag "rect" but got "rectangle"'):
             Rectangle.from_xml(bad_xml, 'rect')
+
+
+class TestDeepError(object):
+    def test_from_xml(self):
+        class Chair(XMLSerializableNamedTuple):
+            xml_default_tag = 'chair'
+            xml_descriptor = [('colour', str)]
+
+        class Room(XMLSerializableNamedTuple):
+            xml_default_tag = 'room'
+            xml_descriptor = [('chairs', [Chair])]
+
+        class Building(XMLSerializableNamedTuple):
+            xml_default_tag = 'building'
+            xml_descriptor = [('rooms', [Room])]
+
+        bad_xml = etree.fromstring("""<building>
+                                        <rooms>
+                                          <room>
+                                            <chairs>
+                                              <chair><colour>red</colour></chair>
+                                              <chair><colour>blue</colour></chair>
+                                            </chairs>
+                                          </room>
+                                          <room>
+                                            <chairs>
+                                              <chair><colour>red</colour></chair>
+                                              <chair><colour>blue</colour></chair>
+                                              <chair><size>42</size></chair>
+                                            </chairs>
+                                          </room>
+                                        </rooms>
+                                      </building>""")
+
+        with pytest.raises_regexp(XMLSerDesError,
+                                  'expected tag "colour" but got "size"',
+                                  ['building', 'rooms', 'room[2]', 'chairs', 'chair[3]']):
+            Building.from_xml(bad_xml, 'building')
