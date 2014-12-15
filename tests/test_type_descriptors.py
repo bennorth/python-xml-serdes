@@ -9,6 +9,7 @@ from lxml import etree
 import numpy as np
 import xmlserdes as X
 import xmlserdes.utils as XU
+from xmlserdes.errors import XMLSerDesError
 
 make_TD = X.TypeDescriptor.from_terse
 
@@ -68,13 +69,13 @@ class TestAtomicTypes(object):
     def test_bool_bad_serialize_values(self):
         td = make_TD(bool)
 
-        with pytest.raises_regexp(ValueError, 'expected True or False but got "42"'):
+        with pytest.raises_regexp(XMLSerDesError, 'expected True or False but got "42"'):
             td.xml_element(42, 'foo')
 
     def test_bool_bad_deserialize_values(self):
         td = make_TD(bool)
 
-        with pytest.raises_regexp(ValueError,
+        with pytest.raises_regexp(XMLSerDesError,
                                   'expected text "true" or "false" but got "banana"'):
             #
             bad_xml = etree.fromstring('<foo>banana</foo>')
@@ -178,7 +179,7 @@ class TestInstanceTypes(object):
     def test_bad_xml(self, xml_str, err_re):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring(xml_str)
-        with pytest.raises_regexp(ValueError, err_re):
+        with pytest.raises_regexp(XMLSerDesError, err_re):
             td.extract_from(bad_xml, 'rect')
 
 
@@ -191,7 +192,7 @@ class _TestNumpyBase(object):
         ids=['string', 'multi-dml', 'wrong-dtype'])
     #
     def test_bad_value(self, x, regexp):
-        with pytest.raises_regexp(ValueError, regexp):
+        with pytest.raises_regexp(XMLSerDesError, regexp):
             self.td.xml_element(x, 'values')
 
 
@@ -276,7 +277,7 @@ class TestNumpyRecordStructured(_TestNumpyBase):
     def test_bad_xml(self, bad_inner_str, exc_re):
         bad_str = '<rect>%s</rect>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
-        with pytest.raises_regexp(ValueError, exc_re):
+        with pytest.raises_regexp(XMLSerDesError, exc_re):
             self.td.extract_from(bad_xml, 'rect')
 
 
@@ -323,7 +324,7 @@ class TestNumpyDTypeScalar(object):
         ids=['string', 'vector', 'multi-dml', 'wrong-dtype-atomic', 'wrong-dtype-structured'])
     #
     def test_bad_value(self, x, regexp):
-        with pytest.raises_regexp(ValueError, regexp):
+        with pytest.raises_regexp(XMLSerDesError, regexp):
             self.atomics_td.xml_element(x, 'values')
 
 
@@ -414,7 +415,7 @@ class TestObject(object):
     #
     def test_bad_input(self, xml_str, des_tag, exc_re):
         bad_xml = etree.fromstring(xml_str)
-        with pytest.raises_regexp(ValueError, exc_re):
+        with pytest.raises_regexp(XMLSerDesError, exc_re):
             X.deserialize(Rectangle, bad_xml, des_tag)
 
 
