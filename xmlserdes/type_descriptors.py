@@ -297,11 +297,11 @@ class AtomicBool(TypeDescriptor):
     >>> xml_elt = etree.fromstring('<is-heavy>true</is-heavy>')
     >>> bool_type_descriptor.extract_from(xml_elt, 'is-heavy')
     True
-    >>> bad_xml_elt = etree.fromstring('<is-heavy>dark-orange</is-heavy>')
+    >>> bad_xml_elt = etree.fromstring('<is-heavy>red</is-heavy>')
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
     Traceback (most recent call last):
         ...
-    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "dark-orange" for bool at /
+    xmlserdes.errors.XMLSerDesError: expected text "true" or "false" but got "red" for bool at /
     >>> bool_type_descriptor.xml_element(42, 'meaning')
     Traceback (most recent call last):
         ...
