@@ -8,10 +8,13 @@ class XMLSerDesError(ValueError):
         self.message = args[0]
         self.xpath = kwargs.pop('xpath')
 
+    @property
+    def xpath_str(self):
+        return '/' + '/'.join(self.xpath)
+
     def __str__(self):
         base_str = ValueError.__str__(self)
-        xpath_str = '/' + '/'.join(self.xpath)
-        return '%s at %s' % (base_str, xpath_str)
+        return '%s at %s' % (base_str, self.xpath_str)
 
 
 class TagDiffEntry(namedtuple('TagDiffEntry', 'type tag')):
