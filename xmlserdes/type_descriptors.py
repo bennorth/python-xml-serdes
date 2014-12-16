@@ -272,6 +272,7 @@ class Atomic(TypeDescriptor):
     Unexpected tag:
 
     >>> atomic_type_descriptor.extract_from(xml_elt, 'length')
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
     xmlserdes.errors.XMLSerDesError: expected tag "length" but got "weight" at /
@@ -312,10 +313,12 @@ class AtomicBool(TypeDescriptor):
     True
     >>> bad_xml_elt = etree.fromstring('<is-heavy>red</is-heavy>')
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
     xmlserdes.errors.XMLSerDesError: expected "true" or "false" but got "red" for bool at /is-heavy
     >>> bool_type_descriptor.xml_element(42, 'meaning')
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
     xmlserdes.errors.XMLSerDesError: expected True or False but got "42" for bool at /
