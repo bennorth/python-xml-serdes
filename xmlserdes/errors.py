@@ -17,6 +17,15 @@ class XMLSerDesError(ValueError):
         return '%s at %s' % (base_str, self.xpath_str)
 
 
+class XMLSerDesWrongChildrenError(XMLSerDesError):
+    def __init__(self, *args, **kwargs):
+        self.exp_tags = kwargs.pop('exp_tags')
+        self.got_tags = kwargs.pop('got_tags')
+        self.tag_comparison = TagListComparison(self.exp_tags, self.got_tags)
+        msg = 'mismatched children: %s' % self.tag_comparison
+        XMLSerDesError.__init__(self, msg, **kwargs)
+
+
 class TagDiffEntry(namedtuple('TagDiffEntry', 'type tag')):
     type_from_code = {'- ': 'missing',
                       '+ ': 'unexpected',

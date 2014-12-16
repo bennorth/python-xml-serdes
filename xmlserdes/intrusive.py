@@ -7,7 +7,7 @@ from xmlserdes.type_descriptors import Instance
 
 import xmlserdes
 import xmlserdes.utils
-from xmlserdes.errors import XMLSerDesError
+from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 
 class XMLSerializableMeta(type):
@@ -89,10 +89,12 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     @classmethod
     def _ordered_dict_from_xml(cls, xml_elt, _xpath):
         descr = cls.xml_descriptor
+
+        # Individual wrong tags will be caught later.
         if len(xml_elt) != len(descr):
-            raise XMLSerDesError('expected %d children but got %d'
-                                 % (len(descr), len(xml_elt)),
-                                 xpath=_xpath)
+            raise XMLSerDesWrongChildrenError(exp_tags=[e.tag for e in descr],
+                                              got_tags=[ch.tag for ch in xml_elt],
+                                              xpath=_xpath)
 
         return collections.OrderedDict(
             (child_elt.tag, descr_elt.extract_from(child_elt, _xpath + [child_elt.tag]))
@@ -148,20 +150,9 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
         tags_got = list(ordered_dict.keys())
         tags_exp = list(cls.slot_name_from_tag_name.keys())
         if tags_got != tags_exp:
-            if len(tags_got) != len(tags_exp):
-                raise XMLSerDesError('expected %d children but got %d'
-                                     % (len(tags_exp), len(tags_got)),
-                                     xpath=_xpath)
-            differing_tags = [
-                (idx, expected, got)
-                for (idx, (expected, got)) in enumerate(zip(tags_exp, tags_got))
-                if expected != got]
-            first_diff = differing_tags[0]
-            raise XMLSerDesError(('unexpected tags: %d differ; first diff:'
-                                  + ' expected "%s" but got "%s" at posn %d')
-                                 % (len(differing_tags),
-                                    first_diff[1], first_diff[2], first_diff[0]),
-                                 xpath=_xpath)
+            raise XMLSerDesWrongChildrenError(exp_tags=tags_exp,
+                                              got_tags=tags_got,
+                                              xpath=_xpath)
 
     @classmethod
     def from_xml_dict(cls, ordered_dict, _xpath=[]):
