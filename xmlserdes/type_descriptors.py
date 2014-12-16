@@ -6,7 +6,7 @@ import numpy as np
 from lxml import etree
 
 import xmlserdes
-from xmlserdes.errors import XMLSerDesError
+from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 import collections  # noqa
 
@@ -448,14 +448,12 @@ class Instance(TypeDescriptor):
             elt.append(child_elt)
         return elt
 
-    components_label = 'children'
-
     def _extract_from(self, elt, expected_tag, _xpath):
         descr = self.xml_descriptor
         if len(elt) != len(descr):
-            raise XMLSerDesError('expected %d %s but got %d'
-                                 % (len(descr), self.components_label, len(elt)),
-                                 xpath=_xpath)
+            raise XMLSerDesWrongChildrenError(exp_tags=[e.tag for e in descr],
+                                              got_tags=[ch.tag for ch in elt],
+                                              xpath=_xpath)
 
         ctor = self.constructor
         ctor_args = [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
@@ -620,8 +618,6 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
 
     def constructor(self, *args):
         return np.array(args, dtype=self.dtype)
-
-    components_label = 'sub-elements'
 
 
 class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
