@@ -9,7 +9,7 @@ from lxml import etree
 import numpy as np
 import xmlserdes as X
 import xmlserdes.utils as XU
-from xmlserdes.errors import XMLSerDesError
+from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 make_TD = X.TypeDescriptor.from_terse
 
@@ -176,16 +176,22 @@ class TestInstanceTypes(object):
         rect_round_trip = td.extract_from(elt, 'rect')
         assert rect_round_trip == rect
 
-    @pytest.mark.parametrize(
-        'xml_str,err_re',
-        [('<rect><a>42</a><b>100</b><c>123</c></rect>', 'expected 2 children but got 3'),
-         ('<rect><a>42</a><b>100</b></rect>', 'expected tag "width" but got "a"')],
-        ids=['wrong-n-children', 'wrong-tag'])
-    #
-    def test_bad_xml(self, xml_str, err_re):
+    def test_bad_xml_wrong_n_children(self):
         td = X.Instance(Rectangle)
-        bad_xml = etree.fromstring(xml_str)
-        with pytest.raises_regexp(XMLSerDesError, err_re, ['rect']):
+        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
+        with pytest.raises_regexp(XMLSerDesWrongChildrenError,
+                                  'mismatched children: '
+                                  r'\[missing: width, missing: height, '
+                                  r'unexpected: a, unexpected: b, unexpected: c\]',
+                                  xpath=['rect']):
+            td.extract_from(bad_xml, 'rect')
+
+    def test_bad_xml_wrong_tag(self):
+        td = X.Instance(Rectangle)
+        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
+        with pytest.raises_regexp(XMLSerDesError,
+                                  'expected tag "width" but got "a"',
+                                  xpath=['rect']):
             td.extract_from(bad_xml, 'rect')
 
 
@@ -275,12 +281,12 @@ class TestNumpyRecordStructured(_TestNumpyBase):
     @pytest.mark.parametrize(
         'bad_inner_str,exc_re,exp_xpath',
         [('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
-          'expected 2 sub-elements but got 3',
+          'mismatched children',
           ['rectangles', 'rect[1]']),
          ('<rect><width>42</width><height>100</height></rect>'
           '<rect><width>42</width><height>100</height></rect>'
           '<rect><width>42</width><height>100</height><depth>99</depth></rect>',
-          'expected 2 sub-elements but got 3',
+          'mismatched children',
           ['rectangles', 'rect[3]']),
          ('<rect><wd>42</wd><ht>100</ht></rect>',
           'expected tag "width" but got "wd"',
@@ -422,7 +428,7 @@ class TestObject(object):
 
     @pytest.mark.parametrize(
         'xml_str,des_tag,exc_re,exp_xpath',
-        [('<rect><width>99</width></rect>', 'rect', 'expected 2 children but got 1', ['rect']),
+        [('<rect><width>99</width></rect>', 'rect', 'mismatched children', ['rect']),
          (expected_rect_xml(42, 100), 'rectangle', 'expected tag .* but got', [])],
         ids=['wrong-n-children', 'wrong-tag'])
     #
