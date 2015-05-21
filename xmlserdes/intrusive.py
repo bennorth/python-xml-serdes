@@ -106,6 +106,10 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         if 'xml_descriptor' not in cls_dict:
             raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
 
+        cls_dict.setdefault('xml_default_tag', cls_name)
+        if cls_dict['xml_default_tag'] is None:
+            cls_dict.pop('xml_default_tag')
+
         super_new = super(XMLSerializableNamedTupleMeta, meta).__new__
         xml_name = '_XML_' + cls_name
         xml_cls_dict = {'xml_descriptor': cls_dict['xml_descriptor']}
@@ -143,6 +147,7 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     <rect><wd>10</wd><ht>20</ht></rect>
     """
 
+    xml_default_tag = None
     xml_descriptor = []
 
     @classmethod
