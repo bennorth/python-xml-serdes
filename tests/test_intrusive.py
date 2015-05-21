@@ -88,6 +88,18 @@ class TestNamedTuple(object):
         assert c1 == c
 
 
+class RightAngledTriangle(XMLSerializableNamedTuple):
+    xml_descriptor = [('a', int), ('b', int), ('c', int)]
+    xml_default_tag = None
+
+
+class TestNamedTupleSuppressInferredDefaultTag(object):
+    def test_tag_not_supplied_caught(self):
+        rat = RightAngledTriangle(4684659, 4684660, 6625109)
+        with pytest.raises_regexp(AttributeError, 'xml_default_tag'):
+            rat.as_xml()
+
+
 class Pattern(XMLSerializableNamedTuple):
     xml_descriptor = [('size', int),
                       ('circles', [Circle, 'circle'])]
