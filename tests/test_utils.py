@@ -39,5 +39,5 @@ class TestToUnicode(object):
         child_1.text = '456'
         elt.append(child_1)
 
-        assert (XmlUtils.str_from_xml_elt(elt, pretty_print=True)
-                == '<foo>\n  <bar>123</bar>\n  <baz>456</baz>\n</foo>\n')
+        assert (XmlUtils.str_from_xml_elt(elt, pretty_print=True) ==
+                '<foo>\n  <bar>123</bar>\n  <baz>456</baz>\n</foo>\n')
