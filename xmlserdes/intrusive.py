@@ -145,6 +145,35 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     20
     >>> print(xmlserdes.utils.str_from_xml_elt(r.as_xml()))
     <rect><wd>10</wd><ht>20</ht></rect>
+
+    If class has no ``xml_default_tag`` attribute, it is created with
+    value equal to the class name:
+
+    >>> class Circle(xmlserdes.XMLSerializableNamedTuple):
+    ...     xml_descriptor = [('radius', int)]
+    >>> c = Circle(42)
+    >>> print(c)
+    Circle(radius=42)
+    >>> c.radius
+    42
+    >>> print(xmlserdes.utils.str_from_xml_elt(c.as_xml()))
+    <Circle><radius>42</radius></Circle>
+
+    To suppress this behaviour, define an ``xml_default_tag`` attribute
+    with value ``None``.  This is useful if you wish to force callers of
+    ``as_xml()`` to supply the tag:
+
+    >>> class Sphere(xmlserdes.XMLSerializableNamedTuple):
+    ...     xml_default_tag = None
+    ...     xml_descriptor = [('radius', int)]
+    >>> s = Sphere(100)
+    >>> print(xmlserdes.utils.str_from_xml_elt(s.as_xml('round-object')))
+    <round-object><radius>100</radius></round-object>
+    >>> x = s.as_xml()
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last):
+        ...
+    AttributeError: 'Sphere' object has no attribute 'xml_default_tag'
     """
 
     xml_default_tag = None
