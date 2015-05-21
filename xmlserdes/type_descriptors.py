@@ -179,7 +179,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                 if contained_atomic_type not in cls.atomic_types_numpy:
                     raise ValueError(
                         '2-tuple descriptor: expected atomic numpy type as second element'
-                        + ' but got "%s"' % contained_atomic_type.__name__)
+                        ' but got "%s"' % contained_atomic_type.__name__)
                 return NumpyAtomicVector(contained_atomic_type)
 
             if len(descr) == 3:
