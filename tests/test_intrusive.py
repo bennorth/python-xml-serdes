@@ -110,12 +110,12 @@ class TestNestedNamedTuple(object):
     @staticmethod
     def expected_xml(tag):
         return ('<{0}>'
-                + '<size>33</size>'
-                + '<circles>'
-                + '<circle><radius>10</radius><colour>blue</colour></circle>'
-                + '<circle><radius>12</radius><colour>red</colour></circle>'
-                + '</circles>'
-                + '</{0}>').format(tag)
+                '<size>33</size>'
+                '<circles>'
+                '<circle><radius>10</radius><colour>blue</colour></circle>'
+                '<circle><radius>12</radius><colour>red</colour></circle>'
+                '</circles>'
+                '</{0}>').format(tag)
 
     @pytest.mark.parametrize(
         'tag,tag_for_expected',
@@ -150,9 +150,9 @@ def TestListImplicitTag(object):
         rc = RectangleCollection('Arthur Jackson',
                                  [Rectangle(12, 34), Rectangle(56, 78)])
         exp_txt = ('<rectangle-collection>'
-                   + '<creator>%s</creator>'
-                   + '<rectangles>%s</rectangles>'
-                   + '</rectangle-collection>'
+                   '<creator>%s</creator>'
+                   '<rectangles>%s</rectangles>'
+                   '</rectangle-collection>'
                    % (rc.creator,
                       ''.join('<rect><width>%d</width><height>%d</height></rect>'
                               % (r.width, r.height)
@@ -175,10 +175,10 @@ class TestNamedTupleDifferentTags(object):
     @staticmethod
     def expected_xml(tag):
         return ('<{0}>'
-                + '<minor-radius>42</minor-radius>'
-                + '<major-radius>99</major-radius>'
-                + '<colour>red</colour>'
-                + '</{0}>').format(tag)
+                '<minor-radius>42</minor-radius>'
+                '<major-radius>99</major-radius>'
+                '<colour>red</colour>'
+                '</{0}>').format(tag)
 
     def test_attributes(self):
         assert self.e.radius0 == 42
