@@ -10,6 +10,8 @@ from xmlserdes.type_descriptors import (
     TypeDescriptor, Atomic, AtomicBool, List, Instance, DTypeScalar, NumpyAtomicVector,
     NumpyRecordVectorStructured, NumpyVector)
 
+from xmlserdes._version import __version__
+
 
 def SerDesDescriptor(children):
     """
@@ -83,8 +85,6 @@ def namedtuple(name, xml_descriptor):
     cls.xml_descriptor = xml_descriptor
     return cls
 
-
-from xmlserdes._version import __version__
 
 __all__ = [
     'TypeDescriptor', 'Atomic', 'AtomicBool', 'List', 'Instance', 'DTypeScalar',

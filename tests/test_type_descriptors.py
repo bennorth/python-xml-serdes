@@ -11,9 +11,9 @@ import xmlserdes as X
 import xmlserdes.utils as XU
 from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
-make_TD = X.TypeDescriptor.from_terse
-
 import re
+
+make_TD = X.TypeDescriptor.from_terse
 
 
 def list_product(*args):
