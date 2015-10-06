@@ -11,6 +11,7 @@ from collections import OrderedDict
 import numpy as np
 from lxml import etree
 import sys
+import six
 
 
 class AutoSubclassesMeta(type):
@@ -40,6 +41,15 @@ class AutoSubclassesMeta(type):
 
 class XMLSerdesAutoSubclassesMeta(AutoSubclassesMeta, type(XMLSerializableNamedTuple)):
     pass
+
+
+class PaintPot(six.with_metaclass(XMLSerdesAutoSubclassesMeta, XMLSerializableNamedTuple)):
+    xml_descriptor = [('diameter', int)]
+    xml_default_tag = 'paint-pot'
+
+    @classmethod
+    def height(cls):
+        return 5
 
 
 class Rectangle(XMLSerializable):
