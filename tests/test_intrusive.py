@@ -70,6 +70,18 @@ class TestRectangle(object):
         assert rounded_rect.as_xml_str(pretty_print=False) == self.expected_xml('round-rect')
 
 
+class TestNullaryNamedTuple(object):
+    @pytest.mark.xfail(reason=('incorrect check for explicit xml_descriptor'
+                               ' in XMLSerializableNamedTuple'))
+    def test_xml(self):
+        class NullaryNamedTuple(XMLSerializableNamedTuple):
+            pass
+
+        nullary_tuple = NullaryNamedTuple()
+        xml_str = nullary_tuple.as_xml_str(pretty_print=False)
+        assert xml_str == '<NullaryNamedTuple/>'
+
+
 class Circle(XMLSerializableNamedTuple):
     xml_descriptor = [('radius', np.uint16), ('colour', str)]
     xml_default_tag = 'circle'
@@ -228,16 +240,10 @@ class TestBadNamedTupleConstruction(object):
             xml_descriptor = [('foo', lambda x: x.foo, str)]
         return Foo
 
-    def build_bad_class_no_descr():
-        class Foo(XMLSerializableNamedTuple):
-            pass
-        return Foo
-
     @pytest.mark.parametrize(
         'class_fun,exc_re',
-        [(build_bad_class_wrong_value_from_slot, 'must be simple'),
-         (build_bad_class_no_descr, 'no "xml_descriptor"')],
-        ids=['wrong-value-from-slot', 'no-xml-descriptor'])
+        [(build_bad_class_wrong_value_from_slot, 'must be simple')],
+        ids=['wrong-value-from-slot'])
     #
     def test_bad_construction(self, class_fun, exc_re):
         with pytest.raises_regexp(ValueError, exc_re):
