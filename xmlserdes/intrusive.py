@@ -127,6 +127,26 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
 
 class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
+    @staticmethod
+    def _partition_dict(src_dict, keys):
+        """
+        Partition the items in ``src_dict`` according to whether the key of the item is
+        in ``keys``.  Two new dictionaries are returned:
+
+            ``matching_keys_dict``, ``non_matching_keys_dict``
+
+        where ``matching_keys_dict`` consists of those items of ``src_dict`` whose keys
+        are in ``keys``, and ``non_matching_keys_dict`` consists of those items of
+        ``src_dict`` whose keys are NOT in ``keys``.  The passed-in ``src_dict`` is not
+        mutated.
+        """
+        matching_keys_dict = {}
+        non_matching_keys_dict = {}
+        for k, v in src_dict.items():
+            dest_dict = matching_keys_dict if k in keys else non_matching_keys_dict
+            dest_dict[k] = v
+        return matching_keys_dict, non_matching_keys_dict
+
     def __new__(meta, cls_name, bases, cls_dict):
         if 'xml_descriptor' not in cls_dict:
             raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
