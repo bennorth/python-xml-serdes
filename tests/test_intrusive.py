@@ -72,6 +72,19 @@ class TestPaintPotSubclasses(object):
         assert paint_pot_cls.colour == colour
         assert PaintPot[colour] is paint_pot_cls
 
+    @parametrize_for_colours()
+    @pytest.mark.parametrize(
+        'tag,tag_for_expected',
+        [(None, 'paint-pot'), ('pot-of-paint', 'pot-of-paint')],
+        ids=['default-tag', 'explicit-tag'])
+    def test_round_trip(self, colour, paint_pot_cls, tag, tag_for_expected):
+        pp = paint_pot_cls(100)
+        pp_xml = pp.as_xml(tag)
+        assert str_from_xml_elt(pp_xml) == self.expected_xml(tag_for_expected)
+        pp1 = paint_pot_cls.from_xml(pp_xml, tag_for_expected)
+        assert type(pp1) is type(pp)
+        assert pp1 == pp
+
 
 class Rectangle(XMLSerializable):
     xml_descriptor = [('width', int), ('height', int)]
