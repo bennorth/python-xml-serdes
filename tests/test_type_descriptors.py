@@ -218,6 +218,8 @@ class TestNumpyAtomic(_TestNumpyBase):
         assert xs_round_trip.shape == xs.shape
         assert np.all(xs_round_trip == xs)
 
+    # flake8 doesn't realise this is defined when we use in below,
+    # hence 'noqa' at that point.
     dtypes_to_test = [np.uint8, np.uint16, np.uint32, np.uint64,
                       np.int8, np.int16, np.int32, np.int64,
                       np.float32, np.float64]
@@ -227,7 +229,7 @@ class TestNumpyAtomic(_TestNumpyBase):
         list_product(dtypes_to_test,
                      [X.NumpyAtomicVector, lambda dt: make_TD((np.ndarray, dt))]),
         ids=['-'.join(flds)
-             for flds in list_product([dt.__name__ for dt in dtypes_to_test],
+             for flds in list_product([dt.__name__ for dt in dtypes_to_test],  # noqa
                                       ['verbose', 'terse'])])
     #
     def test_round_trips(self, dtype, td_func):
