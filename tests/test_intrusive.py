@@ -113,8 +113,6 @@ class TestNamedTuple(object):
         c1 = Circle.from_xml(c_xml, tag_for_expected)
         assert c1 == c
 
-    @pytest.mark.xfail(reason=('XMLSerializableNamedTuple sub-sub-classes do not'
-                               ' yet inherit xml_default_tag'))
     def test_derived_xml_inheriting_tag(self):
         class ThickCircle(Circle):
             line_thickness = 18
