@@ -10,6 +10,36 @@ from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 from collections import OrderedDict
 import numpy as np
 from lxml import etree
+import sys
+
+
+class AutoSubclassesMeta(type):
+    """
+    Create 'ochre' and 'purple' subclasses of any classes having this meta-class.
+
+    But only one level deep, to avoid engaging sorcerer's apprentice mode.
+    """
+    def __new__(meta, cls_name, bases, cls_dict):
+        cls = super(AutoSubclassesMeta, meta).__new__(meta, cls_name, bases, cls_dict)
+        cls_is_base = not hasattr(cls, 'colour')
+        if cls_is_base:
+            cls.__subclass_from_colour__ = {}
+            module_name = cls.__module__
+            module = sys.modules[module_name]
+            for colour in ['ochre', 'purple']:
+                subcls_name = '_'.join([cls_name, colour])
+                subcls = type(subcls_name, (cls,), {'colour': colour})
+                subcls.__module__ = module_name
+                setattr(module, subcls_name, subcls)
+                cls.__subclass_from_colour__[colour] = subcls
+        return cls
+
+    def __getitem__(cls, key):
+        return cls.__subclass_from_colour__[key]
+
+
+class XMLSerdesAutoSubclassesMeta(AutoSubclassesMeta, type(XMLSerializableNamedTuple)):
+    pass
 
 
 class Rectangle(XMLSerializable):
