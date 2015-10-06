@@ -217,6 +217,25 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     Traceback (most recent call last):
         ...
     AttributeError: 'Sphere' object has no attribute 'xml_default_tag'
+
+    If you create a subclass of a ``XMLSerializableNamedTuple`` subclass,
+    and do not explicitly specify an ``xml_default_tag``, then the
+    sub-subclass inherits the sub-class's ``xml_default_tag``:
+
+    >>> class ShinyCircle(Circle):
+    ...     pass
+    >>> sc = ShinyCircle(42)
+    >>> print(sc)
+    ShinyCircle(radius=42)
+    >>> sc.radius
+    42
+
+    ## XFAIL:
+    ##
+    ## >>> print(xmlserdes.utils.str_from_xml_elt(sc.as_xml()))
+    ## <Circle><radius>42</radius></Circle>
+
+    (Note that the tag in the XML is ``Circle`` and not ``ShinyCircle``.)
     """
 
     xml_default_tag = None
