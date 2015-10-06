@@ -155,9 +155,11 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         if cls_dict['xml_default_tag'] is None:
             cls_dict.pop('xml_default_tag')
 
+        xml_cls_dict, direct_cls_dict \
+            = meta._partition_dict(cls_dict, ['xml_descriptor', 'xml_default_tag'])
+
         super_new = super(XMLSerializableNamedTupleMeta, meta).__new__
         xml_name = '_XML_' + cls_name
-        xml_cls_dict = {'xml_descriptor': cls_dict['xml_descriptor']}
         xml_cls = super_new(meta, xml_name, bases, xml_cls_dict)
 
         descr = xml_cls.xml_descriptor
@@ -168,8 +170,7 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         namedtuple_cls = collections.namedtuple(cls_name,
                                                 list(xml_cls.slot_name_from_tag_name.values()))
 
-        cls_dict.pop('xml_descriptor')
-        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), cls_dict)
+        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
 
 
 class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta,
