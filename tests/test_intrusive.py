@@ -53,6 +53,24 @@ class TestRectangle(object):
         r1 = Rectangle.from_xml(r_xml, tag_for_expected)
         assert r1 == r
 
+    @pytest.mark.xfail(reason='derivation of subclasses does not yet work')
+    def test_derived_xml_inheriting_tag(self):
+        class RoundedRectangle(Rectangle):
+            corner_radius = 5
+
+        rounded_rect = RoundedRectangle(42, 100)
+        assert rounded_rect.corner_radius == 5
+        assert rounded_rect.as_xml_str(pretty_print=False) == self.expected_xml('rect')
+
+    @pytest.mark.xfail(reason='derivation of subclasses does not yet work')
+    def test_derived_xml_overriding_tag(self):
+        class RoundedRectangle(Rectangle):
+            xml_default_tag = 'round-rect'
+            corner_radius = 5
+
+        rounded_rect = RoundedRectangle(42, 100)
+        assert rounded_rect.as_xml_str(pretty_print=False) == self.expected_xml('round-rect')
+
 
 class Circle(XMLSerializableNamedTuple):
     xml_descriptor = [('radius', np.uint16), ('colour', str)]
