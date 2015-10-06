@@ -52,6 +52,27 @@ class PaintPot(six.with_metaclass(XMLSerdesAutoSubclassesMeta, XMLSerializableNa
         return 5
 
 
+class TestPaintPotSubclasses(object):
+    @staticmethod
+    def expected_xml(tag):
+        return '<{0}><diameter>100</diameter></{0}>'.format(tag)
+
+    def parametrize_for_colours():
+        # flake8 doesn't realise that PaintPot_ochre and PaintPot_purple
+        # have been magically created; can't really blame it.  Hence the
+        # 'noqa' annotations.
+        return pytest.mark.parametrize('colour, paint_pot_cls',
+                                       [('ochre', PaintPot_ochre),  # noqa
+                                        ('purple', PaintPot_purple)],  # noqa
+                                       ids=['ochre', 'purple'])
+
+    @parametrize_for_colours()
+    def test_subclass_properties(self, colour, paint_pot_cls):
+        assert paint_pot_cls.height() == 5
+        assert paint_pot_cls.colour == colour
+        assert PaintPot[colour] is paint_pot_cls
+
+
 class Rectangle(XMLSerializable):
     xml_descriptor = [('width', int), ('height', int)]
     xml_default_tag = 'rect'
