@@ -148,9 +148,6 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         return matching_keys_dict, non_matching_keys_dict
 
     def __new__(meta, cls_name, bases, cls_dict):
-        if 'xml_descriptor' not in cls_dict:
-            raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
-
         cls_dict.setdefault('xml_default_tag', cls_name)
         if cls_dict['xml_default_tag'] is None:
             cls_dict.pop('xml_default_tag')
