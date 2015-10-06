@@ -71,8 +71,6 @@ class TestRectangle(object):
 
 
 class TestNullaryNamedTuple(object):
-    @pytest.mark.xfail(reason=('incorrect check for explicit xml_descriptor'
-                               ' in XMLSerializableNamedTuple'))
     def test_xml(self):
         class NullaryNamedTuple(XMLSerializableNamedTuple):
             pass
