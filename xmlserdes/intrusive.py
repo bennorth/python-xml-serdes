@@ -47,8 +47,8 @@ class XMLSerializableMeta(type):
         raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
 
     def __new__(meta, cls_name, bases, cls_dict):
-        raw_xml_descriptor = cls_dict['xml_descriptor']
-        xml_descriptor = meta._expand(raw_xml_descriptor)
+        raw_xml_descriptor, inherited_p = meta._find_xml_descriptor(cls_name, bases, cls_dict)
+        xml_descriptor = raw_xml_descriptor if inherited_p else meta._expand(raw_xml_descriptor)
         cls_dict['xml_descriptor'] = xml_descriptor
 
         # Build map tag-name -> slot-name where 'slot-name' makes
