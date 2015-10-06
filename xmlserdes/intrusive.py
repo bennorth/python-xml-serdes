@@ -148,9 +148,11 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         return matching_keys_dict, non_matching_keys_dict
 
     def __new__(meta, cls_name, bases, cls_dict):
-        cls_dict.setdefault('xml_default_tag', cls_name)
-        if cls_dict['xml_default_tag'] is None:
-            cls_dict.pop('xml_default_tag')
+        will_inherit_xml_default_tag_p = any(hasattr(b, 'xml_default_tag') for b in bases)
+        if not will_inherit_xml_default_tag_p:
+            cls_dict.setdefault('xml_default_tag', cls_name)
+            if cls_dict['xml_default_tag'] is None:
+                cls_dict.pop('xml_default_tag')
 
         xml_cls_dict, direct_cls_dict \
             = meta._partition_dict(cls_dict, ['xml_descriptor', 'xml_default_tag'])
@@ -229,11 +231,8 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     ShinyCircle(radius=42)
     >>> sc.radius
     42
-
-    ## XFAIL:
-    ##
-    ## >>> print(xmlserdes.utils.str_from_xml_elt(sc.as_xml()))
-    ## <Circle><radius>42</radius></Circle>
+    >>> print(xmlserdes.utils.str_from_xml_elt(sc.as_xml()))
+    <Circle><radius>42</radius></Circle>
 
     (Note that the tag in the XML is ``Circle`` and not ``ShinyCircle``.)
     """
