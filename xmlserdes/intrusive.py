@@ -22,6 +22,30 @@ class XMLSerializableMeta(type):
             for elt_descr in xml_descriptor
             if elt_descr.value_slot is not None)
 
+    @classmethod
+    def _find_xml_descriptor(meta, cls_name, bases, cls_dict):
+        """
+        Find an 'xml_descriptor' attribute, first by looking within the direct
+        ``cls_dict``, and then the ``bases``.  Return the pair
+
+            ``descriptor``, ``inherited_p``
+
+        where ``descriptor`` is the value of the ``xml_descriptor`` attribute found, and
+        ``inherited_p`` indicates whether the attribute was found somewhere in
+        ``bases``.  (And so ``inherited_p`` is false if the ``xml_descriptor`` attribute
+        was found directly in ``cls_dict``.)
+
+        If no ``xml_descriptor`` is found anywhere, raise a ``ValueError``.
+        """
+        if 'xml_descriptor' in cls_dict:
+            return cls_dict['xml_descriptor'], False
+
+        for b in bases:
+            if hasattr(b, 'xml_descriptor'):
+                return getattr(b, 'xml_descriptor'), True
+
+        raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
+
     def __new__(meta, cls_name, bases, cls_dict):
         xml_descriptor = meta._expand(cls_dict['xml_descriptor'])
         cls_dict['xml_descriptor'] = xml_descriptor
