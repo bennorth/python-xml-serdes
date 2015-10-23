@@ -265,7 +265,7 @@ class TestListImplicitTag(object):
                       ''.join('<rect><width>%d</width><height>%d</height></rect>'
                               % (r.width, r.height)
                               for r in rc.rectangles)))
-        assert str_from_xml_elt(rc.as_xml('rectangle-collection')) == exp_txt
+        assert rc.as_xml_str('rectangle-collection', pretty_print=False) == exp_txt
 
 
 class Ellipse(XMLSerializableNamedTuple):
