@@ -253,7 +253,7 @@ class RectangleCollection(XMLSerializableNamedTuple):
                       ('rectangles', [Rectangle])]
 
 
-def TestListImplicitTag(object):
+class TestListImplicitTag(object):
     def test_rectangles(self):
         rc = RectangleCollection('Arthur Jackson',
                                  [Rectangle(12, 34), Rectangle(56, 78)])
