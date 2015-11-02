@@ -426,3 +426,20 @@ class TestDeepError(object):
                                    'chairs', 'chair[3]',
                                    'dimensions']):
             building.as_xml()
+
+
+class TestBadMetaclassUse(object):
+    def test_no_xml_descriptor(self):
+        """
+        Normally, derivation from XMLSerializable ensures the class being built has an
+        'xml_descriptor' attribute.  To get full test coverage, we need to purposefully
+        attempt to create a class with XMLSerializableMeta as its metaclass but with no
+        'xml_descriptor'.  Furthermore, that test needs an intermediate base class
+        lacking the attribute.
+        """
+        with pytest.raises_regexp(ValueError, 'no "xml_descriptor" in "NoXmlDescriptor"'):
+            class Nop(object):
+                pass
+
+            class NoXmlDescriptor(six.with_metaclass(type(XMLSerializable), Nop)):
+                pass
