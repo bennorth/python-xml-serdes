@@ -12,6 +12,7 @@ AtomicTypes = (int, float, str,
                np.int8, np.int16, np.int32, np.int64,
                np.uint8, np.uint16, np.uint32, np.uint64)
 
+
 class ElementDescriptor(namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
     """
     Object which represents the mapping between an XML element and a
@@ -112,8 +113,9 @@ class Descriptor(namedtuple('_Descriptor', 'children')):
     @classmethod
     def new_from_abbreviated_args(cls, *args):
         raw_descriptor = cls._make(args)
-        return raw_descriptor._replace(children = list(map(ElementDescriptor.new_from_tuple,
-                                                           raw_descriptor.children)))
+        return raw_descriptor._replace(children=list(map(ElementDescriptor.new_from_tuple,
+                                                         raw_descriptor.children)))
+
 
 def SerDesDescriptor(children):
     """
@@ -129,6 +131,7 @@ def SerDesDescriptor(children):
     """
 
     return Descriptor.new_from_abbreviated_args(children)
+
 
 class TypeDescriptor(object):
     """
@@ -184,6 +187,7 @@ class TypeDescriptor(object):
         """
         raise NotImplementedError()
 
+
 class Atomic(TypeDescriptor):
     """
     A :class:`XMLserdes.TypeDescriptor` for handling 'atomic' types.  The concept
@@ -227,6 +231,7 @@ class Atomic(TypeDescriptor):
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
         return self.inner_type(elt.text)
+
 
 class List(TypeDescriptor):
     """
@@ -274,6 +279,7 @@ class List(TypeDescriptor):
         self.verify_tag(elt, expected_tag)
         return [self.contained_descriptor.extract_from(child_elt, self.contained_tag)
                 for child_elt in elt]
+
 
 class Instance(TypeDescriptor):
     """
@@ -338,6 +344,7 @@ class Instance(TypeDescriptor):
 
         return ctor(*ctor_args)
 
+
 class NumpyVectorBase(TypeDescriptor):
     def xml_element(self, obj, tag):
         if not isinstance(obj, np.ndarray):
@@ -355,7 +362,8 @@ class NumpyVectorBase(TypeDescriptor):
     def extract_from(self, elt, expected_tag):
         self.verify_tag(elt, expected_tag)
         elements_list = self.extract_elements_list(elt)
-        return np.array(elements_list, dtype = self.dtype)
+        return np.array(elements_list, dtype=self.dtype)
+
 
 class NumpyAtomicVector(NumpyVectorBase):
     """
@@ -393,6 +401,7 @@ class NumpyAtomicVector(NumpyVectorBase):
     def extract_elements_list(self, elt):
         s_elts = elt.text.split(',')
         return list(map(self.dtype, s_elts))
+
 
 class NumpyRecordVectorStructured(NumpyVectorBase):
     """
@@ -496,7 +505,8 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
     def extract_elements_list(self, elt):
         return list(map(self.extract_entry_element, elt))
 
-def NumpyVector(dtype, contained_tag = None):
+
+def NumpyVector(dtype, contained_tag=None):
     """
     Convenience function to instantiate an instance of the appropriate
     :class:`XMLserdes.TypeDescriptor` subclass chosen from
@@ -521,6 +531,7 @@ def NumpyVector(dtype, contained_tag = None):
     return (NumpyAtomicVector(dtype) if contained_tag is None
             else NumpyRecordVectorStructured(dtype, contained_tag))
 
+
 def Serialize(obj, tag):
     """
     Entry point function to serialize a Python object to an XML element.
@@ -533,6 +544,7 @@ def Serialize(obj, tag):
 
     instance_td = Instance(obj.__class__)
     return instance_td.xml_element(obj, tag)
+
 
 def Deserialize(cls, elt, expected_tag):
     """
@@ -548,6 +560,7 @@ def Deserialize(cls, elt, expected_tag):
 
     instance_td = Instance(cls)
     return instance_td.extract_from(elt, expected_tag)
+
 
 def NamedTuple(name, xml_descriptor):
     """

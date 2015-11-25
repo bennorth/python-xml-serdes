@@ -20,7 +20,7 @@ if not hasattr(TestCase, 'assertRaisesRegex'):
     TestCase.assertRaisesRegex = TestCase.assertRaisesRegexp
 
 def to_unicode(elt):
-    return etree.tostring(elt, encoding = etree_encoding)
+    return etree.tostring(elt, encoding=etree_encoding)
 
 
 class TestAtomicTypes(TestCase):
@@ -102,7 +102,7 @@ class TestNumpyBase:
     def test_bad_values(self):
         self.bad_value_1('hello', 'not ndarray')
         self.bad_value_1(np.array([[1, 2], [3, 4]]), 'not 1-dimensional')
-        self.bad_value_1(np.zeros((12,), dtype = np.float32), 'expecting dtype')
+        self.bad_value_1(np.zeros((12,), dtype=np.float32), 'expecting dtype')
 
 
 class TestNumpyAtomic(TestCase, TestNumpyBase):
@@ -110,7 +110,7 @@ class TestNumpyAtomic(TestCase, TestNumpyBase):
         self.td = X.NumpyAtomicVector(np.int32)
 
     def round_trip_1(self, dtype):
-        xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype = dtype)
+        xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
         td = X.NumpyAtomicVector(dtype)
         elt = td.xml_element(xs, 'values')
         xs_round_trip = td.extract_from(elt, 'values')
@@ -124,7 +124,7 @@ class TestNumpyAtomic(TestCase, TestNumpyBase):
             self.round_trip_1(dtype)
 
     def test_content(self):
-        xs = np.array([32, 42, 100, 99, -100], dtype = np.int32)
+        xs = np.array([32, 42, 100, 99, -100], dtype=np.int32)
         elt = self.td.xml_element(xs, 'values')
         self.assertEqual('<values>32,42,100,99,-100</values>', to_unicode(elt))
 
@@ -146,7 +146,7 @@ class TestNumpyRecordStructured(TestCase, TestNumpyBase):
         self.td = X.NumpyRecordVectorStructured(RectangleDType, 'rect')
 
     def test_1(self):
-        vals = np.array([(42, 100), (99, 12)], dtype = RectangleDType)
+        vals = np.array([(42, 100), (99, 12)], dtype=RectangleDType)
         xml_elt = self.td.xml_element(vals, 'rects')
         expected_xml = remove_whitespace(
             """<rects>
@@ -187,7 +187,9 @@ class TestDescriptors(TestCase):
                       'wd')
 
     def test_from_triple_function(self):
-        def getwd(x): return x.width
+        def getwd(x):
+            return x.width
+
         self.do_tests(X.ElementDescriptor.new_from_tuple(('wd', getwd, X.Atomic(int))),
                       'wd')
 
@@ -243,9 +245,9 @@ class TestComplexObject(TestCase):
                          ['pointy', 'anodized', 'black'],
                          ['bevelled', 'twisted', 'plastic-coated']],
                         ['red', 'burnt-ochre', 'orange'],
-                        np.array([99, 42, 123], dtype = np.uint32),
+                        np.array([99, 42, 123], dtype=np.uint32),
                         Rectangle(210, 297),
-                        np.array([(20, 30), (40, 50)], dtype = RectangleDType))
+                        np.array([(20, 30), (40, 50)], dtype=RectangleDType))
         xml = X.Serialize(layout, 'layout')
         xml_str = to_unicode(xml)
         expected_str = remove_whitespace(

@@ -15,8 +15,12 @@ try:
     etree_encoding = unicode
 except NameError:
     etree_encoding = str
+
+
 def to_unicode(elt):
-    return etree.tostring(elt, encoding = etree_encoding)
+    return etree.tostring(elt, encoding=etree_encoding)
+
+
 def remove_whitespace(s):
     return re.sub(r'\s+', '', s)
 
@@ -34,7 +38,7 @@ class TestNamedTupleConstructor(TestCase):
                          self.FancyRectangle._fields)
 
     def make_example(self):
-        return self.FancyRectangle(99, 100, 'red', np.array([3, 4, 5], dtype = np.uint8))
+        return self.FancyRectangle(99, 100, 'red', np.array([3, 4, 5], dtype=np.uint8))
 
     def test_construction(self):
         obj = self.make_example()
