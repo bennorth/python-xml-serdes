@@ -32,7 +32,13 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.ifconfig',
+    'sphinx.ext.doctest',
 ]
+
+doctest_global_setup = '''
+from xmlserdes import *
+import collections'''
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
