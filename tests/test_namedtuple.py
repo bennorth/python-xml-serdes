@@ -1,3 +1,5 @@
+# -*- coding: utf-8  -*-
+
 from lxml import etree
 import numpy as np
 import re
