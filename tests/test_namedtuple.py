@@ -6,8 +6,6 @@ import re
 
 import xmlserdes as X
 
-import unittest
-from unittest import TestCase
 
 A_int16 = X.Atomic(np.int16)
 A_int32 = X.Atomic(np.int32)
@@ -26,8 +24,9 @@ def to_unicode(elt):
 def remove_whitespace(s):
     return re.sub(r'\s+', '', s)
 
-class TestNamedTupleConstructor(TestCase):
-    def setUp(self):
+
+class TestNamedTupleConstructor(object):
+    def setup_method(self, method):
         xml_descriptor = X.SerDesDescriptor([('width', A_int32),
                                              ('height', A_int16),
                                              ('colour', A_str),
@@ -35,19 +34,18 @@ class TestNamedTupleConstructor(TestCase):
         self.FancyRectangle = X.NamedTuple('FancyRectangle', xml_descriptor)
 
     def test_class_properties(self):
-        self.assertEqual('FancyRectangle', self.FancyRectangle.__name__)
-        self.assertEqual(('width', 'height', 'colour', 'stripes'),
-                         self.FancyRectangle._fields)
+        assert self.FancyRectangle.__name__ == 'FancyRectangle'
+        assert self.FancyRectangle._fields == ('width', 'height', 'colour', 'stripes')
 
     def make_example(self):
         return self.FancyRectangle(99, 100, 'red', np.array([3, 4, 5], dtype=np.uint8))
 
     def test_construction(self):
         obj = self.make_example()
-        self.assertEqual(99, obj.width)
-        self.assertEqual(100, obj.height)
-        self.assertEqual('red', obj.colour)
-        self.assertEqual([3, 4, 5], list(obj.stripes))
+        assert obj.width == 99
+        assert obj.height == 100
+        assert obj.colour == 'red'
+        assert list(obj.stripes) == [3, 4, 5]
 
     def test_serialization(self):
         obj = self.make_example()
@@ -60,7 +58,7 @@ class TestNamedTupleConstructor(TestCase):
                  <colour>red</colour>
                  <stripes>3,4,5</stripes>
                </fancy-rect>''')
-        self.assertEqual(exp_str, xml_str)
+        assert xml_str == exp_str
 
     def test_deserialization(self):
         xml_str = '''<fancy-rect>
@@ -71,13 +69,9 @@ class TestNamedTupleConstructor(TestCase):
                      </fancy-rect>'''
         xml_elt = etree.fromstring(xml_str)
         obj = X.Deserialize(self.FancyRectangle, xml_elt, 'fancy-rect')
-        self.assertEqual(42, obj.width)
-        self.assertEqual(99, obj.height)
-        self.assertEqual('blue', obj.colour)
-        self.assertEqual(np.uint8, obj.stripes.dtype)
-        self.assertEqual(3, obj.stripes.size)
-        self.assertTrue(np.all(np.array([30, 40, 50], dtype = np.uint8) == obj.stripes))
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert obj.width == 42
+        assert obj.height == 99
+        assert obj.colour == 'blue'
+        assert obj.stripes.dtype is np.dtype(np.uint8)
+        assert obj.stripes.size == 3
+        assert np.all(obj.stripes == np.array([30, 40, 50], dtype=np.uint8))
