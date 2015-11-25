@@ -8,11 +8,6 @@ from operator import attrgetter
 import numpy as np
 from lxml import etree
 
-AtomicTypes = (int, float, str,
-               np.int8, np.int16, np.int32, np.int64,
-               np.uint8, np.uint16, np.uint32, np.uint64)
-
-
 class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
     """
     Object which represents the mapping between an XML element and a
