@@ -7,7 +7,7 @@ from unittest import TestCase
 
 from lxml import etree
 import numpy as np
-import XMLserdes as X
+import xmlserdes as X
 
 import re
 

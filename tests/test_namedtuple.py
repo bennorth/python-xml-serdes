@@ -4,7 +4,7 @@ from lxml import etree
 import numpy as np
 import re
 
-import XMLserdes as X
+import xmlserdes as X
 
 import unittest
 from unittest import TestCase
