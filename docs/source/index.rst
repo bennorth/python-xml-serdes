@@ -15,28 +15,28 @@ done.
 Top-level functions
 -------------------
 
-.. autofunction:: XMLserdes.Serialize
-.. autofunction:: XMLserdes.Deserialize
+.. autofunction:: xmlserdes.Serialize
+.. autofunction:: xmlserdes.Deserialize
 
 
 Classes and functions
 ---------------------
 
-.. autoclass:: XMLserdes.ElementDescriptor
+.. autoclass:: xmlserdes.ElementDescriptor
    :members:
    :member-order: bysource
 
-.. autoclass:: XMLserdes.Descriptor
+.. autoclass:: xmlserdes.Descriptor
 
-.. autofunction:: XMLserdes.SerDesDescriptor
+.. autofunction:: xmlserdes.SerDesDescriptor
 
-.. autoclass:: XMLserdes.TypeDescriptor
+.. autoclass:: xmlserdes.TypeDescriptor
    :members:
 
-.. autoclass:: XMLserdes.Atomic
-.. autoclass:: XMLserdes.List
-.. autoclass:: XMLserdes.Instance
-.. autoclass:: XMLserdes.NumpyAtomicVector
-.. autoclass:: XMLserdes.NumpyRecordVectorStructured
+.. autoclass:: xmlserdes.Atomic
+.. autoclass:: xmlserdes.List
+.. autoclass:: xmlserdes.Instance
+.. autoclass:: xmlserdes.NumpyAtomicVector
+.. autoclass:: xmlserdes.NumpyRecordVectorStructured
 
-.. autofunction:: XMLserdes.NumpyVector
+.. autofunction:: xmlserdes.NumpyVector

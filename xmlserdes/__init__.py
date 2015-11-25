@@ -26,11 +26,11 @@ class ElementDescriptor(namedtuple('_ElementDescriptor', 'tag value_from type_de
     :type value_from: callable
     :param type_descr: type-descriptor which can de/serialize the Python object
         from/to the contents of an XML element
-    :type type_descr: subclass of :class:`XMLserdes.TypeDescriptor`
+    :type type_descr: subclass of :class:`xmlserdes.TypeDescriptor`
 
     A more convenient way of constructing a
-    :class:`XMLserdes.ElementDescriptor` is to use the
-    :meth:`XMLserdes.ElementDescriptor.new_from_tuple` method.
+    :class:`xmlserdes.ElementDescriptor` is to use the
+    :meth:`xmlserdes.ElementDescriptor.new_from_tuple` method.
     """
 
     # TODO Better names.  'SimpleDescriptor', 'CompoundDescriptor'? Sth to indicate
@@ -38,7 +38,7 @@ class ElementDescriptor(namedtuple('_ElementDescriptor', 'tag value_from type_de
     @classmethod
     def new_from_tuple(cls, tup):
         """
-        Construct a new :class:`XMLserdes.ElementDescriptor` from a two-
+        Construct a new :class:`xmlserdes.ElementDescriptor` from a two-
         or three-element tuple, covering the most common cases.
 
         :param tuple tup: two- or three-element tuple describing required instance
@@ -103,10 +103,10 @@ class Descriptor(namedtuple('_Descriptor', 'children')):
     should be de/serialized from/to the contents of an XML element.
 
     :ivar children: list of children, each as a
-        :class:`XMLserdes.ElementDescriptor` instance
+        :class:`xmlserdes.ElementDescriptor` instance
 
     Most conveniently constructed via the
-    :func:`XMLserdes.SerDesDescriptor` function.
+    :func:`xmlserdes.SerDesDescriptor` function.
     """
 
     # TODO: Add 'ctor_name' slot
@@ -119,15 +119,15 @@ class Descriptor(namedtuple('_Descriptor', 'children')):
 
 def SerDesDescriptor(children):
     """
-    Convenience function for constructing an instance of :class:`XMLserdes.Descriptor`.
+    Convenience function for constructing an instance of :class:`xmlserdes.Descriptor`.
 
     :param children: descriptions of property/sub-element mappings; each
         should be a tuple suitable for passing to
-        :meth:`XMLserdes.ElementDescriptor.new_from_tuple`.
+        :meth:`xmlserdes.ElementDescriptor.new_from_tuple`.
 
     :type children: iterable of tuples
 
-    :return: New instance of :class:`XMLserdes.Descriptor`.
+    :return: New instance of :class:`xmlserdes.Descriptor`.
     """
 
     return Descriptor.new_from_abbreviated_args(children)
@@ -135,7 +135,7 @@ def SerDesDescriptor(children):
 
 class TypeDescriptor(object):
     """
-    Instances of classes derived from :class:`XMLserdes.TypeDescriptor` support
+    Instances of classes derived from :class:`xmlserdes.TypeDescriptor` support
     two operations on objects of a particular type:
 
     - :func:`xml_element` --- serialize a given object as an XML element.
@@ -145,11 +145,11 @@ class TypeDescriptor(object):
 
     This base type is not useful.  Concrete derived types are:
 
-    - :class:`XMLserdes.Atomic` --- fundamental type such as integer or string.
-    - :class:`XMLserdes.List` --- homogeneous list of elements.
-    - :class:`XMLserdes.Instance` --- instance of class, with fixed list of fields.
-    - :class:`XMLserdes.NumpyAtomicVector` --- Numpy vector with atomic ``dtype``.
-    - :class:`XMLserdes.NumpyRecordVectorStructured` --- Numpy vector of record ``dtype``.
+    - :class:`xmlserdes.Atomic` --- fundamental type such as integer or string.
+    - :class:`xmlserdes.List` --- homogeneous list of elements.
+    - :class:`xmlserdes.Instance` --- instance of class, with fixed list of fields.
+    - :class:`xmlserdes.NumpyAtomicVector` --- Numpy vector with atomic ``dtype``.
+    - :class:`xmlserdes.NumpyRecordVectorStructured` --- Numpy vector of record ``dtype``.
 
     See those classes' individual docstrings for more details.
     """
@@ -169,7 +169,7 @@ class TypeDescriptor(object):
         :type tag: str
         :rtype: XML element (as :class:`etree.Element` instance)
 
-        See examples under subclasses of :class:`XMLserdes.TypeDescriptor` for details.
+        See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
         raise NotImplementedError()
 
@@ -190,14 +190,14 @@ class TypeDescriptor(object):
 
 class Atomic(TypeDescriptor):
     """
-    A :class:`XMLserdes.TypeDescriptor` for handling 'atomic' types.  The concept
+    A :class:`xmlserdes.TypeDescriptor` for handling 'atomic' types.  The concept
     of an 'atomic' type is not explicitly defined, but anything which
     can be faithfully represented as a string via ``str()``, and can be
     parsed from a string using the type name, will work.
 
     :param inner_type: The native Python atomic type to be serialized and deserialized.
 
-    For example, an :class:`XMLserdes.Atomic` type-descriptor to handle an integer:
+    For example, an :class:`xmlserdes.Atomic` type-descriptor to handle an integer:
 
     >>> atomic_type_descriptor = Atomic(int)
 
@@ -235,15 +235,15 @@ class Atomic(TypeDescriptor):
 
 class List(TypeDescriptor):
     """
-    A :class:`XMLserdes.TypeDescriptor` for handling homogeneous lists of
+    A :class:`xmlserdes.TypeDescriptor` for handling homogeneous lists of
     elements.
 
     :param contained_descriptor: specification of the type of each element in the lists
-    :type contained_descriptor: :class:`XMLserdes.TypeDescriptor`
+    :type contained_descriptor: :class:`xmlserdes.TypeDescriptor`
     :param contained_tag: tag for each sub-element of the sequence element
     :type contained_tag: str
 
-    For example, a :class:`XMLserdes.List` type-descriptor to handle lists of
+    For example, a :class:`xmlserdes.List` type-descriptor to handle lists of
     integers, where each integer in the list will be represented by an
     XML element with tag ``answer``.
 
@@ -283,11 +283,11 @@ class List(TypeDescriptor):
 
 class Instance(TypeDescriptor):
     """
-    A :class:`XMLserdes.TypeDescriptor` for handling homogeneous instances of
+    A :class:`xmlserdes.TypeDescriptor` for handling homogeneous instances of
     a 'complex' class having an 'XML descriptor'.
 
     :param cls: class whose instances are to be de/serialized; must have
-        attribute named ``XML_Descriptor`` of type :class:`XMLserdes.Descriptor`
+        attribute named ``XML_Descriptor`` of type :class:`xmlserdes.Descriptor`
 
     .. note:: Possible to-do is allow separate passing-in of descriptor
         rather than requiring it to be an attribute of the to-be-serialized
@@ -367,7 +367,7 @@ class NumpyVectorBase(TypeDescriptor):
 
 class NumpyAtomicVector(NumpyVectorBase):
     """
-    A :class:`XMLserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
+    A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is an
     'atomic' type.  Serialization is done as a CSV string.  Complex
     types are not supported.
@@ -405,7 +405,7 @@ class NumpyAtomicVector(NumpyVectorBase):
 
 class NumpyRecordVectorStructured(NumpyVectorBase):
     """
-    A :class:`XMLserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
+    A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is a
     Numpy record type.  Currently, the record-type's fields must all be
     scalar atomic types.
@@ -509,14 +509,14 @@ class NumpyRecordVectorStructured(NumpyVectorBase):
 def NumpyVector(dtype, contained_tag=None):
     """
     Convenience function to instantiate an instance of the appropriate
-    :class:`XMLserdes.TypeDescriptor` subclass chosen from
+    :class:`xmlserdes.TypeDescriptor` subclass chosen from
 
-    - :class:`XMLserdes.NumpyAtomicVector`
-    - :class:`XMLserdes.NumpyRecordVectorStructured`
+    - :class:`xmlserdes.NumpyAtomicVector`
+    - :class:`xmlserdes.NumpyRecordVectorStructured`
 
     If a ``contained_tag`` is given, a
-    :class:`XMLserdes.NumpyRecordVectorStructured` is created.  If not, a
-    :class:`XMLserdes.NumpyAtomicVector`.
+    :class:`xmlserdes.NumpyRecordVectorStructured` is created.  If not, a
+    :class:`xmlserdes.NumpyAtomicVector`.
 
     >>> import numpy as np
     >>> int_vector_td = NumpyVector(np.int32)
@@ -571,11 +571,11 @@ def NamedTuple(name, xml_descriptor):
 
     :param str name: the ``__name__`` of the defined class
 
-    :type xml_descriptor: instance of :class:`XMLserdes.Descriptor`
+    :type xml_descriptor: instance of :class:`xmlserdes.Descriptor`
     :param xml_descriptor: list of field definitions
 
     The field names of the resulting class are taken from the ``tag``
-    fields of the individual :class:`XMLserdes.ElementDescriptor`
+    fields of the individual :class:`xmlserdes.ElementDescriptor`
     instances within ``xml_descriptor``, and so the ``value_from`` field
     of each element-descriptor must be (equivalent to)
     ``attrgetter(tag)``.  This restriction might be lifted in future.
