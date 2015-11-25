@@ -6,3 +6,5 @@ htmlcov/
 .coverage
 .junit/
 docs/build/
+build/
+notes.txt
