@@ -1,9 +1,8 @@
 # -*- coding: utf-8  -*-
 
-from collections import namedtuple
-
 import pytest
 
+import collections
 
 from lxml import etree
 import numpy as np
@@ -45,11 +44,11 @@ class TestListTypes(object):
         assert val_round_trip == val
 
 
-class BareRectangle(namedtuple('BareRectangle', 'width height')):
+class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
     pass
 
 
-class Rectangle(namedtuple('BareRectangle', 'width height')):
+class Rectangle(collections.namedtuple('BareRectangle', 'width height')):
     XML_Descriptor = X.SerDesDescriptor([('width', X.Atomic(int)),
                                          ('height', X.Atomic(int))])
 
@@ -205,24 +204,24 @@ class TestObject(object):
         self.rect = Rectangle(42, 123)
 
     def test_1(self):
-        serialized_xml = X.Serialize(self.rect, 'rect')
+        serialized_xml = X.serialize(self.rect, 'rect')
         assert to_unicode(serialized_xml) == expected_rect_xml(42, 123)
 
-        rect_round_trip = X.Deserialize(Rectangle, serialized_xml, 'rect')
+        rect_round_trip = X.deserialize(Rectangle, serialized_xml, 'rect')
         assert rect_round_trip == self.rect
 
     def test_bad_n_children(self):
         bad_xml = etree.fromstring('<rect><width>99</width></rect>')
         with pytest.raises_regexp(ValueError, 'expecting 2 children but got 1'):
-            X.Deserialize(Rectangle, bad_xml, 'rect')
+            X.deserialize(Rectangle, bad_xml, 'rect')
 
     def test_bad_root_tag(self):
         bad_xml = etree.fromstring(expected_rect_xml(42, 100))
         with pytest.raises_regexp(ValueError, 'expected tag .* but got'):
-            X.Deserialize(Rectangle, bad_xml, 'rectangle')
+            X.deserialize(Rectangle, bad_xml, 'rectangle')
 
 
-class Layout(namedtuple('Layout_', 'colour cornerprops stripes ids shape components')):
+class Layout(collections.namedtuple('Layout_', 'colour cornerprops stripes ids shape components')):
     XML_Descriptor = X.SerDesDescriptor(
         [('colour', X.Atomic(str)),
          ('corner-properties', 'cornerprops', X.List(X.List(X.Atomic(str), 'prop'), 'corner')),
@@ -243,7 +242,7 @@ class TestComplexObject(object):
                         np.array([99, 42, 123], dtype=np.uint32),
                         Rectangle(210, 297),
                         np.array([(20, 30), (40, 50)], dtype=RectangleDType))
-        xml = X.Serialize(layout, 'layout')
+        xml = X.serialize(layout, 'layout')
         xml_str = to_unicode(xml)
         expected_str = remove_whitespace(
             """<layout>
@@ -290,4 +289,4 @@ class TestComplexObject(object):
                  </components>
                </layout>""")
         assert xml_str == expected_str
-        X.Deserialize(Layout, xml, 'layout')
+        X.deserialize(Layout, xml, 'layout')

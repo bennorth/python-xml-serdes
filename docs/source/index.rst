@@ -15,8 +15,8 @@ done.
 Top-level functions
 -------------------
 
-.. autofunction:: xmlserdes.Serialize
-.. autofunction:: xmlserdes.Deserialize
+.. autofunction:: xmlserdes.serialize
+.. autofunction:: xmlserdes.deserialize
 
 
 Classes and functions

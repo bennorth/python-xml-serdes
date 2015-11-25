@@ -31,7 +31,7 @@ class TestNamedTupleConstructor(object):
                                              ('height', A_int16),
                                              ('colour', A_str),
                                              ('stripes', X.NumpyAtomicVector(np.uint8))])
-        self.FancyRectangle = X.NamedTuple('FancyRectangle', xml_descriptor)
+        self.FancyRectangle = X.namedtuple('FancyRectangle', xml_descriptor)
 
     def test_class_properties(self):
         assert self.FancyRectangle.__name__ == 'FancyRectangle'
@@ -49,7 +49,7 @@ class TestNamedTupleConstructor(object):
 
     def test_serialization(self):
         obj = self.make_example()
-        xml_elt = X.Serialize(obj, 'fancy-rect')
+        xml_elt = X.serialize(obj, 'fancy-rect')
         xml_str = to_unicode(xml_elt)
         exp_str = remove_whitespace(
             '''<fancy-rect>
@@ -68,7 +68,7 @@ class TestNamedTupleConstructor(object):
                        <stripes>30,40,50</stripes>
                      </fancy-rect>'''
         xml_elt = etree.fromstring(xml_str)
-        obj = X.Deserialize(self.FancyRectangle, xml_elt, 'fancy-rect')
+        obj = X.deserialize(self.FancyRectangle, xml_elt, 'fancy-rect')
         assert obj.width == 42
         assert obj.height == 99
         assert obj.colour == 'blue'

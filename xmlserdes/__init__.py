@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from collections import namedtuple
+import collections
 from operator import attrgetter
 
 import numpy as np
@@ -13,7 +13,7 @@ AtomicTypes = (int, float, str,
                np.uint8, np.uint16, np.uint32, np.uint64)
 
 
-class ElementDescriptor(namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
+class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
     """
     Object which represents the mapping between an XML element and a
     property of a Python object, together with the native Python type of
@@ -96,7 +96,7 @@ class ElementDescriptor(namedtuple('_ElementDescriptor', 'tag value_from type_de
         return self.type_descr.extract_from(elt, self.tag)
 
 
-class Descriptor(namedtuple('_Descriptor', 'children')):
+class Descriptor(collections.namedtuple('_Descriptor', 'children')):
     """
     Representation of a list of object-property/sub-XML-element
     mappings.  Used to represent how instances of a particular class
@@ -532,7 +532,7 @@ def NumpyVector(dtype, contained_tag=None):
             else NumpyRecordVectorStructured(dtype, contained_tag))
 
 
-def Serialize(obj, tag):
+def serialize(obj, tag):
     """
     Entry point function to serialize a Python object to an XML element.
 
@@ -546,7 +546,7 @@ def Serialize(obj, tag):
     return instance_td.xml_element(obj, tag)
 
 
-def Deserialize(cls, elt, expected_tag):
+def deserialize(cls, elt, expected_tag):
     """
     Entry point function to deserialize a Python object from an XML element.
 
@@ -562,7 +562,7 @@ def Deserialize(cls, elt, expected_tag):
     return instance_td.extract_from(elt, expected_tag)
 
 
-def NamedTuple(name, xml_descriptor):
+def namedtuple(name, xml_descriptor):
     """
     Define a class extended from :class:`collections.namedtuple` having
     fields matching those defined in ``xml_descriptor``.  The
@@ -582,6 +582,6 @@ def NamedTuple(name, xml_descriptor):
     """
 
     field_names = [ed.tag for ed in xml_descriptor.children]
-    cls = namedtuple(name, field_names)
+    cls = collections.namedtuple(name, field_names)
     cls.XML_Descriptor = xml_descriptor
     return cls
