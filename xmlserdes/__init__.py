@@ -8,6 +8,8 @@ from operator import attrgetter
 import numpy as np
 from lxml import etree
 
+import xmlserdes.utils
+
 class ElementDescriptor(collections.namedtuple('_ElementDescriptor', 'tag value_from type_descr')):
     """
     Object which represents the mapping between an XML element and a
