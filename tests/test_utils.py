@@ -1,7 +1,5 @@
 # -*- coding: utf-8  -*-
 
-import pytest
-
 import xmlserdes.utils as XmlUtils
 
 import lxml.etree
