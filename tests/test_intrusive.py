@@ -115,6 +115,16 @@ class TestNestedNamedTuple(object):
         p1 = Pattern.from_xml(p_xml, tag_for_expected)
         assert p1 == p
 
+    @pytest.mark.parametrize('tag, kwargs', [
+        (None, {}),
+        ('circle-picture', {'pretty_print': False})
+    ])
+    def test_as_xml_str(self, tag, kwargs):
+        if 'pretty_print' not in kwargs:
+            kwargs['pretty_print'] = True
+        p = Pattern(33, [Circle(10, 'blue'), Circle(12, 'red')])
+        assert str_from_xml_elt(p.as_xml(tag), **kwargs) == p.as_xml_str(tag, **kwargs)
+
 
 class RectangleCollection(XMLSerializableNamedTuple):
     xml_descriptor = [('creator', str),
