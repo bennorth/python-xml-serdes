@@ -82,3 +82,10 @@ def namedtuple(name, xml_descriptor):
     cls = collections.namedtuple(name, field_names)
     cls.xml_descriptor = xml_descriptor
     return cls
+
+
+__all__ = [
+    'TypeDescriptor', 'Atomic', 'AtomicBool', 'List', 'Instance', 'DTypeScalar',
+    'NumpyAtomicVector', 'NumpyRecordVectorStructured', 'NumpyVector', 'ElementDescriptor',
+    'XMLSerializable', 'XMLSerializableNamedTuple'
+]
