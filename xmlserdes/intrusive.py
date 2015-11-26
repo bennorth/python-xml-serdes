@@ -58,6 +58,14 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         instance_td = Instance(self.__class__)  # TODO: Cache this t.d. in class?
         return instance_td.xml_element(self, tag)
 
+    def as_xml_str(self, tag=None, **kwargs):
+        """
+        Return an XML element representing ``self`` rendered as string. Defaults to
+        pretty printing unless specified otherwise.
+        """
+        kwargs['pretty_print'] = kwargs.get('pretty_print', True)
+        return xmlserdes.utils.str_from_xml_elt(self.as_xml(tag=tag), **kwargs)
+
     @classmethod
     def from_xml(cls, xml_elt, expected_tag):
         """
