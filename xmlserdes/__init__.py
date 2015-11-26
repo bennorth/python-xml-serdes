@@ -84,8 +84,10 @@ def namedtuple(name, xml_descriptor):
     return cls
 
 
+from xmlserdes._version import __version__
+
 __all__ = [
     'TypeDescriptor', 'Atomic', 'AtomicBool', 'List', 'Instance', 'DTypeScalar',
     'NumpyAtomicVector', 'NumpyRecordVectorStructured', 'NumpyVector', 'ElementDescriptor',
-    'XMLSerializable', 'XMLSerializableNamedTuple'
+    'XMLSerializable', 'XMLSerializableNamedTuple', '__version__'
 ]
