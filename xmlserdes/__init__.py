@@ -2,22 +2,13 @@
 
 from __future__ import print_function
 
-from xmlserdes.type_descriptors import \
-    TypeDescriptor, Atomic, AtomicBool, List, Instance, \
-    DTypeScalar, \
-    NumpyAtomicVector, NumpyRecordVectorStructured, NumpyVector
+import collections
 
 from xmlserdes.element_descriptor import ElementDescriptor
-
 from xmlserdes.intrusive import XMLSerializable, XMLSerializableNamedTuple
-
-import collections
-from operator import attrgetter
-
-import numpy as np
-from lxml import etree
-
-import xmlserdes.utils
+from xmlserdes.type_descriptors import (
+    TypeDescriptor, Atomic, AtomicBool, List, Instance, DTypeScalar, NumpyAtomicVector,
+    NumpyRecordVectorStructured, NumpyVector)
 
 
 def SerDesDescriptor(children):
