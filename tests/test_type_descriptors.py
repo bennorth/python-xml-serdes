@@ -101,8 +101,8 @@ class TestListTypes(object):
     def test_type_descriptor(self, td):
         val = [42, 100, 99, 123]
         elt = td.xml_element(val, 'widths')
-        assert XU.str_from_xml_elt(elt) == \
-               '<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val)
+        assert (XU.str_from_xml_elt(elt) ==
+                '<widths>%s</widths>' % ''.join('<wd>%d</wd>' % x for x in val))
         val_round_trip = td.extract_from(elt, 'widths')
         assert val_round_trip == val
 
