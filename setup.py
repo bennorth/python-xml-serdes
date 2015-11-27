@@ -11,6 +11,5 @@ setup(
     name='xml-serdes',
     version=__version__,
     packages=find_packages(),
-    install_requires=['lxml', 'numpy', 'six'],
-    package_data = {}
+    install_requires=['lxml', 'numpy', 'six']
 )
