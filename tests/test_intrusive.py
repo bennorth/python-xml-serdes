@@ -10,6 +10,80 @@ from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 from collections import OrderedDict
 import numpy as np
 from lxml import etree
+import sys
+import six
+
+
+class AutoSubclassesMeta(type):
+    """
+    Create 'ochre' and 'purple' subclasses of any classes having this meta-class.
+
+    But only one level deep, to avoid engaging sorcerer's apprentice mode.
+    """
+    def __new__(meta, cls_name, bases, cls_dict):
+        cls = super(AutoSubclassesMeta, meta).__new__(meta, cls_name, bases, cls_dict)
+        cls_is_base = not hasattr(cls, 'colour')
+        if cls_is_base:
+            cls.__subclass_from_colour__ = {}
+            module_name = cls.__module__
+            module = sys.modules[module_name]
+            for colour in ['ochre', 'purple']:
+                subcls_name = '_'.join([cls_name, colour])
+                subcls = type(subcls_name, (cls,), {'colour': colour})
+                subcls.__module__ = module_name
+                setattr(module, subcls_name, subcls)
+                cls.__subclass_from_colour__[colour] = subcls
+        return cls
+
+    def __getitem__(cls, key):
+        return cls.__subclass_from_colour__[key]
+
+
+class XMLSerdesAutoSubclassesMeta(AutoSubclassesMeta, type(XMLSerializableNamedTuple)):
+    pass
+
+
+class PaintPot(six.with_metaclass(XMLSerdesAutoSubclassesMeta, XMLSerializableNamedTuple)):
+    xml_descriptor = [('diameter', int)]
+    xml_default_tag = 'paint-pot'
+
+    @classmethod
+    def height(cls):
+        return 5
+
+
+class TestPaintPotSubclasses(object):
+    @staticmethod
+    def expected_xml(tag):
+        return '<{0}><diameter>100</diameter></{0}>'.format(tag)
+
+    def parametrize_for_colours():
+        # flake8 doesn't realise that PaintPot_ochre and PaintPot_purple
+        # have been magically created; can't really blame it.  Hence the
+        # 'noqa' annotations.
+        return pytest.mark.parametrize('colour, paint_pot_cls',
+                                       [('ochre', PaintPot_ochre),  # noqa
+                                        ('purple', PaintPot_purple)],  # noqa
+                                       ids=['ochre', 'purple'])
+
+    @parametrize_for_colours()
+    def test_subclass_properties(self, colour, paint_pot_cls):
+        assert paint_pot_cls.height() == 5
+        assert paint_pot_cls.colour == colour
+        assert PaintPot[colour] is paint_pot_cls
+
+    @parametrize_for_colours()
+    @pytest.mark.parametrize(
+        'tag,tag_for_expected',
+        [(None, 'paint-pot'), ('pot-of-paint', 'pot-of-paint')],
+        ids=['default-tag', 'explicit-tag'])
+    def test_round_trip(self, colour, paint_pot_cls, tag, tag_for_expected):
+        pp = paint_pot_cls(100)
+        pp_xml = pp.as_xml(tag)
+        assert str_from_xml_elt(pp_xml) == self.expected_xml(tag_for_expected)
+        pp1 = paint_pot_cls.from_xml(pp_xml, tag_for_expected)
+        assert type(pp1) is type(pp)
+        assert pp1 == pp
 
 
 class Rectangle(XMLSerializable):
@@ -53,6 +127,32 @@ class TestRectangle(object):
         r1 = Rectangle.from_xml(r_xml, tag_for_expected)
         assert r1 == r
 
+    def test_derived_xml_inheriting_tag(self):
+        class RoundedRectangle(Rectangle):
+            corner_radius = 5
+
+        rounded_rect = RoundedRectangle(42, 100)
+        assert rounded_rect.corner_radius == 5
+        assert rounded_rect.as_xml_str(pretty_print=False) == self.expected_xml('rect')
+
+    def test_derived_xml_overriding_tag(self):
+        class RoundedRectangle(Rectangle):
+            xml_default_tag = 'round-rect'
+            corner_radius = 5
+
+        rounded_rect = RoundedRectangle(42, 100)
+        assert rounded_rect.as_xml_str(pretty_print=False) == self.expected_xml('round-rect')
+
+
+class TestNullaryNamedTuple(object):
+    def test_xml(self):
+        class NullaryNamedTuple(XMLSerializableNamedTuple):
+            pass
+
+        nullary_tuple = NullaryNamedTuple()
+        xml_str = nullary_tuple.as_xml_str(pretty_print=False)
+        assert xml_str == '<NullaryNamedTuple/>'
+
 
 class Circle(XMLSerializableNamedTuple):
     xml_descriptor = [('radius', np.uint16), ('colour', str)]
@@ -86,6 +186,14 @@ class TestNamedTuple(object):
         assert str_from_xml_elt(c_xml) == self.expected_xml(tag_for_expected)
         c1 = Circle.from_xml(c_xml, tag_for_expected)
         assert c1 == c
+
+    def test_derived_xml_inheriting_tag(self):
+        class ThickCircle(Circle):
+            line_thickness = 18
+
+        c = ThickCircle(42, 'orange')
+        assert c.line_thickness == 18
+        assert c.as_xml_str(pretty_print=False) == self.expected_xml('circle')
 
 
 class RightAngledTriangle(XMLSerializableNamedTuple):
@@ -212,16 +320,10 @@ class TestBadNamedTupleConstruction(object):
             xml_descriptor = [('foo', lambda x: x.foo, str)]
         return Foo
 
-    def build_bad_class_no_descr():
-        class Foo(XMLSerializableNamedTuple):
-            pass
-        return Foo
-
     @pytest.mark.parametrize(
         'class_fun,exc_re',
-        [(build_bad_class_wrong_value_from_slot, 'must be simple'),
-         (build_bad_class_no_descr, 'no "xml_descriptor"')],
-        ids=['wrong-value-from-slot', 'no-xml-descriptor'])
+        [(build_bad_class_wrong_value_from_slot, 'must be simple')],
+        ids=['wrong-value-from-slot'])
     #
     def test_bad_construction(self, class_fun, exc_re):
         with pytest.raises_regexp(ValueError, exc_re):

@@ -22,8 +22,33 @@ class XMLSerializableMeta(type):
             for elt_descr in xml_descriptor
             if elt_descr.value_slot is not None)
 
+    @classmethod
+    def _find_xml_descriptor(meta, cls_name, bases, cls_dict):
+        """
+        Find an 'xml_descriptor' attribute, first by looking within the direct
+        ``cls_dict``, and then the ``bases``.  Return the pair
+
+            ``descriptor``, ``inherited_p``
+
+        where ``descriptor`` is the value of the ``xml_descriptor`` attribute found, and
+        ``inherited_p`` indicates whether the attribute was found somewhere in
+        ``bases``.  (And so ``inherited_p`` is false if the ``xml_descriptor`` attribute
+        was found directly in ``cls_dict``.)
+
+        If no ``xml_descriptor`` is found anywhere, raise a ``ValueError``.
+        """
+        if 'xml_descriptor' in cls_dict:
+            return cls_dict['xml_descriptor'], False
+
+        for b in bases:
+            if hasattr(b, 'xml_descriptor'):
+                return getattr(b, 'xml_descriptor'), True
+
+        raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
+
     def __new__(meta, cls_name, bases, cls_dict):
-        xml_descriptor = meta._expand(cls_dict['xml_descriptor'])
+        raw_xml_descriptor, inherited_p = meta._find_xml_descriptor(cls_name, bases, cls_dict)
+        xml_descriptor = raw_xml_descriptor if inherited_p else meta._expand(raw_xml_descriptor)
         cls_dict['xml_descriptor'] = xml_descriptor
 
         # Build map tag-name -> slot-name where 'slot-name' makes
@@ -102,18 +127,39 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
 
 class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
-    def __new__(meta, cls_name, bases, cls_dict):
-        if 'xml_descriptor' not in cls_dict:
-            raise ValueError('no "xml_descriptor" in "%s"' % cls_name)
+    @staticmethod
+    def _partition_dict(src_dict, keys):
+        """
+        Partition the items in ``src_dict`` according to whether the key of the item is
+        in ``keys``.  Two new dictionaries are returned:
 
-        cls_dict.setdefault('xml_default_tag', cls_name)
-        if cls_dict['xml_default_tag'] is None:
-            cls_dict.pop('xml_default_tag')
+            ``matching_keys_dict``, ``non_matching_keys_dict``
+
+        where ``matching_keys_dict`` consists of those items of ``src_dict`` whose keys
+        are in ``keys``, and ``non_matching_keys_dict`` consists of those items of
+        ``src_dict`` whose keys are NOT in ``keys``.  The passed-in ``src_dict`` is not
+        mutated.
+        """
+        matching_keys_dict = {}
+        non_matching_keys_dict = {}
+        for k, v in src_dict.items():
+            dest_dict = matching_keys_dict if k in keys else non_matching_keys_dict
+            dest_dict[k] = v
+        return matching_keys_dict, non_matching_keys_dict
+
+    def __new__(meta, cls_name, bases, cls_dict):
+        will_inherit_xml_default_tag_p = any(hasattr(b, 'xml_default_tag') for b in bases)
+        if not will_inherit_xml_default_tag_p:
+            cls_dict.setdefault('xml_default_tag', cls_name)
+            if cls_dict['xml_default_tag'] is None:
+                cls_dict.pop('xml_default_tag')
+
+        xml_cls_dict, direct_cls_dict \
+            = meta._partition_dict(cls_dict, ['xml_descriptor', 'xml_default_tag'])
 
         super_new = super(XMLSerializableNamedTupleMeta, meta).__new__
         xml_name = '_XML_' + cls_name
-        xml_cls_dict = {'xml_descriptor': cls_dict['xml_descriptor']}
-        xml_cls = super_new(meta, xml_name, (), xml_cls_dict)
+        xml_cls = super_new(meta, xml_name, bases, xml_cls_dict)
 
         descr = xml_cls.xml_descriptor
 
@@ -123,8 +169,7 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         namedtuple_cls = collections.namedtuple(cls_name,
                                                 list(xml_cls.slot_name_from_tag_name.values()))
 
-        cls_dict.pop('xml_descriptor')
-        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls) + bases, cls_dict)
+        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
 
 
 class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta,
@@ -174,6 +219,22 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     Traceback (most recent call last):
         ...
     AttributeError: 'Sphere' object has no attribute 'xml_default_tag'
+
+    If you create a subclass of a ``XMLSerializableNamedTuple`` subclass,
+    and do not explicitly specify an ``xml_default_tag``, then the
+    sub-subclass inherits the sub-class's ``xml_default_tag``:
+
+    >>> class ShinyCircle(Circle):
+    ...     pass
+    >>> sc = ShinyCircle(42)
+    >>> print(sc)
+    ShinyCircle(radius=42)
+    >>> sc.radius
+    42
+    >>> print(xmlserdes.utils.str_from_xml_elt(sc.as_xml()))
+    <Circle><radius>42</radius></Circle>
+
+    (Note that the tag in the XML is ``Circle`` and not ``ShinyCircle``.)
     """
 
     xml_default_tag = None
