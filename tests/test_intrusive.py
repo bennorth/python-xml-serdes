@@ -98,10 +98,10 @@ class Rectangle(XMLSerializable):
         return self.width == other.width and self.height == other.height
 
     @classmethod
-    def from_xml_dict(cls, dict, _xpath=[]):
-        if list(dict.keys()) != ['width', 'height']:
+    def from_xml_dict(cls, dct, _xpath=[]):
+        if list(dct) != ['width', 'height']:
             raise ValueError('wrong tags')
-        return cls(*dict.values())
+        return cls(*dct.values())
 
 
 class TestRectangle(object):
@@ -253,7 +253,7 @@ class RectangleCollection(XMLSerializableNamedTuple):
                       ('rectangles', [Rectangle])]
 
 
-def TestListImplicitTag(object):
+class TestListImplicitTag(object):
     def test_rectangles(self):
         rc = RectangleCollection('Arthur Jackson',
                                  [Rectangle(12, 34), Rectangle(56, 78)])
@@ -265,7 +265,7 @@ def TestListImplicitTag(object):
                       ''.join('<rect><width>%d</width><height>%d</height></rect>'
                               % (r.width, r.height)
                               for r in rc.rectangles)))
-        assert str_from_xml_elt(rc.as_xml('rectangle-collection')) == exp_txt
+        assert rc.as_xml_str('rectangle-collection', pretty_print=False) == exp_txt
 
 
 class Ellipse(XMLSerializableNamedTuple):
@@ -426,3 +426,20 @@ class TestDeepError(object):
                                    'chairs', 'chair[3]',
                                    'dimensions']):
             building.as_xml()
+
+
+class TestBadMetaclassUse(object):
+    def test_no_xml_descriptor(self):
+        """
+        Normally, derivation from XMLSerializable ensures the class being built has an
+        'xml_descriptor' attribute.  To get full test coverage, we need to purposefully
+        attempt to create a class with XMLSerializableMeta as its metaclass but with no
+        'xml_descriptor'.  Furthermore, that test needs an intermediate base class
+        lacking the attribute.
+        """
+        with pytest.raises_regexp(ValueError, 'no "xml_descriptor" in "NoXmlDescriptor"'):
+            class Nop(object):
+                pass
+
+            class NoXmlDescriptor(six.with_metaclass(type(XMLSerializable), Nop)):
+                pass
