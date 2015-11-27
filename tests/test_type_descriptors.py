@@ -9,6 +9,7 @@ from lxml import etree
 import numpy as np
 import xmlserdes as X
 import xmlserdes.utils as XU
+from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 make_TD = X.TypeDescriptor.from_terse
 
@@ -68,16 +69,22 @@ class TestAtomicTypes(object):
     def test_bool_bad_serialize_values(self):
         td = make_TD(bool)
 
-        with pytest.raises_regexp(ValueError, 'expected True or False but got "42"'):
+        with pytest.raises_regexp(XMLSerDesError, 'expected True or False but got "42"', []):
             td.xml_element(42, 'foo')
 
     def test_bool_bad_deserialize_values(self):
         td = make_TD(bool)
 
-        with pytest.raises_regexp(ValueError,
-                                  'expected text "true" or "false" but got "banana"'):
+        with pytest.raises_regexp(XMLSerDesError,
+                                  'expected "true" or "false" but got "banana"', ['foo']):
             #
             bad_xml = etree.fromstring('<foo>banana</foo>')
+            td.extract_from(bad_xml, 'foo')
+
+    def test_int_bad_deserialize_values(self):
+        td = make_TD(int)
+        bad_xml = etree.fromstring('<foo>banana</foo>')
+        with pytest.raises_regexp(XMLSerDesError, 'could not parse "banana" as "int"', ['foo']):
             td.extract_from(bad_xml, 'foo')
 
 
@@ -169,16 +176,22 @@ class TestInstanceTypes(object):
         rect_round_trip = td.extract_from(elt, 'rect')
         assert rect_round_trip == rect
 
-    @pytest.mark.parametrize(
-        'xml_str,err_re',
-        [('<rect><a>42</a><b>100</b><c>123</c></rect>', 'expected 2 children but got 3'),
-         ('<rect><a>42</a><b>100</b></rect>', 'expected tag "width" but got "a"')],
-        ids=['wrong-n-children', 'wrong-tag'])
-    #
-    def test_bad_xml(self, xml_str, err_re):
+    def test_bad_xml_wrong_n_children(self):
         td = X.Instance(Rectangle)
-        bad_xml = etree.fromstring(xml_str)
-        with pytest.raises_regexp(ValueError, err_re):
+        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
+        with pytest.raises_regexp(XMLSerDesWrongChildrenError,
+                                  'mismatched children: '
+                                  r'\[missing: width, missing: height, '
+                                  r'unexpected: a, unexpected: b, unexpected: c\]',
+                                  xpath=['rect']):
+            td.extract_from(bad_xml, 'rect')
+
+    def test_bad_xml_wrong_tag(self):
+        td = X.Instance(Rectangle)
+        bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
+        with pytest.raises_regexp(XMLSerDesError,
+                                  'expected tag "width" but got "a"',
+                                  xpath=['rect']):
             td.extract_from(bad_xml, 'rect')
 
 
@@ -191,7 +204,7 @@ class _TestNumpyBase(object):
         ids=['string', 'multi-dml', 'wrong-dtype'])
     #
     def test_bad_value(self, x, regexp):
-        with pytest.raises_regexp(ValueError, regexp):
+        with pytest.raises_regexp(XMLSerDesError, regexp, []):
             self.td.xml_element(x, 'values')
 
 
@@ -266,18 +279,25 @@ class TestNumpyRecordStructured(_TestNumpyBase):
         assert np.all(vals_rt == self.vals)
 
     @pytest.mark.parametrize(
-        'bad_inner_str,exc_re',
+        'bad_inner_str,exc_re,exp_xpath',
         [('<rect><width>42</width><height>100</height><depth>99</depth></rect>',
-          'expected 2 sub-elements but got 3'),
+          'mismatched children',
+          ['rectangles', 'rect[1]']),
+         ('<rect><width>42</width><height>100</height></rect>'
+          '<rect><width>42</width><height>100</height></rect>'
+          '<rect><width>42</width><height>100</height><depth>99</depth></rect>',
+          'mismatched children',
+          ['rectangles', 'rect[3]']),
          ('<rect><wd>42</wd><ht>100</ht></rect>',
-          'expected tag "width" but got "wd"')],
-        ids=['wrong-n-elts', 'wrong-child-tag'])
+          'expected tag "width" but got "wd"',
+          ['rectangles', 'rect[1]'])],
+        ids=['wrong-n-elts', 'wrong-n-elts-third-child', 'wrong-child-tag'])
     #
-    def test_bad_xml(self, bad_inner_str, exc_re):
-        bad_str = '<rect>%s</rect>' % bad_inner_str
+    def test_bad_xml(self, bad_inner_str, exc_re, exp_xpath):
+        bad_str = '<rectangles>%s</rectangles>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
-        with pytest.raises_regexp(ValueError, exc_re):
-            self.td.extract_from(bad_xml, 'rect')
+        with pytest.raises_regexp(XMLSerDesError, exc_re, exp_xpath):
+            self.td.extract_from(bad_xml, 'rectangles')
 
 
 class TestNumpyDTypeScalar(object):
@@ -323,7 +343,7 @@ class TestNumpyDTypeScalar(object):
         ids=['string', 'vector', 'multi-dml', 'wrong-dtype-atomic', 'wrong-dtype-structured'])
     #
     def test_bad_value(self, x, regexp):
-        with pytest.raises_regexp(ValueError, regexp):
+        with pytest.raises_regexp(XMLSerDesError, regexp, []):
             self.atomics_td.xml_element(x, 'values')
 
 
@@ -407,14 +427,14 @@ class TestObject(object):
         assert rect_round_trip == self.rect
 
     @pytest.mark.parametrize(
-        'xml_str,des_tag,exc_re',
-        [('<rect><width>99</width></rect>', 'rect', 'expected 2 children but got 1'),
-         (expected_rect_xml(42, 100), 'rectangle', 'expected tag .* but got')],
+        'xml_str,des_tag,exc_re,exp_xpath',
+        [('<rect><width>99</width></rect>', 'rect', 'mismatched children', ['rect']),
+         (expected_rect_xml(42, 100), 'rectangle', 'expected tag .* but got', [])],
         ids=['wrong-n-children', 'wrong-tag'])
     #
-    def test_bad_input(self, xml_str, des_tag, exc_re):
+    def test_bad_input(self, xml_str, des_tag, exc_re, exp_xpath):
         bad_xml = etree.fromstring(xml_str)
-        with pytest.raises_regexp(ValueError, exc_re):
+        with pytest.raises_regexp(XMLSerDesError, exc_re, exp_xpath):
             X.deserialize(Rectangle, bad_xml, des_tag)
 
 

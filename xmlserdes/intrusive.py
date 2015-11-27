@@ -7,6 +7,7 @@ from xmlserdes.type_descriptors import Instance
 
 import xmlserdes
 import xmlserdes.utils
+from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 
 class XMLSerializableMeta(type):
@@ -56,7 +57,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
 
         tag = tag or self.xml_default_tag
         instance_td = Instance(self.__class__)  # TODO: Cache this t.d. in class?
-        return instance_td.xml_element(self, tag)
+        return instance_td.xml_element(self, tag, [tag])
 
     def as_xml_str(self, tag=None, **kwargs):
         """
@@ -67,7 +68,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         return xmlserdes.utils.str_from_xml_elt(self.as_xml(tag=tag), **kwargs)
 
     @classmethod
-    def from_xml(cls, xml_elt, expected_tag):
+    def from_xml(cls, xml_elt, expected_tag, _xpath=[]):
         """
         Return a new instance of ``cls`` by deserializing the given XML
         element, which must have the given expected tag.  The real work
@@ -75,23 +76,28 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         class must provide.
         """
 
+        _xpath = _xpath or [expected_tag]
         if xml_elt.tag != expected_tag:
-            raise ValueError('expected tag "%s" but got "%s"'
-                             % (expected_tag, xml_elt.tag))
+            raise XMLSerDesError('expected tag "%s" but got "%s"'
+                                 % (expected_tag, xml_elt.tag),
+                                 xpath=_xpath[:-1])
 
-        ordered_dict = cls._ordered_dict_from_xml(xml_elt)
+        ordered_dict = cls._ordered_dict_from_xml(xml_elt, _xpath)
         # Might throw exception if class doesn't care about deserialization:
-        return cls.from_xml_dict(ordered_dict)
+        return cls.from_xml_dict(ordered_dict, _xpath)
 
     @classmethod
-    def _ordered_dict_from_xml(cls, xml_elt):
+    def _ordered_dict_from_xml(cls, xml_elt, _xpath):
         descr = cls.xml_descriptor
+
+        # Individual wrong tags will be caught later.
         if len(xml_elt) != len(descr):
-            raise ValueError('expected %d children but got %d'
-                             % (len(descr), len(xml_elt)))
+            raise XMLSerDesWrongChildrenError(exp_tags=[e.tag for e in descr],
+                                              got_tags=[ch.tag for ch in xml_elt],
+                                              xpath=_xpath)
 
         return collections.OrderedDict(
-            (child_elt.tag, descr_elt.extract_from(child_elt))
+            (child_elt.tag, descr_elt.extract_from(child_elt, _xpath + [child_elt.tag]))
             for child_elt, descr_elt in zip(xml_elt, descr))
 
 
@@ -140,23 +146,15 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     xml_descriptor = []
 
     @classmethod
-    def _verify_children(cls, ordered_dict):
+    def _verify_children(cls, ordered_dict, _xpath):
         tags_got = list(ordered_dict.keys())
         tags_exp = list(cls.slot_name_from_tag_name.keys())
         if tags_got != tags_exp:
-            if len(tags_got) != len(tags_exp):
-                raise ValueError('expected %d children but got %d'
-                                 % (len(tags_exp), len(tags_got)))
-            differing_tags = [
-                (idx, expected, got)
-                for (idx, (expected, got)) in enumerate(zip(tags_exp, tags_got))
-                if expected != got]
-            first_diff = differing_tags[0]
-            raise ValueError(('unexpected tags: %d differ; first diff:'
-                              + ' expected "%s" but got "%s" at posn %d')
-                             % (len(differing_tags), first_diff[1], first_diff[2], first_diff[0]))
+            raise XMLSerDesWrongChildrenError(exp_tags=tags_exp,
+                                              got_tags=tags_got,
+                                              xpath=_xpath)
 
     @classmethod
-    def from_xml_dict(cls, ordered_dict):
-        cls._verify_children(ordered_dict)
+    def from_xml_dict(cls, ordered_dict, _xpath=[]):
+        cls._verify_children(ordered_dict, _xpath)
         return cls._make(ordered_dict.values())

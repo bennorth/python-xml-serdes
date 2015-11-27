@@ -6,6 +6,7 @@ import numpy as np
 from lxml import etree
 
 import xmlserdes
+from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 import collections  # noqa
 
@@ -200,13 +201,14 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
         raise ValueError('unhandled terse descriptor of type %s' % type(descr).__name__)
 
-    def verify_tag(self, elt, expected_tag):
+    def verify_tag(self, elt, expected_tag, _xpath):
         if elt.tag != expected_tag:
-            raise ValueError('expected tag "%s" but got "%s"'
-                             % (expected_tag, elt.tag))
+            raise XMLSerDesError('expected tag "%s" but got "%s"'
+                                 % (expected_tag, elt.tag),
+                                 xpath=_xpath[:-1])
 
     @abstractmethod  # pragma: no cover
-    def xml_element(self, obj, tag):
+    def xml_element(self, obj, tag, _xpath=[]):
         """
         Return an XML element, with the given tag, corresponding to the
         given object.
@@ -219,18 +221,27 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
 
-    @abstractmethod  # pragma: no cover
-    def extract_from(self, elt, expected_tag):
+    def extract_from(self, elt, expected_tag, _xpath=[]):
         """
         Extract and return an object from the given XML element.  The
-        tag of ``elt`` should be the given expected tag, otherwise a
-        ``ValueError`` is raised.
+        tag of ``elt`` should be the given expected tag, otherwise an
+        ``XMLSerDesError`` is raised.
 
         :param elt: XML element
         :type elt: :class:`etree.Element`
         :param expected_tag: tag which ``elt`` must have
         :type expected_tag: str
         :rtype: depends on concrete subclass of ``TypeDescriptor``
+        """
+        _xpath = _xpath or [expected_tag]
+        self.verify_tag(elt, expected_tag, _xpath)
+        return self._extract_from(elt, expected_tag, _xpath)
+
+    @abstractmethod  # pragma: no cover
+    def _extract_from(self, elt, expected_tag, _xpath):
+        """
+        Internal method implementing extract_from() under the assumption
+        that the tag is as expected.
         """
 
 
@@ -261,22 +272,27 @@ class Atomic(TypeDescriptor):
     Unexpected tag:
 
     >>> atomic_type_descriptor.extract_from(xml_elt, 'length')
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
-    ValueError: expected tag "length" but got "weight"
+    xmlserdes.errors.XMLSerDesError: expected tag "length" but got "weight" at /
     """
 
     def __init__(self, inner_type):
         self.inner_type = inner_type
 
-    def xml_element(self, obj, tag):
+    def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
         elt.text = str(obj)
         return elt
 
-    def extract_from(self, elt, expected_tag):
-        self.verify_tag(elt, expected_tag)
-        return self.inner_type(elt.text)
+    def _extract_from(self, elt, expected_tag, _xpath):
+        try:
+            return self.inner_type(elt.text)
+        except Exception as err:
+            raise XMLSerDesError('could not parse "%.100s" as "%s": %s'
+                                 % (elt.text, self.inner_type.__name__, str(err)),
+                                 xpath=_xpath)
 
 
 class AtomicBool(TypeDescriptor):
@@ -295,35 +311,38 @@ class AtomicBool(TypeDescriptor):
     >>> xml_elt = etree.fromstring('<is-heavy>true</is-heavy>')
     >>> bool_type_descriptor.extract_from(xml_elt, 'is-heavy')
     True
-    >>> bad_xml_elt = etree.fromstring('<is-heavy>dark-orange</is-heavy>')
+    >>> bad_xml_elt = etree.fromstring('<is-heavy>red</is-heavy>')
     >>> bool_type_descriptor.extract_from(bad_xml_elt, 'is-heavy')
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
-    ValueError: expected text "true" or "false" but got "dark-orange" for bool
+    xmlserdes.errors.XMLSerDesError: expected "true" or "false" but got "red" for bool at /is-heavy
     >>> bool_type_descriptor.xml_element(42, 'meaning')
+    ... #doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
         ...
-    ValueError: expected True or False but got "42" for bool
+    xmlserdes.errors.XMLSerDesError: expected True or False but got "42" for bool at /
     """
 
-    def xml_element(self, obj, tag):
+    def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
         if obj is True:
             elt.text = 'true'
         elif obj is False:
             elt.text = 'false'
         else:
-            raise ValueError('expected True or False but got "%s" for bool' % obj)
+            raise XMLSerDesError('expected True or False but got "%s" for bool' % obj,
+                                 xpath=_xpath)
         return elt
 
-    def extract_from(self, elt, expected_tag):
-        self.verify_tag(elt, expected_tag)
+    def _extract_from(self, elt, expected_tag, _xpath):
         text = elt.text
         if text == 'true':
             return True
         if text == 'false':
             return False
-        raise ValueError('expected text "true" or "false" but got "%s" for bool' % text)
+        raise XMLSerDesError('expected "true" or "false" but got "%s" for bool' % text,
+                             xpath=_xpath)
 
 
 class List(TypeDescriptor):
@@ -363,16 +382,23 @@ class List(TypeDescriptor):
         self.contained_descriptor = contained_descriptor
         self.contained_tag = contained_tag
 
-    def xml_element(self, obj, tag):
+    def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
-        for obj_elt in obj:
-            elt.append(self.contained_descriptor.xml_element(obj_elt, self.contained_tag))
+        for i, obj_elt in enumerate(obj):
+            elt.append(self.contained_descriptor.xml_element(
+                obj_elt,
+                self.contained_tag,
+                _xpath + [self.child_xpath_component(i)]))
         return elt
 
-    def extract_from(self, elt, expected_tag):
-        self.verify_tag(elt, expected_tag)
-        return [self.contained_descriptor.extract_from(child_elt, self.contained_tag)
-                for child_elt in elt]
+    def child_xpath_component(self, i_0b):
+        # '+1' is to convert to xpath's 1-based indexing:
+        return '%s[%d]' % (self.contained_tag, (i_0b + 1))
+
+    def _extract_from(self, elt, expected_tag, _xpath):
+        return [self.contained_descriptor.extract_from(child_elt, self.contained_tag,
+                                                       _xpath + [self.child_xpath_component(i)])
+                for i, child_elt in enumerate(elt)]
 
 
 class Instance(TypeDescriptor):
@@ -418,38 +444,39 @@ class Instance(TypeDescriptor):
         self.xml_descriptor = cls.xml_descriptor
         self.constructor = cls
 
-    def xml_element(self, obj, tag):
+    def xml_element(self, obj, tag, _xpath=[]):
         elt = etree.Element(tag)
         for child in self.xml_descriptor:
-            child_elt = child.xml_element(obj)
+            child_elt = child.xml_element(obj, _xpath + [child.tag])
             elt.append(child_elt)
         return elt
 
-    components_label = 'children'
-
-    def extract_from(self, elt, expected_tag):
-        self.verify_tag(elt, expected_tag)
+    def _extract_from(self, elt, expected_tag, _xpath):
         descr = self.xml_descriptor
         if len(elt) != len(descr):
-            raise ValueError('expected %d %s but got %d'
-                             % (len(descr), self.components_label, len(elt)))
+            raise XMLSerDesWrongChildrenError(exp_tags=[e.tag for e in descr],
+                                              got_tags=[ch.tag for ch in elt],
+                                              xpath=_xpath)
 
         ctor = self.constructor
-        ctor_args = [descr_elt.extract_from(child_elt)
+        ctor_args = [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
                      for child_elt, descr_elt in zip(elt, descr)]
 
         return ctor(*ctor_args)
 
 
 class NumpyValidityAssertionMixin(object):
-    def assert_valid(self, obj, exp_type, exp_type_label, exp_ndim):
+    def assert_valid(self, obj, exp_type, exp_type_label, exp_ndim, _xpath):
         if not isinstance(obj, exp_type):
-            raise ValueError('object not %s' % exp_type_label)
+            raise XMLSerDesError('object not %s' % exp_type_label,
+                                 xpath=_xpath)
         if obj.ndim != exp_ndim:
-            raise ValueError('ndarray not %d-dimensional' % exp_ndim)
+            raise XMLSerDesError('ndarray not %d-dimensional' % exp_ndim,
+                                 xpath=_xpath)
         if obj.dtype != self.dtype:
-            raise ValueError('expected dtype "%s" but got "%s"'
-                             % (self.dtype, obj.dtype))
+            raise XMLSerDesError('expected dtype "%s" but got "%s"'
+                                 % (self.dtype, obj.dtype),
+                                 xpath=_xpath)
 
 
 class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
@@ -482,14 +509,13 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
     def __init__(self, dtype):
         self.dtype = dtype
 
-    def xml_element(self, obj, tag):
-        self.assert_valid(obj, np.ndarray, 'ndarray', 1)
+    def xml_element(self, obj, tag, _xpath=[]):
+        self.assert_valid(obj, np.ndarray, 'ndarray', 1, _xpath)
         elt = etree.Element(tag)
         elt.text = ','.join(map(repr, obj))
         return elt
 
-    def extract_from(self, elt, expected_tag):
-        self.verify_tag(elt, expected_tag)
+    def _extract_from(self, elt, expected_tag, _xpath):
         s_elts = elt.text.split(',')
         elements_list = list(map(self.dtype, s_elts))
         return np.array(elements_list, dtype=self.dtype)
@@ -589,14 +615,12 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
             for nm in dtype.names
         ]
 
-    def xml_element(self, obj, tag):
-        self.assert_valid(obj, np.void, 'numpy scalar', 0)
-        return Instance.xml_element(self, obj, tag)
+    def xml_element(self, obj, tag, _xpath=[]):
+        self.assert_valid(obj, np.void, 'numpy scalar', 0, _xpath)
+        return Instance.xml_element(self, obj, tag, _xpath)
 
     def constructor(self, *args):
         return np.array(args, dtype=self.dtype)
-
-    components_label = 'sub-elements'
 
 
 class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
@@ -705,12 +729,12 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
         self.dtype = dtype
         List.__init__(self, DTypeScalar(dtype), contained_tag)
 
-    def xml_element(self, obj, tag):
-        self.assert_valid(obj, np.ndarray, 'ndarray', 1)
-        return List.xml_element(self, obj, tag)
+    def xml_element(self, obj, tag, _xpath=[]):
+        self.assert_valid(obj, np.ndarray, 'ndarray', 1, _xpath)
+        return List.xml_element(self, obj, tag, _xpath)
 
-    def extract_from(self, elt, expected_tag):
-        elts = List.extract_from(self, elt, expected_tag)
+    def _extract_from(self, elt, expected_tag, _xpath):
+        elts = List._extract_from(self, elt, expected_tag, _xpath)
         return np.array(elts, dtype=self.dtype)
 
 
