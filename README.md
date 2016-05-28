@@ -17,7 +17,7 @@ Courtesy of Travis-CI: [![Build Status](https://travis-ci.org/bennorth/python-xm
 ## Licence
 
 ```
-Copyright 2014 Ben North
+Copyright 2014, 2015, 2016 Ben North
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
