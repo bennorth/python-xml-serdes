@@ -9,3 +9,7 @@ done.
 ## Documentation
 
 Documentation is available at [ReadTheDocs](https://python-xml-serdes.readthedocs.io/en/master/).
+
+## Build status
+
+Courtesy of Travis-CI: [![Build Status](https://travis-ci.org/bennorth/python-xml-serdes.svg?branch=master)](https://travis-ci.org/bennorth/python-xml-serdes)
