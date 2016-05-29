@@ -2,7 +2,7 @@ import lxml
 
 try:
     etree_encoding = unicode
-except NameError:
+except NameError:  # pragma: no cover
     etree_encoding = str
 
 
