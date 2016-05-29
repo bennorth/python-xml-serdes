@@ -6,6 +6,9 @@ python:
   - '3.5'
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
   - python setup.py install
 script:
-  - py.test --doctest-modules tests
+  - coverage run --source xmlserdes -m py.test --doctest-modules tests
+after_success:
+  - coveralls
