@@ -12,7 +12,10 @@ Documentation is available at [ReadTheDocs](https://python-xml-serdes.readthedoc
 
 ## Build status
 
-Courtesy of Travis-CI: [![Build Status](https://travis-ci.org/bennorth/python-xml-serdes.svg?branch=master)](https://travis-ci.org/bennorth/python-xml-serdes)
+Courtesy of Travis-CI and Coveralls:
+
+[![Build Status](https://travis-ci.org/bennorth/python-xml-serdes.svg?branch=master)](https://travis-ci.org/bennorth/python-xml-serdes)
+[![Coverage Status](https://coveralls.io/repos/github/bennorth/python-xml-serdes/badge.svg?branch=master)](https://coveralls.io/github/bennorth/python-xml-serdes?branch=master)
 
 ## Licence
 
