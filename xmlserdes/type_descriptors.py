@@ -354,6 +354,22 @@ class AtomicBool(TypeDescriptor):
 
 if HAVE_ENUM:
     class AtomicEnum(TypeDescriptor):
+        """
+        A :class:`xmlserdes.TypeDescriptor` for handling `Enum`-derived types, available
+        starting with Python 3.4.  Values are de/serialized as their string `name`.
+
+        >>> from enum import Enum
+        >>> Animal = Enum('Animal', 'Cat Dog Rabbit')
+        >>> pet = Animal.Cat
+        >>> enum_type_descriptor = xmlserdes.AtomicEnum(Animal)
+
+        >>> print(xmlserdes.utils.str_from_xml_elt(enum_type_descriptor.xml_element(pet, 'pet')))
+        <pet>Cat</pet>
+
+        >>> xml_elt = etree.fromstring('<companion>Rabbit</companion>')
+        >>> enum_type_descriptor.extract_from(xml_elt, 'companion')
+        <Animal.Rabbit: 3>
+        """
         def __init__(self, enum_type):
             self.enum_type = enum_type
 
