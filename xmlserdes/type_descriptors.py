@@ -12,6 +12,13 @@ import collections  # noqa
 
 import six
 
+try:
+    from enum import Enum
+    HAVE_ENUM = True
+except ImportError:
+    class Enum(object): pass
+    HAVE_ENUM = False
+
 
 class TypeDescriptor(six.with_metaclass(ABCMeta)):
     """
