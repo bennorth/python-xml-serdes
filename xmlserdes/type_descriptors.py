@@ -395,6 +395,8 @@ if HAVE_ENUM:
         xmlserdes.errors.XMLSerDesError: could not parse "Elephant" as member of enumeration "Animal" at /pachyderm
         """
         def __init__(self, enum_type):
+            if not isinstance(enum_type, type) or not issubclass(enum_type, Enum):
+                raise TypeError('expected Enum-derived type')
             self.enum_type = enum_type
 
         def xml_element(self, obj, tag, _xpath=[]):
