@@ -443,3 +443,21 @@ class TestBadMetaclassUse(object):
 
             class NoXmlDescriptor(six.with_metaclass(type(XMLSerializable), Nop)):
                 pass
+
+
+@pytest.mark.skipif(sys.version_info < (3, 4),
+                    reason='requires Python 3.4 or higher')
+class TestEnum(object):
+    def test_round_trip(self):
+        from enum import Enum
+        Animal = Enum('Animal', 'Cat Dog Rabbit')
+
+        class PetDetails(XMLSerializableNamedTuple):
+            xml_descriptor = [('type', Animal), ('weight', float)]
+
+        pd = PetDetails(Animal.Dog, 42.5)
+        pd_xml = pd.as_xml('pet-details')
+        assert str_from_xml_elt(pd_xml) == ('<pet-details><type>Dog</type>'
+                                            '<weight>42.5</weight></pet-details>')
+        pd1 = PetDetails.from_xml(pd_xml, 'pet-details')
+        assert pd1 == pd
