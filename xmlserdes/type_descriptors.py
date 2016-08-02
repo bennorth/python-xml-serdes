@@ -352,6 +352,20 @@ class AtomicBool(TypeDescriptor):
                              xpath=_xpath)
 
 
+if HAVE_ENUM:
+    class AtomicEnum(TypeDescriptor):
+        def __init__(self, enum_type):
+            self.enum_type = enum_type
+
+        def xml_element(self, obj, tag, _xpath=[]):
+            elt = etree.Element(tag)
+            elt.text = obj.name
+            return elt
+
+        def _extract_from(self, elt, expected_tag, _xpath):
+            return self.enum_type[elt.text]
+
+
 class List(TypeDescriptor):
     """
     A :class:`xmlserdes.TypeDescriptor` for handling homogeneous lists of
