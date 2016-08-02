@@ -369,6 +369,13 @@ if HAVE_ENUM:
         >>> xml_elt = etree.fromstring('<companion>Rabbit</companion>')
         >>> enum_type_descriptor.extract_from(xml_elt, 'companion')
         <Animal.Rabbit: 3>
+
+        >>> bad_xml_elt = etree.fromstring('<pachyderm>Elephant</pachyderm>')
+        >>> enum_type_descriptor.extract_from(bad_xml_elt, 'pachyderm')
+        ... #doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+            ...
+        xmlserdes.errors.XMLSerDesError: could not parse "Elephant" as member of enumeration "Animal" at /pachyderm
         """
         def __init__(self, enum_type):
             self.enum_type = enum_type
