@@ -70,6 +70,20 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(False, 'is-blue')))
             <is-blue>false</is-blue>
 
+        Enum-derived class [Python 3.4 onwards]
+            An instance of :class:`xmlserdes.AtomicEnum` is created.
+
+            >>> import sys
+            >>> if sys.version_info >= (3, 4):
+            ...     from enum import Enum
+            ...     Animal = Enum('Animal', 'Cat Dog Rabbit')
+            ...     td = TypeDescriptor.from_terse(Animal)
+            ...     pet = Animal.Cat
+            ...     print(xmlserdes.utils.str_from_xml_elt(td.xml_element(pet, 'pet')))
+            ... else:
+            ...     print('<pet>Cat</pet>')
+            <pet>Cat</pet>
+
         string instance
             A :class:`xmlserdes.Atomic` instance is created, where the
             contained type is found by interpreting the given string as
@@ -155,6 +169,9 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
         if descr is bool:
             return AtomicBool()
+
+        if isinstance(descr, type) and issubclass(descr, Enum):
+            return AtomicEnum(descr)
 
         if isinstance(descr, str):
             return Atomic(np.dtype(descr).type)
