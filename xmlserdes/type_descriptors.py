@@ -400,6 +400,8 @@ if HAVE_ENUM:
             self.enum_type = enum_type
 
         def xml_element(self, obj, tag, _xpath=[]):
+            if not isinstance(obj, self.enum_type):
+                raise ValueError('expected instance of %.100s' % str(self.enum_type))
             elt = etree.Element(tag)
             elt.text = obj.name
             return elt
