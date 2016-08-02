@@ -96,6 +96,13 @@ class TestAtomicEnum(object):
         with pytest.raises_regexp(TypeError, 'expected Enum-derived type'):
             X.AtomicEnum(int)
 
+    def test_bad_enum_value(self):
+        from enum import Enum
+        Animal = Enum('Animal', 'Cat Dog Rabbit')
+        td = X.AtomicEnum(Animal)
+        with pytest.raises_regexp(ValueError, "expected instance of <enum 'Animal'>"):
+            td.xml_element(42, 'bad-animal')
+
 
 class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):
     pass
