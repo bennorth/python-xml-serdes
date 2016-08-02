@@ -379,7 +379,12 @@ if HAVE_ENUM:
             return elt
 
         def _extract_from(self, elt, expected_tag, _xpath):
-            return self.enum_type[elt.text]
+            try:
+                return self.enum_type[elt.text]
+            except KeyError:
+                raise XMLSerDesError('could not parse "%.100s" as member of enumeration "%.100s"'
+                                     % (elt.text, self.enum_type.__name__),
+                                     xpath=_xpath)
 
 
 class List(TypeDescriptor):
