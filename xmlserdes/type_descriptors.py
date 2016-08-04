@@ -12,6 +12,13 @@ import collections  # noqa
 
 import six
 
+try:
+    from enum import Enum
+    HAVE_ENUM = True
+except ImportError:
+    class Enum(object): pass
+    HAVE_ENUM = False
+
 
 class TypeDescriptor(six.with_metaclass(ABCMeta)):
     """
@@ -62,6 +69,20 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             >>> td = TypeDescriptor.from_terse(bool)
             >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(False, 'is-blue')))
             <is-blue>false</is-blue>
+
+        Enum-derived class [Python 3.4 onwards]
+            An instance of :class:`xmlserdes.AtomicEnum` is created.
+
+            >>> import sys
+            >>> if sys.version_info >= (3, 4):
+            ...     from enum import Enum
+            ...     Animal = Enum('Animal', 'Cat Dog Rabbit')
+            ...     td = TypeDescriptor.from_terse(Animal)
+            ...     pet = Animal.Cat
+            ...     print(xmlserdes.utils.str_from_xml_elt(td.xml_element(pet, 'pet')))
+            ... else:
+            ...     print('<pet>Cat</pet>')
+            <pet>Cat</pet>
 
         string instance
             A :class:`xmlserdes.Atomic` instance is created, where the
@@ -148,6 +169,9 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
         if descr is bool:
             return AtomicBool()
+
+        if isinstance(descr, type) and issubclass(descr, Enum):
+            return AtomicEnum(descr)
 
         if isinstance(descr, str):
             return Atomic(np.dtype(descr).type)
@@ -343,6 +367,52 @@ class AtomicBool(TypeDescriptor):
             return False
         raise XMLSerDesError('expected "true" or "false" but got "%s" for bool' % text,
                              xpath=_xpath)
+
+
+if HAVE_ENUM:
+    class AtomicEnum(TypeDescriptor):
+        """
+        A :class:`xmlserdes.TypeDescriptor` for handling `Enum`-derived types, available
+        starting with Python 3.4.  Values are de/serialized as their string `name`.
+
+        >>> from enum import Enum
+        >>> Animal = Enum('Animal', 'Cat Dog Rabbit')
+        >>> pet = Animal.Cat
+        >>> enum_type_descriptor = xmlserdes.AtomicEnum(Animal)
+
+        >>> print(xmlserdes.utils.str_from_xml_elt(enum_type_descriptor.xml_element(pet, 'pet')))
+        <pet>Cat</pet>
+
+        >>> xml_elt = etree.fromstring('<companion>Rabbit</companion>')
+        >>> enum_type_descriptor.extract_from(xml_elt, 'companion')
+        <Animal.Rabbit: 3>
+
+        >>> bad_xml_elt = etree.fromstring('<pachyderm>Elephant</pachyderm>')
+        >>> enum_type_descriptor.extract_from(bad_xml_elt, 'pachyderm')
+        ... #doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+            ...
+        xmlserdes.errors.XMLSerDesError: could not parse "Elephant" as member of enumeration "Animal" at /pachyderm
+        """
+        def __init__(self, enum_type):
+            if not isinstance(enum_type, type) or not issubclass(enum_type, Enum):
+                raise TypeError('expected Enum-derived type')
+            self.enum_type = enum_type
+
+        def xml_element(self, obj, tag, _xpath=[]):
+            if not isinstance(obj, self.enum_type):
+                raise ValueError('expected instance of %.100s' % str(self.enum_type))
+            elt = etree.Element(tag)
+            elt.text = obj.name
+            return elt
+
+        def _extract_from(self, elt, expected_tag, _xpath):
+            try:
+                return self.enum_type[elt.text]
+            except KeyError:
+                raise XMLSerDesError('could not parse "%.100s" as member of enumeration "%.100s"'
+                                     % (elt.text, self.enum_type.__name__),
+                                     xpath=_xpath)
 
 
 class List(TypeDescriptor):
