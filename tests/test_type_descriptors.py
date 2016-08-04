@@ -4,6 +4,7 @@ import pytest
 
 import collections
 import itertools
+import sys
 
 from lxml import etree
 import numpy as np
@@ -86,6 +87,21 @@ class TestAtomicTypes(object):
         bad_xml = etree.fromstring('<foo>banana</foo>')
         with pytest.raises_regexp(XMLSerDesError, 'could not parse "banana" as "int"', ['foo']):
             td.extract_from(bad_xml, 'foo')
+
+
+@pytest.mark.skipif(sys.version_info < (3, 4),
+                    reason='requires Python 3.4 or higher')
+class TestAtomicEnum(object):
+    def test_bad_enum(self):
+        with pytest.raises_regexp(TypeError, 'expected Enum-derived type'):
+            X.AtomicEnum(int)
+
+    def test_bad_enum_value(self):
+        from enum import Enum
+        Animal = Enum('Animal', 'Cat Dog Rabbit')
+        td = X.AtomicEnum(Animal)
+        with pytest.raises_regexp(ValueError, "expected instance of <enum 'Animal'>"):
+            td.xml_element(42, 'bad-animal')
 
 
 class BareRectangle(collections.namedtuple('BareRectangle', 'width height')):

@@ -10,6 +10,11 @@ from xmlserdes.type_descriptors import (
     TypeDescriptor, Atomic, AtomicBool, List, Instance, DTypeScalar, NumpyAtomicVector,
     NumpyRecordVectorStructured, NumpyVector)
 
+try:
+    from xmlserdes.type_descriptors import AtomicEnum
+except ImportError:
+    pass
+
 from xmlserdes._version import __version__
 
 
