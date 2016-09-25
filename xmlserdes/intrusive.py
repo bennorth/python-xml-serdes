@@ -232,7 +232,8 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     ShinyCircle(radius=42)
     >>> sc.radius
     42
-    >>> print(xmlserdes.utils.str_from_xml_elt(sc.as_xml()))
+    >>> sc_xml = sc.as_xml()
+    >>> print(xmlserdes.utils.str_from_xml_elt(sc_xml))
     <Circle><radius>42</radius></Circle>
 
     (Note that the tag in the XML is ``Circle`` and not ``ShinyCircle``.)
