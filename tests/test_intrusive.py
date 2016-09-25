@@ -393,7 +393,7 @@ class TestDeepError(object):
                                       </building>""")
 
         with pytest.raises_regexp(XMLSerDesError,
-                                  'expected tag "colour" but got "size"',
+                                  'missing: colour.*unexpected: size',
                                   ['building', 'rooms', 'room[2]', 'chairs', 'chair[3]']):
             Building.from_xml(bad_xml, 'building')
 
