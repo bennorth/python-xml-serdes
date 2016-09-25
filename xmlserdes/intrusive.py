@@ -170,7 +170,8 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         namedtuple_cls = collections.namedtuple(cls_name,
                                                 list(xml_cls.slot_name_from_tag_name.values()))
 
-        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
+        final_cls = type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
+        return final_cls
 
 
 class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta,
