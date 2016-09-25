@@ -237,6 +237,13 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     <Circle><radius>42</radius></Circle>
 
     (Note that the tag in the XML is ``Circle`` and not ``ShinyCircle``.)
+
+    But extracting a ``ShinyCircle`` from an XML element works as
+    expected:
+
+    >>> sc_round_trip = ShinyCircle.from_xml(sc_xml, 'Circle')
+    >>> print(sc_round_trip)
+    ShinyCircle(radius=42)
     """
 
     xml_default_tag = None
