@@ -333,7 +333,7 @@ class TestBadMethodUsage(object):
             Rectangle.from_xml(bad_xml, 'rect')
 
     @pytest.mark.parametrize(
-        'bad_dict_items,cmp_txt',
+        'bad_tag_val_pairs,cmp_txt',
         [([('a', 1), ('b', 2), ('c', 3)],
           r'\[missing: radius, missing: colour, unexpected: a, unexpected: b, unexpected: c\]'),
          ([('a', 1), ('b', 2)],
@@ -342,12 +342,12 @@ class TestBadMethodUsage(object):
           r'\[as-expected: radius, missing: colour, unexpected: b\]')],
         ids=['wrong-n-children', 'wrong-tags', 'one-wrong-tag'])
     #
-    def test_bad_ordered_dict(self, bad_dict_items, cmp_txt):
+    def test_bad_child_elements(self, bad_tag_val_pairs, cmp_txt):
         with pytest.raises_regexp(XMLSerDesWrongChildrenError,
                                   'mismatched children: ' + cmp_txt,
                                   xpath=['Circle']):
             bad_xml = etree.Element('Circle')
-            for k, v in bad_dict_items:
+            for k, v in bad_tag_val_pairs:
                 elt = etree.Element(k)
                 elt.text = str(v)
                 bad_xml.append(elt)
