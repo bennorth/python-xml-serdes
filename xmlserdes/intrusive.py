@@ -101,20 +101,6 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         """
         return cls.xml_type_descriptor.extract_from(xml_elt, expected_tag, _xpath)
 
-    @classmethod
-    def _ordered_dict_from_xml(cls, xml_elt, _xpath):
-        descr = cls.xml_descriptor
-
-        # Individual wrong tags will be caught later.
-        if len(xml_elt) != len(descr):
-            raise XMLSerDesWrongChildrenError(exp_tags=[e.tag for e in descr],
-                                              got_tags=[ch.tag for ch in xml_elt],
-                                              xpath=_xpath)
-
-        return collections.OrderedDict(
-            (child_elt.tag, descr_elt.extract_from(child_elt, _xpath + [child_elt.tag]))
-            for child_elt, descr_elt in zip(xml_elt, descr))
-
 
 class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
     @staticmethod
