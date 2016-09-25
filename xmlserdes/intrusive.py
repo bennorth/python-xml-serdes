@@ -101,16 +101,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         is done by a class method ``from_xml_dict``, which the derived
         class must provide.
         """
-
-        _xpath = _xpath or [expected_tag]
-        if xml_elt.tag != expected_tag:
-            raise XMLSerDesError('expected tag "%s" but got "%s"'
-                                 % (expected_tag, xml_elt.tag),
-                                 xpath=_xpath[:-1])
-
-        ordered_dict = cls._ordered_dict_from_xml(xml_elt, _xpath)
-        # Might throw exception if class doesn't care about deserialization:
-        return cls.from_xml_dict(ordered_dict, _xpath)
+        return cls.xml_type_descriptor.extract_from(xml_elt, expected_tag, _xpath)
 
     @classmethod
     def _ordered_dict_from_xml(cls, xml_elt, _xpath):
