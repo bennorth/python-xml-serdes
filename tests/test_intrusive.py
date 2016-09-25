@@ -343,13 +343,16 @@ class TestBadMethodUsage(object):
         ids=['wrong-n-children', 'wrong-tags', 'one-wrong-tag'])
     #
     def test_bad_ordered_dict(self, bad_dict_items, cmp_txt):
-        # Shouldn't occur in normal use because from_xml() checks on
-        # construction of the dictionary that tags are as expected.
         bad_dict = OrderedDict(bad_dict_items)
         with pytest.raises_regexp(XMLSerDesWrongChildrenError,
                                   'mismatched children: ' + cmp_txt,
-                                  xpath=[]):
-            Circle.from_xml_dict(bad_dict)
+                                  xpath=['Circle']):
+            bad_xml = etree.Element('Circle')
+            for k, v in bad_dict_items:
+                elt = etree.Element(k)
+                elt.text = str(v)
+                bad_xml.append(elt)
+            Circle.from_xml(bad_xml, 'Circle')
 
     def test_wrong_top_level_tag(self):
         bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
