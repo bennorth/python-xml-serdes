@@ -170,7 +170,10 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         namedtuple_cls = collections.namedtuple(cls_name,
                                                 list(xml_cls.slot_name_from_tag_name.values()))
 
+        # Can't add 'xml_type_descriptor' to 'direct_cls_dict' because the class
+        # must exist before we can make an Instance type-descriptor for it.
         final_cls = type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
+        final_cls.xml_type_descriptor = Instance(final_cls)
         return final_cls
 
 
