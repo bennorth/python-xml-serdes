@@ -56,6 +56,7 @@ class XMLSerializableMeta(type):
         cls_dict['slot_name_from_tag_name'] = meta.build_map_as_ordered_dict(xml_descriptor)
 
         cls = super(XMLSerializableMeta, meta).__new__(meta, cls_name, bases, cls_dict)
+        cls.xml_type_descriptor = Instance(cls)
 
         # Any further checks on cls here?
         return cls
