@@ -259,10 +259,10 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         """
         _xpath = _xpath or [expected_tag]
         self.verify_tag(elt, expected_tag, _xpath)
-        return self._extract_from(elt, expected_tag, _xpath)
+        return self._extract_from(elt, _xpath)
 
     @abstractmethod  # pragma: no cover
-    def _extract_from(self, elt, expected_tag, _xpath):
+    def _extract_from(self, elt, _xpath):
         """
         Internal method implementing extract_from() under the assumption
         that the tag is as expected.
@@ -310,7 +310,7 @@ class Atomic(TypeDescriptor):
         elt.text = str(obj)
         return elt
 
-    def _extract_from(self, elt, expected_tag, _xpath):
+    def _extract_from(self, elt, _xpath):
         try:
             return self.inner_type(elt.text)
         except Exception as err:
@@ -359,7 +359,7 @@ class AtomicBool(TypeDescriptor):
                                  xpath=_xpath)
         return elt
 
-    def _extract_from(self, elt, expected_tag, _xpath):
+    def _extract_from(self, elt, _xpath):
         text = elt.text
         if text == 'true':
             return True
@@ -406,7 +406,7 @@ if HAVE_ENUM:
             elt.text = obj.name
             return elt
 
-        def _extract_from(self, elt, expected_tag, _xpath):
+        def _extract_from(self, elt, _xpath):
             try:
                 return self.enum_type[elt.text]
             except KeyError:
@@ -465,7 +465,7 @@ class List(TypeDescriptor):
         # '+1' is to convert to xpath's 1-based indexing:
         return '%s[%d]' % (self.contained_tag, (i_0b + 1))
 
-    def _extract_from(self, elt, expected_tag, _xpath):
+    def _extract_from(self, elt, _xpath):
         return [self.contained_descriptor.extract_from(child_elt, self.contained_tag,
                                                        _xpath + [self.child_xpath_component(i)])
                 for i, child_elt in enumerate(elt)]
@@ -521,7 +521,7 @@ class Instance(TypeDescriptor):
             elt.append(child_elt)
         return elt
 
-    def _extract_from(self, elt, expected_tag, _xpath):
+    def _extract_from(self, elt, _xpath):
         descr = self.xml_descriptor
         exp_tags = [e.tag for e in descr]
         got_tags = [ch.tag for ch in elt]
@@ -587,7 +587,7 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
         elt.text = ','.join(map(repr, obj))
         return elt
 
-    def _extract_from(self, elt, expected_tag, _xpath):
+    def _extract_from(self, elt, _xpath):
         elt_text = elt.text or ''
         raw_s_elts = elt_text.split(',')
         # A special case is when elt.text is the empty string:
@@ -809,8 +809,8 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
         self.assert_valid(obj, np.ndarray, 'ndarray', 1, _xpath)
         return List.xml_element(self, obj, tag, _xpath)
 
-    def _extract_from(self, elt, expected_tag, _xpath):
-        elts = List._extract_from(self, elt, expected_tag, _xpath)
+    def _extract_from(self, elt, _xpath):
+        elts = List._extract_from(self, elt, _xpath)
         return np.array(elts, dtype=self.dtype)
 
 
