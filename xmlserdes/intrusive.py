@@ -97,9 +97,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     def from_xml(cls, xml_elt, expected_tag, _xpath=[]):
         """
         Return a new instance of ``cls`` by deserializing the given XML
-        element, which must have the given expected tag.  The real work
-        is done by a class method ``from_xml_dict``, which the derived
-        class must provide.
+        element, which must have the given expected tag.
         """
         return cls.xml_type_descriptor.extract_from(xml_elt, expected_tag, _xpath)
 
