@@ -343,7 +343,6 @@ class TestBadMethodUsage(object):
         ids=['wrong-n-children', 'wrong-tags', 'one-wrong-tag'])
     #
     def test_bad_ordered_dict(self, bad_dict_items, cmp_txt):
-        bad_dict = OrderedDict(bad_dict_items)
         with pytest.raises_regexp(XMLSerDesWrongChildrenError,
                                   'mismatched children: ' + cmp_txt,
                                   xpath=['Circle']):
