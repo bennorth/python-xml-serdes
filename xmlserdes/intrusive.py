@@ -227,17 +227,3 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
 
     xml_default_tag = None
     xml_descriptor = []
-
-    @classmethod
-    def _verify_children(cls, ordered_dict, _xpath):
-        tags_got = list(ordered_dict.keys())
-        tags_exp = list(cls.slot_name_from_tag_name.keys())
-        if tags_got != tags_exp:
-            raise XMLSerDesWrongChildrenError(exp_tags=tags_exp,
-                                              got_tags=tags_got,
-                                              xpath=_xpath)
-
-    @classmethod
-    def from_xml_dict(cls, ordered_dict, _xpath=[]):
-        cls._verify_children(ordered_dict, _xpath)
-        return cls._make(ordered_dict.values())
