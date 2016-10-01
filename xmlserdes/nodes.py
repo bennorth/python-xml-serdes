@@ -7,6 +7,9 @@ class XMLElementNode(object):
         elt.text = text
         self.elt = elt
 
+    def append_child(self, ch):
+        self.elt.append(ch)
+
 
 def make_XMLNode(tag, *args):
     return XMLElementNode(tag, *args)
