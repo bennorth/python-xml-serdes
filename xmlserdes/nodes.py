@@ -10,6 +10,9 @@ class XMLElementNode(object):
     def append_child(self, ch):
         self.elt.append(ch)
 
+    def append_attrib(self, ch):
+        self.elt.attrib[ch.tag] = ch.text
+
     def append_to(self, parent_elt):
         parent_elt.append_child(self.elt)
 
@@ -23,6 +26,9 @@ class XMLAttributeNode(object):
 
     def append_child(self, ch):
         raise ValueError('cannot append child to XMLAttributeNode')
+
+    def append_attrib(self, ch):
+        raise ValueError('cannot append attribute to XMLAttributeNode')
 
     def append_to(self, parent_elt):
         parent_elt.append_attrib(self)
