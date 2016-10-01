@@ -475,3 +475,14 @@ class TestEnum(object):
                                             '<weight>42.5</weight></pet-details>')
         pd1 = PetDetails.from_xml(pd_xml, 'pet-details')
         assert pd1 == pd
+
+    def test_in_attribute(self):
+        # TODO: If tag-/slot-name starts with '@', strip from slot-name
+        class PetDetails(XMLSerializableNamedTuple):
+            xml_descriptor = [('@tp', 'type', self.Animal), ('@wt', 'weight', float)]
+
+        pd = PetDetails(self.Animal.Dog, 42.5)
+        pd_xml = pd.as_xml('pet-details')
+        assert str_from_xml_elt(pd_xml) == '<pet-details tp="Dog" wt="42.5"/>'
+        pd1 = PetDetails.from_xml(pd_xml, 'pet-details')
+        assert pd1 == pd
