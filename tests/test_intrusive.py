@@ -308,6 +308,18 @@ class TestNamedTupleDifferentTags(object):
         assert e1 == e
 
 
+class FruitSalad(XMLSerializableNamedTuple):
+    xml_descriptor = [('@n-apples', 'n_apples', int),
+                      ('put-in', 'container', str)]
+
+
+class TestNamedTupleAttributes(object):
+    def test_round_trip(self):
+        s = FruitSalad(7, 'bowl')
+        assert (str_from_xml_elt(s.as_xml())
+                == '<FruitSalad n-apples="7"><put-in>bowl</put-in></FruitSalad>')
+
+
 class TestBadNamedTupleConstruction(object):
     def build_bad_class_wrong_value_from_slot():
         class Foo(XMLSerializableNamedTuple):
