@@ -245,6 +245,12 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
 
+    @abstractmethod  # pragma: no cover
+    def xml_node(self, obj, tag, _xpath=[]):
+        """
+        Return either an xml element or an xml attribute.
+        """
+
     def extract_from(self, elt, expected_tag, _xpath=[]):
         """
         Extract and return an object from the given XML element.  The
