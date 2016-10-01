@@ -35,4 +35,7 @@ class XMLAttributeNode(object):
 
 
 def make_XMLNode(tag, *args):
-    return XMLElementNode(tag, *args)
+    if tag[0] == '@':
+        return XMLAttributeNode(tag[1:], *args)
+    else:
+        return XMLElementNode(tag, *args)
