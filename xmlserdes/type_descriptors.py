@@ -231,7 +231,6 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                                  % (expected_tag, elt.tag),
                                  xpath=_xpath[:-1])
 
-    @abstractmethod  # pragma: no cover
     def xml_element(self, obj, tag, _xpath=[]):
         """
         Return an XML element, with the given tag, corresponding to the
@@ -244,6 +243,10 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
         See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
         """
+        nd = self.xml_node(obj, tag, _xpath)
+        if not isinstance(nd, XMLElementNode):
+            raise XMLSerDesError('expected element but got attribute', xpath=_xpath)
+        return nd.elt
 
     @abstractmethod  # pragma: no cover
     def xml_node(self, obj, tag, _xpath=[]):
