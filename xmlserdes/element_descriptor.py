@@ -92,6 +92,9 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         """
         return self.type_descr.xml_element(self.value_from(obj), self.tag, _xpath)
 
+    def xml_node(self, obj, _xpath=[]):
+        return self.type_descr.xml_node(self.value_from(obj), self.tag, _xpath)
+
     def extract_from(self, elt, _xpath=[]):
         """
         Deserialize, from an XML element, a value of the relevant type.
