@@ -458,6 +458,7 @@ class List(TypeDescriptor):
         self.contained_tag = contained_tag
 
     def xml_node(self, obj, tag, _xpath=[]):
+        # TODO: Ensure tag does not start with '@', as early as possible.
         elt = XMLElementNode(tag)
         for i, obj_elt in enumerate(obj):
             child = self.contained_descriptor.xml_node(
@@ -472,6 +473,7 @@ class List(TypeDescriptor):
         return '%s[%d]' % (self.contained_tag, (i_0b + 1))
 
     def _extract_from(self, elt, _xpath):
+        # TODO: Ensure no attributes in elt.
         return [self.contained_descriptor.extract_from(child_elt, self.contained_tag,
                                                        _xpath + [self.child_xpath_component(i)])
                 for i, child_elt in enumerate(elt)]
