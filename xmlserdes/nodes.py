@@ -24,6 +24,9 @@ class XMLAttributeNode(object):
     def append_child(self, ch):
         raise ValueError('cannot append child to XMLAttributeNode')
 
+    def append_to(self, parent_elt):
+        parent_elt.append_attrib(self)
+
 
 def make_XMLNode(tag, *args):
     return XMLElementNode(tag, *args)
