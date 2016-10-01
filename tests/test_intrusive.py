@@ -456,14 +456,20 @@ class TestBadMetaclassUse(object):
 @pytest.mark.skipif(sys.version_info < (3, 4),
                     reason='requires Python 3.4 or higher')
 class TestEnum(object):
-    def test_round_trip(self):
+    try:
+        # Tests will only actually run under correct Python, so fine to
+        # ignore the ImportError if we don't find the 'enum' module at
+        # class-definition time.
         from enum import Enum
         Animal = Enum('Animal', 'Cat Dog Rabbit')
+    except ImportError:
+        pass
 
+    def test_round_trip(self):
         class PetDetails(XMLSerializableNamedTuple):
-            xml_descriptor = [('type', Animal), ('weight', float)]
+            xml_descriptor = [('type', self.Animal), ('weight', float)]
 
-        pd = PetDetails(Animal.Dog, 42.5)
+        pd = PetDetails(self.Animal.Dog, 42.5)
         pd_xml = pd.as_xml('pet-details')
         assert str_from_xml_elt(pd_xml) == ('<pet-details><type>Dog</type>'
                                             '<weight>42.5</weight></pet-details>')
