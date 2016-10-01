@@ -6,3 +6,7 @@ class XMLElementNode(object):
         elt = etree.Element(tag)
         elt.text = text
         self.elt = elt
+
+
+def make_XMLNode(tag, *args):
+    return XMLElementNode(tag, *args)
