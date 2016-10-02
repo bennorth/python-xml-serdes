@@ -542,13 +542,16 @@ class Instance(TypeDescriptor):
                                               got_tags=got_tags,
                                               xpath=_xpath)
 
+    def _ctor_args(self, elt, _xpath):
+        return [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
+                for child_elt, descr_elt in zip(elt, self.xml_descriptor)]
+
     def _extract_from(self, elt, _xpath):
         descr = self.xml_descriptor
         self._verify_children(elt, _xpath)
 
         ctor = self.constructor
-        ctor_args = [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
-                     for child_elt, descr_elt in zip(elt, descr)]
+        ctor_args = self._ctor_args(elt, _xpath)
 
         return ctor(*ctor_args)
 
