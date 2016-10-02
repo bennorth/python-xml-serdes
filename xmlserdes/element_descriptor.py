@@ -64,7 +64,8 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
 
         if len(tup) == 2:
             tag, td = tup
-            return cls(tag, operator.attrgetter(tag), tag, cls._ensure_TypeDescriptor(td))
+            slot = (tag[1:] if tag[0] == '@' else tag)
+            return cls(tag, operator.attrgetter(slot), slot, cls._ensure_TypeDescriptor(td))
         elif len(tup) == 3:
             tag, vf, td = tup
             vslot = None
