@@ -532,7 +532,10 @@ class Instance(TypeDescriptor):
 
     @staticmethod
     def _canonical_tags_list(descr):
-        return [e.tag for e in descr]
+        all_tags = [e.tag for e in descr]
+        attrib_tags = sorted(t for t in all_tags if t[0] == '@')
+        child_tags = [t for t in all_tags if t[0] != '@']
+        return attrib_tags + child_tags
 
     def _verify_children(self, elt, _xpath):
         got_tags = [ch.tag for ch in elt]
