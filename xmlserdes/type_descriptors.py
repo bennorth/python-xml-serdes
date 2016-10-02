@@ -7,7 +7,7 @@ from lxml import etree
 
 import xmlserdes
 from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
-from xmlserdes.nodes import XMLElementNode, make_XMLNode
+from xmlserdes.nodes import XMLElementNode, XMLAttributeNode, make_XMLNode
 
 import collections  # noqa
 
@@ -547,8 +547,15 @@ class Instance(TypeDescriptor):
                                               xpath=_xpath)
 
     def _ctor_args(self, elt, _xpath):
-        return [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
-                for child_elt, descr_elt in zip(elt, self.xml_descriptor)]
+        elt_children = iter(elt)
+        ctor_args = []
+        for elt_descr in self.xml_descriptor:
+            tag = elt_descr.tag
+            node = (XMLAttributeNode(tag, elt.attrib[tag[1:]]) if tag[0] == '@'
+                    else next(elt_children))
+            ctor_args.append(elt_descr.extract_from(node, _xpath + [tag]))
+
+        return ctor_args
 
     def _extract_from(self, elt, _xpath):
         self._verify_children(elt, _xpath)
