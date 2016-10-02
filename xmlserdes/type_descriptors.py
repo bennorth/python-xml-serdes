@@ -520,6 +520,7 @@ class Instance(TypeDescriptor):
             raise ValueError('class "%s" has no xml_descriptor' % cls.__name__)
 
         self.xml_descriptor = cls.xml_descriptor
+        self.expected_tags = self._canonical_tags_list(self.xml_descriptor)
         self.constructor = cls
 
     def xml_node(self, obj, tag, _xpath=[]):
@@ -535,7 +536,7 @@ class Instance(TypeDescriptor):
 
     def _extract_from(self, elt, _xpath):
         descr = self.xml_descriptor
-        exp_tags = [e.tag for e in descr]
+        exp_tags = self.expected_tags
         got_tags = [ch.tag for ch in elt]
         if got_tags != exp_tags:
             raise XMLSerDesWrongChildrenError(exp_tags=exp_tags,
