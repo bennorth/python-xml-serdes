@@ -547,13 +547,8 @@ class Instance(TypeDescriptor):
                 for child_elt, descr_elt in zip(elt, self.xml_descriptor)]
 
     def _extract_from(self, elt, _xpath):
-        descr = self.xml_descriptor
         self._verify_children(elt, _xpath)
-
-        ctor = self.constructor
-        ctor_args = self._ctor_args(elt, _xpath)
-
-        return ctor(*ctor_args)
+        return self.constructor(*self._ctor_args(elt, _xpath))
 
 
 class NumpyValidityAssertionMixin(object):
