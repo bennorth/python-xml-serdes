@@ -529,6 +529,10 @@ class Instance(TypeDescriptor):
             child_nd.append_to(nd)
         return nd
 
+    @staticmethod
+    def _canonical_tags_list(descr):
+        return [e.tag for e in descr]
+
     def _extract_from(self, elt, _xpath):
         descr = self.xml_descriptor
         exp_tags = [e.tag for e in descr]
