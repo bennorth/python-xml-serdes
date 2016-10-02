@@ -97,12 +97,6 @@ class Rectangle(XMLSerializable):
     def __eq__(self, other):
         return self.width == other.width and self.height == other.height
 
-    @classmethod
-    def from_xml_dict(cls, dct, _xpath=[]):
-        if list(dct) != ['width', 'height']:
-            raise ValueError('wrong tags')
-        return cls(*dct.values())
-
 
 class TestRectangle(object):
     def test_equality(self):
