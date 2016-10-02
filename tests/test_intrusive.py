@@ -8,6 +8,7 @@ from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
 
 
 from collections import OrderedDict
+from itertools import permutations
 import numpy as np
 from lxml import etree
 import sys
@@ -318,6 +319,24 @@ class TestNamedTupleAttributes(object):
         s = FruitSalad(7, 'bowl')
         assert (str_from_xml_elt(s.as_xml())
                 == '<FruitSalad n-apples="7"><put-in>bowl</put-in></FruitSalad>')
+
+
+class Substance(XMLSerializableNamedTuple):
+    xml_descriptor = [('name', str),
+                      ('@earth', int), ('@air', int), ('@fire', int), ('@water', int)]
+
+
+class TestAttributePermutations(object):
+    def test_create_attribute_ordering(self):
+        elt_fields = Substance._fields[1:]
+        composition = dict((c, 10 + i) for i, c in enumerate(elt_fields))
+        chalk = Substance('chalk', 10, 11, 12, 13)
+        for elements in permutations(elt_fields):
+            attribs_str = ''.join(' {0}="{1}"'.format(e, composition[e]) for e in elements)
+            xml_str = '<Substance{}><name>chalk</name></Substance>'.format(attribs_str)
+            xml = etree.fromstring(xml_str)
+            chalk1 = Substance.from_xml(xml, 'Substance')
+            assert chalk1 == chalk
 
 
 class TestBadNamedTupleConstruction(object):
