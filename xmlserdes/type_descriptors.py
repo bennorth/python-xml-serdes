@@ -544,12 +544,7 @@ class Instance(TypeDescriptor):
 
     def _extract_from(self, elt, _xpath):
         descr = self.xml_descriptor
-        exp_tags = self.expected_tags
-        got_tags = [ch.tag for ch in elt]
-        if got_tags != exp_tags:
-            raise XMLSerDesWrongChildrenError(exp_tags=exp_tags,
-                                              got_tags=got_tags,
-                                              xpath=_xpath)
+        self._verify_children(elt, _xpath)
 
         ctor = self.constructor
         ctor_args = [descr_elt.extract_from(child_elt, _xpath + [child_elt.tag])
