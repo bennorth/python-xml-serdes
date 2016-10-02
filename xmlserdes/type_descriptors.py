@@ -697,6 +697,7 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
             )
             for nm in dtype.names
         ]
+        self.expected_tags = [e.tag for e in self.xml_descriptor]
 
     def xml_node(self, obj, tag, _xpath=[]):
         self.assert_valid(obj, np.void, 'numpy scalar', 0, _xpath)
