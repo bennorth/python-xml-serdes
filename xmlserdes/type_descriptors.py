@@ -538,7 +538,8 @@ class Instance(TypeDescriptor):
         return attrib_tags + child_tags
 
     def _verify_children(self, elt, _xpath):
-        got_tags = [ch.tag for ch in elt]
+        got_tags = (['@' + tag for tag in sorted(elt.attrib.keys())]
+                    + [ch.tag for ch in elt])
         exp_tags = self.expected_tags
         if got_tags != exp_tags:
             raise XMLSerDesWrongChildrenError(exp_tags=exp_tags,
