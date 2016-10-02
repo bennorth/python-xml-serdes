@@ -534,6 +534,14 @@ class Instance(TypeDescriptor):
     def _canonical_tags_list(descr):
         return [e.tag for e in descr]
 
+    def _verify_children(self, elt, _xpath):
+        got_tags = [ch.tag for ch in elt]
+        exp_tags = self.expected_tags
+        if got_tags != exp_tags:
+            raise XMLSerDesWrongChildrenError(exp_tags=exp_tags,
+                                              got_tags=got_tags,
+                                              xpath=_xpath)
+
     def _extract_from(self, elt, _xpath):
         descr = self.xml_descriptor
         exp_tags = self.expected_tags
