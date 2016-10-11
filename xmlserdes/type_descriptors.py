@@ -199,6 +199,9 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
                     'list descriptor: expected 1 or 2 elements but got %d' % len(descr))
             return List(cls.from_terse(contained_descr), tag)
 
+        if isinstance(descr, np.dtype):
+            return DTypeScalar(descr)
+
         if isinstance(descr, tuple):
             if len(descr) == 0:
                 raise ValueError('empty tuple descriptor')
