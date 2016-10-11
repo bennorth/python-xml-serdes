@@ -6,7 +6,7 @@ import xmlserdes.nodes as XN
 make_TD = X.TypeDescriptor.from_terse
 
 
-class TestBadAppend(object):
+class TestBadAttributeActions(object):
     @pytest.mark.parametrize(
         'err_fragment, tag',
         [('child', 'height'), ('attribute', '@height')])
