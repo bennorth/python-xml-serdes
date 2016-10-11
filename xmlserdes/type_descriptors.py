@@ -469,6 +469,10 @@ class List(TypeDescriptor):
         self.contained_descriptor = contained_descriptor
         self.contained_tag = contained_tag
 
+    @staticmethod
+    def tag_is_valid(tag):
+        return tag[0] != '@'
+
     def xml_node(self, obj, tag, _xpath=[]):
         # TODO: Ensure tag does not start with '@', as early as possible.
         elt = XMLElementNode(tag)
@@ -534,6 +538,10 @@ class Instance(TypeDescriptor):
         self.xml_descriptor = cls.xml_descriptor
         self.expected_tags = self._canonical_tags_list(self.xml_descriptor)
         self.constructor = cls
+
+    @staticmethod
+    def tag_is_valid(tag):
+        return tag[0] != '@'
 
     def xml_node(self, obj, tag, _xpath=[]):
         nd = XMLElementNode(tag)
@@ -723,6 +731,10 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
         ]
         self.expected_tags = [e.tag for e in self.xml_descriptor]
 
+    @staticmethod
+    def tag_is_valid(tag):
+        return tag[0] != '@'
+
     def xml_node(self, obj, tag, _xpath=[]):
         self.assert_valid(obj, np.void, 'numpy scalar', 0, _xpath)
         return Instance.xml_node(self, obj, tag, _xpath)
@@ -836,6 +848,10 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     def __init__(self, dtype, contained_tag):
         self.dtype = dtype
         List.__init__(self, DTypeScalar(dtype), contained_tag)
+
+    @staticmethod
+    def tag_is_valid(tag):
+        return tag[0] != '@'
 
     def xml_node(self, obj, tag, _xpath=[]):
         self.assert_valid(obj, np.ndarray, 'ndarray', 1, _xpath)
