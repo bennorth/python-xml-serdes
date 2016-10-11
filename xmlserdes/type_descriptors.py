@@ -31,6 +31,14 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
     - :func:`extract_from` --- extract an object of the correct type
       from a given XML element.
 
+    The following static method is also available:
+
+    - :func:`tag_is_valid` --- return ``True`` or ``False`` according to
+      whether the given tag is valid for this type-descriptor.  For
+      example, lists cannot be stored in attributes, and so a tag
+      beginning with ``'@'`` is not valid for a type-descriptor storing
+      a list.
+
     This base type is not useful.  Concrete derived types are:
 
     - :class:`xmlserdes.Atomic` --- fundamental type such as integer or string.
@@ -254,6 +262,10 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         """
         Return either an xml element or an xml attribute.
         """
+
+    @staticmethod
+    def tag_is_valid(tag):
+        return True
 
     def extract_from(self, elt, expected_tag, _xpath=[]):
         """
