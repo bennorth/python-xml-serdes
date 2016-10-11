@@ -17,6 +17,11 @@ class TestBadAttributeActions(object):
             ch = XN.make_XMLNode(tag, '6 feet')
             ch.append_to(n)
 
+    def test_attribute_no_text(self):
+        with pytest.raises_regexp(ValueError,
+                                  'expected "text" when constructing XMLAttributeNode'):
+            n = XN.make_XMLNode('@weight')
+
 
 class TestBadElement(object):
     def test_request_element_when_attribute(self):
