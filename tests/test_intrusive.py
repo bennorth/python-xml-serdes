@@ -265,8 +265,7 @@ class TestBadAttributeContents(object):
         with pytest.raises_regexp(ValueError, 'tag "@dimensions" not valid'):
             dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
             class BadList(XMLSerializableNamedTuple):
-                # TODO: Provide 'terse' shortcut for DTypeScalar
-                xml_descriptor = [('@dimensions', DTypeScalar(dims_dtype))]
+                xml_descriptor = [('@dimensions', dims_dtype)]
 
 
 class RectangleCollection(XMLSerializableNamedTuple):
