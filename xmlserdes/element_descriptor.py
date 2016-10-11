@@ -30,6 +30,13 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
     :meth:`xmlserdes.ElementDescriptor.new_from_tuple` method.
     """
 
+    def __new__(cls, *args, **kwargs):
+        elt_descr = super(ElementDescriptor, cls).__new__(cls, *args, **kwargs)
+        if not elt_descr.type_descr.tag_is_valid(elt_descr.tag):
+            raise ValueError('tag "{0}" not valid for complex type-descriptor'
+                             .format(elt_descr.tag))
+        return elt_descr
+
     @classmethod
     def _ensure_TypeDescriptor(cls, obj):
         """
