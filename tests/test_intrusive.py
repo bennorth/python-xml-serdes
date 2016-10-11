@@ -5,6 +5,7 @@ import pytest
 from xmlserdes import XMLSerializable, XMLSerializableNamedTuple
 from xmlserdes.utils import str_from_xml_elt
 from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
+from xmlserdes.type_descriptors import DTypeScalar
 
 
 from collections import OrderedDict
@@ -241,6 +242,31 @@ class TestNestedNamedTuple(object):
             kwargs['pretty_print'] = True
         p = Pattern(33, [Circle(10, 'blue'), Circle(12, 'red')])
         assert str_from_xml_elt(p.as_xml(tag), **kwargs) == p.as_xml_str(tag, **kwargs)
+
+
+class TestBadAttributeContents(object):
+    def test_instance_attribute(self):
+        with pytest.raises_regexp(ValueError, 'tag "@circle" not valid'):
+            class BadInstance(XMLSerializableNamedTuple):
+                xml_descriptor = [('@circle', Circle)]
+
+    def test_list_attribute(self):
+        with pytest.raises_regexp(ValueError, 'tag "@circles" not valid'):
+            class BadList(XMLSerializableNamedTuple):
+                xml_descriptor = [('@circles', [Circle, 'circle'])]
+
+    def test_numpy_record_vector_attribute(self):
+        with pytest.raises_regexp(ValueError, 'tag "@dimensions" not valid'):
+            dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
+            class BadList(XMLSerializableNamedTuple):
+                xml_descriptor = [('@dimensions', (np.ndarray, dims_dtype, 'dims'))]
+
+    def test_dtype_scalar_attribute(self):
+        with pytest.raises_regexp(ValueError, 'tag "@dimensions" not valid'):
+            dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
+            class BadList(XMLSerializableNamedTuple):
+                # TODO: Provide 'terse' shortcut for DTypeScalar
+                xml_descriptor = [('@dimensions', DTypeScalar(dims_dtype))]
 
 
 class RectangleCollection(XMLSerializableNamedTuple):
