@@ -56,6 +56,7 @@ class XMLSerializableMeta(type):
         cls_dict['slot_name_from_tag_name'] = meta.build_map_as_ordered_dict(xml_descriptor)
 
         cls = super(XMLSerializableMeta, meta).__new__(meta, cls_name, bases, cls_dict)
+        cls.xml_type_descriptor = Instance(cls)
 
         # Any further checks on cls here?
         return cls
@@ -81,7 +82,7 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
         """
 
         tag = tag or self.xml_default_tag
-        instance_td = Instance(self.__class__)  # TODO: Cache this t.d. in class?
+        instance_td = self.xml_type_descriptor
         return instance_td.xml_element(self, tag, [tag])
 
     def as_xml_str(self, tag=None, **kwargs):
@@ -96,34 +97,9 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     def from_xml(cls, xml_elt, expected_tag, _xpath=[]):
         """
         Return a new instance of ``cls`` by deserializing the given XML
-        element, which must have the given expected tag.  The real work
-        is done by a class method ``from_xml_dict``, which the derived
-        class must provide.
+        element, which must have the given expected tag.
         """
-
-        _xpath = _xpath or [expected_tag]
-        if xml_elt.tag != expected_tag:
-            raise XMLSerDesError('expected tag "%s" but got "%s"'
-                                 % (expected_tag, xml_elt.tag),
-                                 xpath=_xpath[:-1])
-
-        ordered_dict = cls._ordered_dict_from_xml(xml_elt, _xpath)
-        # Might throw exception if class doesn't care about deserialization:
-        return cls.from_xml_dict(ordered_dict, _xpath)
-
-    @classmethod
-    def _ordered_dict_from_xml(cls, xml_elt, _xpath):
-        descr = cls.xml_descriptor
-
-        # Individual wrong tags will be caught later.
-        if len(xml_elt) != len(descr):
-            raise XMLSerDesWrongChildrenError(exp_tags=[e.tag for e in descr],
-                                              got_tags=[ch.tag for ch in xml_elt],
-                                              xpath=_xpath)
-
-        return collections.OrderedDict(
-            (child_elt.tag, descr_elt.extract_from(child_elt, _xpath + [child_elt.tag]))
-            for child_elt, descr_elt in zip(xml_elt, descr))
+        return cls.xml_type_descriptor.extract_from(xml_elt, expected_tag, _xpath)
 
 
 class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
@@ -169,7 +145,11 @@ class XMLSerializableNamedTupleMeta(XMLSerializableMeta):
         namedtuple_cls = collections.namedtuple(cls_name,
                                                 list(xml_cls.slot_name_from_tag_name.values()))
 
-        return type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
+        # Can't add 'xml_type_descriptor' to 'direct_cls_dict' because the class
+        # must exist before we can make an Instance type-descriptor for it.
+        final_cls = type.__new__(meta, cls_name, (namedtuple_cls, xml_cls), direct_cls_dict)
+        final_cls.xml_type_descriptor = Instance(final_cls)
+        return final_cls
 
 
 class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta,
@@ -231,25 +211,19 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     ShinyCircle(radius=42)
     >>> sc.radius
     42
-    >>> print(xmlserdes.utils.str_from_xml_elt(sc.as_xml()))
+    >>> sc_xml = sc.as_xml()
+    >>> print(xmlserdes.utils.str_from_xml_elt(sc_xml))
     <Circle><radius>42</radius></Circle>
 
     (Note that the tag in the XML is ``Circle`` and not ``ShinyCircle``.)
+
+    But extracting a ``ShinyCircle`` from an XML element works as
+    expected:
+
+    >>> sc_round_trip = ShinyCircle.from_xml(sc_xml, 'Circle')
+    >>> print(sc_round_trip)
+    ShinyCircle(radius=42)
     """
 
     xml_default_tag = None
     xml_descriptor = []
-
-    @classmethod
-    def _verify_children(cls, ordered_dict, _xpath):
-        tags_got = list(ordered_dict.keys())
-        tags_exp = list(cls.slot_name_from_tag_name.keys())
-        if tags_got != tags_exp:
-            raise XMLSerDesWrongChildrenError(exp_tags=tags_exp,
-                                              got_tags=tags_got,
-                                              xpath=_xpath)
-
-    @classmethod
-    def from_xml_dict(cls, ordered_dict, _xpath=[]):
-        cls._verify_children(ordered_dict, _xpath)
-        return cls._make(ordered_dict.values())

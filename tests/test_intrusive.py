@@ -97,12 +97,6 @@ class Rectangle(XMLSerializable):
     def __eq__(self, other):
         return self.width == other.width and self.height == other.height
 
-    @classmethod
-    def from_xml_dict(cls, dct, _xpath=[]):
-        if list(dct) != ['width', 'height']:
-            raise ValueError('wrong tags')
-        return cls(*dct.values())
-
 
 class TestRectangle(object):
     def test_equality(self):
@@ -339,7 +333,7 @@ class TestBadMethodUsage(object):
             Rectangle.from_xml(bad_xml, 'rect')
 
     @pytest.mark.parametrize(
-        'bad_dict_items,cmp_txt',
+        'bad_tag_val_pairs,cmp_txt',
         [([('a', 1), ('b', 2), ('c', 3)],
           r'\[missing: radius, missing: colour, unexpected: a, unexpected: b, unexpected: c\]'),
          ([('a', 1), ('b', 2)],
@@ -348,14 +342,16 @@ class TestBadMethodUsage(object):
           r'\[as-expected: radius, missing: colour, unexpected: b\]')],
         ids=['wrong-n-children', 'wrong-tags', 'one-wrong-tag'])
     #
-    def test_bad_ordered_dict(self, bad_dict_items, cmp_txt):
-        # Shouldn't occur in normal use because from_xml() checks on
-        # construction of the dictionary that tags are as expected.
-        bad_dict = OrderedDict(bad_dict_items)
+    def test_bad_child_elements(self, bad_tag_val_pairs, cmp_txt):
         with pytest.raises_regexp(XMLSerDesWrongChildrenError,
                                   'mismatched children: ' + cmp_txt,
-                                  xpath=[]):
-            Circle.from_xml_dict(bad_dict)
+                                  xpath=['Circle']):
+            bad_xml = etree.Element('Circle')
+            for k, v in bad_tag_val_pairs:
+                elt = etree.Element(k)
+                elt.text = str(v)
+                bad_xml.append(elt)
+            Circle.from_xml(bad_xml, 'Circle')
 
     def test_wrong_top_level_tag(self):
         bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
@@ -396,7 +392,7 @@ class TestDeepError(object):
                                       </building>""")
 
         with pytest.raises_regexp(XMLSerDesError,
-                                  'expected tag "colour" but got "size"',
+                                  'missing: colour.*unexpected: size',
                                   ['building', 'rooms', 'room[2]', 'chairs', 'chair[3]']):
             Building.from_xml(bad_xml, 'building')
 

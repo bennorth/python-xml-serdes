@@ -206,7 +206,7 @@ class TestInstanceTypes(object):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
         with pytest.raises_regexp(XMLSerDesError,
-                                  'expected tag "width" but got "a"',
+                                  '.*missing: width.*unexpected: a',
                                   xpath=['rect']):
             td.extract_from(bad_xml, 'rect')
 
@@ -307,7 +307,7 @@ class TestNumpyRecordStructured(_TestNumpyBase):
           'mismatched children',
           ['rectangles', 'rect[3]']),
          ('<rect><wd>42</wd><ht>100</ht></rect>',
-          'expected tag "width" but got "wd"',
+          'missing: width.*unexpected: wd',
           ['rectangles', 'rect[1]'])],
         ids=['wrong-n-elts', 'wrong-n-elts-third-child', 'wrong-child-tag'])
     #
