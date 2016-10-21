@@ -61,7 +61,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         """
         Method to construct an instance of
         :class:`xmlserdes.TypeDescriptor` from a terse expression.  Many
-        types for the ``expression`` argument are supported:
+        types for the ``descr`` argument are supported:
 
         atomic type object
             A :class:`xmlserdes.Atomic` instance is created for that
