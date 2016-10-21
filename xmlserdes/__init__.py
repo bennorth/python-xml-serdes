@@ -21,16 +21,16 @@ from xmlserdes._version import __version__
 def SerDesDescriptor(children):
     """
     Convenience function for constructing a list of
-    :class:`xmlserdes.ElementDescriptor` instances from a list of
+    :class:`~xmlserdes.ElementDescriptor` instances from a list of
     abbreviated tuples.
 
     :param children: descriptions of property/sub-element mappings; each
         should be a tuple suitable for passing to
-        :meth:`xmlserdes.ElementDescriptor.new_from_tuple`.
+        :meth:`ElementDescriptor.new_from_tuple<xmlserdes.ElementDescriptor.new_from_tuple>`.
 
     :type children: iterable of tuples
 
-    :return: New list of instances of :class:`xmlserdes.ElementDescriptor`.
+    :return: New list of instances of :class:`~xmlserdes.ElementDescriptor`.
     """
 
     return list(map(ElementDescriptor.new_from_tuple, children))
@@ -75,11 +75,11 @@ def namedtuple(name, xml_descriptor):
 
     :param str name: the ``__name__`` of the defined class
 
-    :type xml_descriptor: list of :class:`xmlserdes.ElementDescriptor` instances
+    :type xml_descriptor: list of :class:`~xmlserdes.ElementDescriptor` instances
     :param xml_descriptor: list of field definitions
 
     The field names of the resulting class are taken from the ``tag``
-    fields of the individual :class:`xmlserdes.ElementDescriptor`
+    fields of the individual :class:`~xmlserdes.ElementDescriptor`
     instances within ``xml_descriptor``, and so the ``value_from`` field
     of each element-descriptor must be (equivalent to)
     ``attrgetter(tag)``.  This restriction might be lifted in future.

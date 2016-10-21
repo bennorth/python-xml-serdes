@@ -23,7 +23,7 @@ except ImportError:
 
 class TypeDescriptor(six.with_metaclass(ABCMeta)):
     """
-    Instances of classes derived from :class:`xmlserdes.TypeDescriptor` support
+    Instances of classes derived from :class:`~xmlserdes.TypeDescriptor` support
     two operations on objects of a particular type:
 
     - :func:`xml_element` --- serialize a given object as an XML element.
@@ -41,11 +41,11 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
     This base type is not useful.  Concrete derived types are:
 
-    - :class:`xmlserdes.Atomic` --- fundamental type such as integer or string.
-    - :class:`xmlserdes.List` --- homogeneous list of elements.
-    - :class:`xmlserdes.Instance` --- instance of class, with fixed list of fields.
-    - :class:`xmlserdes.NumpyAtomicVector` --- Numpy vector with atomic ``dtype``.
-    - :class:`xmlserdes.NumpyRecordVectorStructured` --- Numpy vector of record ``dtype``.
+    - :class:`~xmlserdes.Atomic` --- fundamental type such as integer or string.
+    - :class:`~xmlserdes.List` --- homogeneous list of elements.
+    - :class:`~xmlserdes.Instance` --- instance of class, with fixed list of fields.
+    - :class:`~xmlserdes.NumpyAtomicVector` --- Numpy vector with atomic ``dtype``.
+    - :class:`~xmlserdes.NumpyRecordVectorStructured` --- Numpy vector of record ``dtype``.
 
     See those classes' individual docstrings for more details.
     """
@@ -60,11 +60,11 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
     def from_terse(cls, descr):
         """
         Method to construct an instance of
-        :class:`xmlserdes.TypeDescriptor` from a terse expression.  Many
+        :class:`~xmlserdes.TypeDescriptor` from a terse descriptor.  Many
         types for the ``descr`` argument are supported:
 
         atomic type object
-            A :class:`xmlserdes.Atomic` instance is created for that
+            A :class:`~xmlserdes.Atomic` instance is created for that
             type.  The list of known 'atomic' types is stored in
             ``TypeDescriptor.atomic_types``.
 
@@ -73,14 +73,14 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             <answer>42</answer>
 
         bool type object
-            An instance of :class:`xmlserdes.AtomicBool` is created.
+            An instance of :class:`~xmlserdes.AtomicBool` is created.
 
             >>> td = TypeDescriptor.from_terse(bool)
             >>> print(xmlserdes.utils.str_from_xml_elt(td.xml_element(False, 'is-blue')))
             <is-blue>false</is-blue>
 
         Enum-derived class [Python 3.4 onwards]
-            An instance of :class:`xmlserdes.AtomicEnum` is created.
+            An instance of :class:`~xmlserdes.AtomicEnum` is created.
 
             >>> import sys
             >>> if sys.version_info >= (3, 4):
@@ -94,7 +94,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             <pet>Cat</pet>
 
         string instance
-            A :class:`xmlserdes.Atomic` instance is created, where the
+            A :class:`~xmlserdes.Atomic` instance is created, where the
             contained type is found by interpreting the given string as
             a Numpy dtype code.
 
@@ -103,7 +103,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             <answer>42</answer>
 
         non-atomic type object
-            A :class:`xmlserdes.Instance` instance is created, where the
+            A :class:`~xmlserdes.Instance` instance is created, where the
             contained type is the given type.  The type must have an
             ``xml_descriptor`` attribute.
 
@@ -117,7 +117,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             specify the XML behaviour of the one field of ``Blob``.)
 
         list instance
-            A :class:`xmlserdes.List` instance is created.
+            A :class:`~xmlserdes.List` instance is created.
 
             The given list must have either one or two elements.
 
@@ -142,14 +142,14 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
         tuple instance
             Depending on the tuple length, either a
-            :class:`xmlserdes.NumpyAtomicVector` or a
-            :class:`xmlserdes.NumpyRecordVectorStructured` is created.
+            :class:`~xmlserdes.NumpyAtomicVector` or a
+            :class:`~xmlserdes.NumpyRecordVectorStructured` is created.
             In all cases, the first element of the tuple must be the
             Numpy.ndarray type object
 
             two-element tuple
                 The second tuple element must be an atomic Numpy dtype,
-                and a :class:`xmlserdes.NumpyAtomicVector` for that
+                and a :class:`~xmlserdes.NumpyAtomicVector` for that
                 dtype is returned.
 
                 >>> td = xmlserdes.TypeDescriptor.from_terse((np.ndarray, np.int32))
@@ -160,7 +160,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
             three-element tuple
                 The second element must be a record dtype, and the third
                 element must be a string naming the contained elements.  A
-                :class:`xmlserdes.NumpyRecordVectorStructured` is created.
+                :class:`~xmlserdes.NumpyRecordVectorStructured` is created.
 
                 This example uses very short tag names to keep the output
                 of a reasonable length:
@@ -253,7 +253,7 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
         :type tag: str
         :rtype: XML element (as :class:`etree.Element` instance)
 
-        See examples under subclasses of :class:`xmlserdes.TypeDescriptor` for details.
+        See examples under subclasses of :class:`~xmlserdes.TypeDescriptor` for details.
         """
         nd = self.xml_node(obj, tag, _xpath)
         if not isinstance(nd, XMLElementNode):
@@ -296,14 +296,14 @@ class TypeDescriptor(six.with_metaclass(ABCMeta)):
 
 class Atomic(TypeDescriptor):
     """
-    A :class:`xmlserdes.TypeDescriptor` for handling 'atomic' types.  The concept
+    A :class:`~xmlserdes.TypeDescriptor` for handling 'atomic' types.  The concept
     of an 'atomic' type is not explicitly defined, but anything which
     can be faithfully represented as a string via ``str()``, and can be
     parsed from a string using the type name, will work.
 
     :param inner_type: The native Python atomic type to be serialized and deserialized.
 
-    For example, an :class:`xmlserdes.Atomic` type-descriptor to handle an integer:
+    For example, an :class:`~xmlserdes.Atomic` type-descriptor to handle an integer:
 
     >>> atomic_type_descriptor = xmlserdes.Atomic(int)
 
@@ -344,7 +344,7 @@ class Atomic(TypeDescriptor):
 
 class AtomicBool(TypeDescriptor):
     """
-    A special-case :class:`xmlserdes.TypeDescriptor` for handling atomic
+    A special-case :class:`~xmlserdes.TypeDescriptor` for handling atomic
     Boolean values.  The Python value ``True`` is serialized as the
     string ``true`` (note the case difference), and similarly for the
     value ``False``.
@@ -394,7 +394,7 @@ class AtomicBool(TypeDescriptor):
 if HAVE_ENUM:
     class AtomicEnum(TypeDescriptor):
         """
-        A :class:`xmlserdes.TypeDescriptor` for handling `Enum`-derived types, available
+        A :class:`~xmlserdes.TypeDescriptor` for handling `Enum`-derived types, available
         starting with Python 3.4.  Values are de/serialized as their string `name`.
 
         >>> from enum import Enum
@@ -437,15 +437,15 @@ if HAVE_ENUM:
 
 class List(TypeDescriptor):
     """
-    A :class:`xmlserdes.TypeDescriptor` for handling homogeneous lists of
+    A :class:`~xmlserdes.TypeDescriptor` for handling homogeneous lists of
     elements.
 
     :param contained_descriptor: specification of the type of each element in the lists
-    :type contained_descriptor: :class:`xmlserdes.TypeDescriptor`
+    :type contained_descriptor: :class:`~xmlserdes.TypeDescriptor`
     :param contained_tag: tag for each sub-element of the sequence element
     :type contained_tag: str
 
-    For example, a :class:`xmlserdes.List` type-descriptor to handle lists of
+    For example, a :class:`~xmlserdes.List` type-descriptor to handle lists of
     integers, where each integer in the list will be represented by an
     XML element with tag ``answer``.
 
@@ -500,12 +500,12 @@ class List(TypeDescriptor):
 
 class Instance(TypeDescriptor):
     """
-    A :class:`xmlserdes.TypeDescriptor` for handling homogeneous instances of
+    A :class:`~xmlserdes.TypeDescriptor` for handling homogeneous instances of
     a 'complex' class having an 'XML descriptor'.
 
     :param cls: class whose instances are to be de/serialized; must have
         attribute named ``xml_descriptor`` which is a list of instances
-        of :class:`xmlserdes.ElementDescriptor`
+        of :class:`~xmlserdes.ElementDescriptor`
 
     .. note:: Possible to-do is allow separate passing-in of descriptor
         rather than requiring it to be an attribute of the to-be-serialized
@@ -601,7 +601,7 @@ class NumpyValidityAssertionMixin(object):
 
 class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
     """
-    A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
+    A :class:`~xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is an
     'atomic' type.  Serialization is done as a CSV string.  Complex
     types are not supported.
@@ -641,7 +641,7 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
 
 class DTypeScalar(Instance, NumpyValidityAssertionMixin):
     """
-    A :class:`xmlserdes.TypeDescriptor` for handling Numpy scalars of
+    A :class:`~xmlserdes.TypeDescriptor` for handling Numpy scalars of
     custom dtype.
 
     The XML representation has one sub-element per field of the dtype.
@@ -748,7 +748,7 @@ class DTypeScalar(Instance, NumpyValidityAssertionMixin):
 
 class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     """
-    A :class:`xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
+    A :class:`~xmlserdes.TypeDescriptor` for handling Numpy vectors (i.e.,
     one-dimensional ``ndarray`` instances) where the ``dtype`` is a
     Numpy record type.  The record-type's fields can be of scalar atomic
     type or custom ``dtype`` in turn.
@@ -868,14 +868,14 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
 def NumpyVector(dtype, contained_tag=None):
     """
     Convenience function to instantiate an instance of the appropriate
-    :class:`xmlserdes.TypeDescriptor` subclass chosen from
+    :class:`~xmlserdes.TypeDescriptor` subclass chosen from
 
-    - :class:`xmlserdes.NumpyAtomicVector`
-    - :class:`xmlserdes.NumpyRecordVectorStructured`
+    - :class:`~xmlserdes.NumpyAtomicVector`
+    - :class:`~xmlserdes.NumpyRecordVectorStructured`
 
     If a ``contained_tag`` is given, a
-    :class:`xmlserdes.NumpyRecordVectorStructured` is created.  If not, a
-    :class:`xmlserdes.NumpyAtomicVector`.
+    :class:`~xmlserdes.NumpyRecordVectorStructured` is created.  If not, a
+    :class:`~xmlserdes.NumpyAtomicVector`.
 
     >>> import numpy as np
     >>> int_vector_td = xmlserdes.NumpyVector(np.int32)

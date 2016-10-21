@@ -12,7 +12,7 @@ XMLSerializableNamedTuple
 ElementDescriptor
 -----------------
 Most uses will be via the mechanism described in
-:meth:`xmlserdes.ElementDescriptor.new_from_tuple`.
+:meth:`ElementDescriptor.new_from_tuple<xmlserdes.ElementDescriptor.new_from_tuple>`.
 
 .. autoclass:: xmlserdes.ElementDescriptor
    :members:
@@ -26,7 +26,7 @@ SerDesDescriptor
 TypeDescriptor and subclasses
 -----------------------------
 Most uses will be via the mechanism described in
-:meth:`xmlserdes.TypeDescriptor.from_terse`.
+:meth:`TypeDescriptor.from_terse<xmlserdes.TypeDescriptor.from_terse>`.
 
 .. autoclass:: xmlserdes.TypeDescriptor
    :members:

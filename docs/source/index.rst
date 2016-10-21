@@ -58,7 +58,7 @@ achieved using the ``as_xml()`` method::
 The reference sections below give more details.  In particular, a full
 description of how the elements of the ``xml_descriptor`` are
 interpreted is given in
-:meth:`xmlserdes.ElementDescriptor.new_from_tuple`.
+:meth:`ElementDescriptor.new_from_tuple<xmlserdes.ElementDescriptor.new_from_tuple>`.
 
 
 .. toctree::

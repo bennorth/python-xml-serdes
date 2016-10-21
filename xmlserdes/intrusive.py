@@ -69,8 +69,8 @@ class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     ``from_xml``.  XML behaviour is specified via an ``xml_descriptor``
     class attribute (of the derived class), which is a list of
     element-descriptor tuples --- see
-    :meth:`xmlserdes.ElementDescriptor.new_from_tuple` and
-    :meth:`xmlserdes.TypeDescriptor.from_terse` for details.
+    :meth:`ElementDescriptor.new_from_tuple<xmlserdes.ElementDescriptor.new_from_tuple>` and
+    :meth:`TypeDescriptor.from_terse<xmlserdes.TypeDescriptor.from_terse>` for details.
     """
 
     xml_descriptor = []

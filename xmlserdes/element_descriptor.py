@@ -23,11 +23,11 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
     :type value_from: callable
     :param type_descr: type-descriptor which can de/serialize the Python object
         from/to the contents of an XML element
-    :type type_descr: subclass of :class:`xmlserdes.TypeDescriptor`
+    :type type_descr: subclass of :class:`~xmlserdes.TypeDescriptor`
 
     A more convenient way of constructing a
-    :class:`xmlserdes.ElementDescriptor` is to use the
-    :meth:`xmlserdes.ElementDescriptor.new_from_tuple` method.
+    :class:`~xmlserdes.ElementDescriptor` is to use the
+    :meth:`new_from_tuple<xmlserdes.ElementDescriptor.new_from_tuple>` method.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -43,7 +43,7 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         If ``obj`` is already an instance of (a subclass of)
         TypeDescriptor, return it unchanged, otherwise return a new
         TypeDescriptor constructed via
-        :meth:`xmlserdes.TypeDescriptor.from_terse`.
+        :meth:`TypeDescriptor.from_terse<xmlserdes.TypeDescriptor.from_terse>`.
         """
         if isinstance(obj, TypeDescriptor):
             return obj
@@ -52,7 +52,7 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
     @classmethod
     def new_from_tuple(cls, tup):
         """
-        Construct a new :class:`xmlserdes.ElementDescriptor` from a two-
+        Construct a new :class:`~xmlserdes.ElementDescriptor` from a two-
         or three-element tuple, covering the most common cases.
 
         :param tuple tup: two- or three-element tuple describing required instance
@@ -70,8 +70,8 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
           ``field_name_or_callable`` must be a callable.
 
         In both cases, the ``type_descriptor`` can either be an instance
-        of :class:`xmlserdes.TypeDescriptor`, or a 'terse' descriptor as understood by
-        :meth:`xmlserdes.TypeDescriptor.from_terse`.
+        of :class:`~xmlserdes.TypeDescriptor`, or a 'terse' descriptor as understood by
+        :meth:`TypeDescriptor.from_terse<xmlserdes.TypeDescriptor.from_terse>`.
         """
 
         if len(tup) == 2:
