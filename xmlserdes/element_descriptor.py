@@ -68,6 +68,10 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
           attribute and the resulting ``value_from`` is
           ``attrgetter(field_name_or_callable)``; otherwise
           ``field_name_or_callable`` must be a callable.
+
+        In both cases, the ``type_descriptor`` can either be an instance
+        of :class:`xmlserdes.TypeDescriptor`, or a 'terse' descriptor as understood by
+        :meth:`xmlserdes.TypeDescriptor.from_terse`.
         """
 
         if len(tup) == 2:
