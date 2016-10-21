@@ -12,16 +12,6 @@ instance of some class having multiple properties to be de/serialized.
 Support is provided for declarative specification of how this is to be
 done.
 
-Top-level functions
--------------------
-
-.. autofunction:: xmlserdes.serialize
-.. autofunction:: xmlserdes.deserialize
-
-See also :class:`xmlserdes.XMLSerializable` and
-:class:`xmlserdes.XMLSerializableNamedTuple` for an 'intrusive' API.
-
-
 Classes and functions
 ---------------------
 
