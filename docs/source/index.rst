@@ -12,26 +12,3 @@ instance of some class having multiple properties to be de/serialized.
 Support is provided for declarative specification of how this is to be
 done.
 
-Classes and functions
----------------------
-
-.. autoclass:: xmlserdes.XMLSerializable
-.. autoclass:: xmlserdes.XMLSerializableNamedTuple
-
-.. autoclass:: xmlserdes.ElementDescriptor
-   :members:
-   :member-order: bysource
-
-.. autofunction:: xmlserdes.SerDesDescriptor
-
-.. autoclass:: xmlserdes.TypeDescriptor
-   :members:
-
-.. autoclass:: xmlserdes.Atomic
-.. autoclass:: xmlserdes.List
-.. autoclass:: xmlserdes.Instance
-.. autoclass:: xmlserdes.DTypeScalar
-.. autoclass:: xmlserdes.NumpyAtomicVector
-.. autoclass:: xmlserdes.NumpyRecordVectorStructured
-
-.. autofunction:: xmlserdes.NumpyVector
