@@ -42,7 +42,8 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         """
         If ``obj`` is already an instance of (a subclass of)
         TypeDescriptor, return it unchanged, otherwise return a new
-        TypeDescriptor constructed via :meth:`from_terse`.
+        TypeDescriptor constructed via
+        :meth:`xmlserdes.TypeDescriptor.from_terse`.
         """
         if isinstance(obj, TypeDescriptor):
             return obj
