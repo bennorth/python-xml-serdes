@@ -169,6 +169,8 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
       or :meth:`as_xml_str<xmlserdes.XMLSerializable.as_xml_str>`
     * Deserializable from XML via class method :meth:`from_xml<xmlserdes.XMLSerializable.from_xml>`
 
+    Example:
+
     >>> class Rectangle(xmlserdes.XMLSerializableNamedTuple):
     ...     xml_default_tag = 'rect'
     ...     xml_descriptor = [('wd', int), ('ht', int)]
