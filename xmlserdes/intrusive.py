@@ -64,9 +64,13 @@ class XMLSerializableMeta(type):
 
 class XMLSerializable(six.with_metaclass(XMLSerializableMeta)):
     """
-    Base class for types which become serializable to XML via instance
-    method ``as_xml``, and deserializable from XML via class method
-    ``from_xml``.  XML behaviour is specified via an ``xml_descriptor``
+    Base class for types which become:
+
+    * Serializable to XML via instance method :meth:`as_xml<xmlserdes.XMLSerializable.as_xml>`
+      or :meth:`as_xml_str<xmlserdes.XMLSerializable.as_xml_str>`
+    * Deserializable from XML via class method :meth:`from_xml<xmlserdes.XMLSerializable.from_xml>`
+
+    XML behaviour is specified via an ``xml_descriptor``
     class attribute (of the derived class), which is a list of
     element-descriptor tuples --- see
     :meth:`ElementDescriptor.new_from_tuple<xmlserdes.ElementDescriptor.new_from_tuple>` and
@@ -157,7 +161,13 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
                                                    XMLSerializable)):
     """
     Base class for types which are essentially named tuples with the
-    field-names taken from the ``xml_descriptor``.
+    field-names taken from the ``xml_descriptor``.  This is a subclass
+    of :class:`~xmlserdes.XMLSerializable` and so types derived from
+    :class:`~xmlserdes.XMLSerializableNamedTuple` are:
+
+    * Serializable to XML via instance method :meth:`as_xml<xmlserdes.XMLSerializable.as_xml>`
+      or :meth:`as_xml_str<xmlserdes.XMLSerializable.as_xml_str>`
+    * Deserializable from XML via class method :meth:`from_xml<xmlserdes.XMLSerializable.from_xml>`
 
     >>> class Rectangle(xmlserdes.XMLSerializableNamedTuple):
     ...     xml_default_tag = 'rect'
