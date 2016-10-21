@@ -12,3 +12,10 @@ instance of some class having multiple properties to be de/serialized.
 Support is provided for declarative specification of how this is to be
 done.
 
+
+.. toctree::
+   :caption: Reference
+   :maxdepth: 2
+
+   classes-and-functions
+   top-level-functions
