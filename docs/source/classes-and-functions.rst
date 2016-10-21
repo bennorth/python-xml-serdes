@@ -4,6 +4,8 @@ Classes and functions
 XMLSerializable
 ---------------
 .. autoclass:: xmlserdes.XMLSerializable
+   :members:
+   :member-order: bysource
 
 XMLSerializableNamedTuple
 -------------------------
