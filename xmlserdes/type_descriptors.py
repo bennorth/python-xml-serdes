@@ -759,6 +759,7 @@ class NumpyRecordVectorStructured(List, NumpyValidityAssertionMixin):
     ...        </greens>''')
     >>> extracted_colours = colour_vector_td.extract_from(xml_elt, 'greens')
     >>> print(extracted_colours)
+    ... # doctest: +NORMALIZE_WHITESPACE
     [(0, 64, 0) (0, 192, 0)]
     >>> print(extracted_colours.dtype)
     [('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
