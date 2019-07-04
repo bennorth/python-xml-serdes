@@ -246,23 +246,23 @@ class TestNestedNamedTuple(object):
 
 class TestBadAttributeContents(object):
     def test_instance_attribute(self):
-        with pytest.raises_regexp(ValueError, 'tag "@circle" not valid'):
+        with pytest.raises(ValueError, match='tag "@circle" not valid'):
             class BadInstance(XMLSerializableNamedTuple):
                 xml_descriptor = [('@circle', Circle)]
 
     def test_list_attribute(self):
-        with pytest.raises_regexp(ValueError, 'tag "@circles" not valid'):
+        with pytest.raises(ValueError, match='tag "@circles" not valid'):
             class BadList(XMLSerializableNamedTuple):
                 xml_descriptor = [('@circles', [Circle, 'circle'])]
 
     def test_numpy_record_vector_attribute(self):
-        with pytest.raises_regexp(ValueError, 'tag "@dimensions" not valid'):
+        with pytest.raises(ValueError, match='tag "@dimensions" not valid'):
             dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
             class BadList(XMLSerializableNamedTuple):
                 xml_descriptor = [('@dimensions', (np.ndarray, dims_dtype, 'dims'))]
 
     def test_dtype_scalar_attribute(self):
-        with pytest.raises_regexp(ValueError, 'tag "@dimensions" not valid'):
+        with pytest.raises(ValueError, match='tag "@dimensions" not valid'):
             dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
             class BadList(XMLSerializableNamedTuple):
                 xml_descriptor = [('@dimensions', dims_dtype)]
