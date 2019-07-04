@@ -198,7 +198,7 @@ class RightAngledTriangle(XMLSerializableNamedTuple):
 class TestNamedTupleSuppressInferredDefaultTag(object):
     def test_tag_not_supplied_caught(self):
         rat = RightAngledTriangle(4684659, 4684660, 6625109)
-        with pytest.raises_regexp(AttributeError, 'xml_default_tag'):
+        with pytest.raises(AttributeError, match='xml_default_tag'):
             rat.as_xml()
 
 
@@ -320,17 +320,17 @@ class TestBadNamedTupleConstruction(object):
         ids=['wrong-value-from-slot'])
     #
     def test_bad_construction(self, class_fun, exc_re):
-        with pytest.raises_regexp(ValueError, exc_re):
+        with pytest.raises(ValueError, match=exc_re):
             class_fun()
 
 
 class TestBadMethodUsage(object):
     def test_wrong_n_children(self):
         bad_xml = etree.fromstring('<rect><a>1</a><b>1</b><c>1</c></rect>')
-        with pytest.raises_regexp(XMLSerDesWrongChildrenError,
-                                  'mismatched children',
-                                  xpath=['rect']):
+        with pytest.raises(XMLSerDesWrongChildrenError,
+                           match='mismatched children') as exc_info:
             Rectangle.from_xml(bad_xml, 'rect')
+        assert exc_info.value.xpath == ['rect']
 
     @pytest.mark.parametrize(
         'bad_tag_val_pairs,cmp_txt',
@@ -343,19 +343,19 @@ class TestBadMethodUsage(object):
         ids=['wrong-n-children', 'wrong-tags', 'one-wrong-tag'])
     #
     def test_bad_child_elements(self, bad_tag_val_pairs, cmp_txt):
-        with pytest.raises_regexp(XMLSerDesWrongChildrenError,
-                                  'mismatched children: ' + cmp_txt,
-                                  xpath=['Circle']):
+        with pytest.raises(XMLSerDesWrongChildrenError,
+                           match='mismatched children: ' + cmp_txt) as exc_info:
             bad_xml = etree.Element('Circle')
             for k, v in bad_tag_val_pairs:
                 elt = etree.Element(k)
                 elt.text = str(v)
                 bad_xml.append(elt)
             Circle.from_xml(bad_xml, 'Circle')
+        assert exc_info.value.xpath == ['Circle']
 
     def test_wrong_top_level_tag(self):
         bad_xml = etree.fromstring('<rectangle><width>1</width><height>2</height></rectangle>')
-        with pytest.raises_regexp(ValueError, 'expected tag "rect" but got "rectangle"'):
+        with pytest.raises(ValueError, match='expected tag "rect" but got "rectangle"'):
             Rectangle.from_xml(bad_xml, 'rect')
 
 
@@ -391,10 +391,10 @@ class TestDeepError(object):
                                         </rooms>
                                       </building>""")
 
-        with pytest.raises_regexp(XMLSerDesError,
-                                  'missing: colour.*unexpected: size',
-                                  ['building', 'rooms', 'room[2]', 'chairs', 'chair[3]']):
+        with pytest.raises(XMLSerDesError,
+                           match='missing: colour.*unexpected: size') as exc_info:
             Building.from_xml(bad_xml, 'building')
+        assert exc_info.value.xpath == ['building', 'rooms', 'room[2]', 'chairs', 'chair[3]']
 
     def test_as_xml(self):
         class Chair(XMLSerializableNamedTuple):
@@ -415,13 +415,13 @@ class TestDeepError(object):
         building = Building([Room(chairs),
                              Room(chairs + [Chair(np.array([100, 200, 300], dtype=np.int32))])])
 
-        with pytest.raises_regexp(XMLSerDesError,
-                                  'expected dtype .*int16.* but got "int32"',
-                                  ['building',
-                                   'rooms', 'room[2]',
-                                   'chairs', 'chair[3]',
-                                   'dimensions']):
+        with pytest.raises(XMLSerDesError,
+                           match='expected dtype .*int16.* but got "int32"') as exc_info:
             building.as_xml()
+        assert exc_info.value.xpath == ['building',
+                                        'rooms', 'room[2]',
+                                        'chairs', 'chair[3]',
+                                        'dimensions']
 
 
 class TestBadMetaclassUse(object):
@@ -433,7 +433,7 @@ class TestBadMetaclassUse(object):
         'xml_descriptor'.  Furthermore, that test needs an intermediate base class
         lacking the attribute.
         """
-        with pytest.raises_regexp(ValueError, 'no "xml_descriptor" in "NoXmlDescriptor"'):
+        with pytest.raises(ValueError, match='no "xml_descriptor" in "NoXmlDescriptor"'):
             class Nop(object):
                 pass
 

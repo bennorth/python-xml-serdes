@@ -53,7 +53,7 @@ class TestAtomicTypes(object):
         assert val_round_trip == 19
 
     def test_bad_terse_string_descriptors(self):
-        with pytest.raises_regexp(TypeError, 'data type .* not understood'):
+        with pytest.raises(TypeError, match='data type .* not understood'):
             make_TD('not-a-real-dtype-code')
 
     def test_bool(self):
@@ -70,37 +70,42 @@ class TestAtomicTypes(object):
     def test_bool_bad_serialize_values(self):
         td = make_TD(bool)
 
-        with pytest.raises_regexp(XMLSerDesError, 'expected True or False but got "42"', []):
+        with pytest.raises(XMLSerDesError,
+                           match='expected True or False but got "42"') as exc_info:
             td.xml_element(42, 'foo')
+        assert exc_info.value.xpath == []
 
     def test_bool_bad_deserialize_values(self):
         td = make_TD(bool)
 
-        with pytest.raises_regexp(XMLSerDesError,
-                                  'expected "true" or "false" but got "banana"', ['foo']):
+        with pytest.raises(XMLSerDesError,
+                           match='expected "true" or "false" but got "banana"') as exc_info:
             #
             bad_xml = etree.fromstring('<foo>banana</foo>')
             td.extract_from(bad_xml, 'foo')
+        assert exc_info.value.xpath == ['foo']
 
     def test_int_bad_deserialize_values(self):
         td = make_TD(int)
         bad_xml = etree.fromstring('<foo>banana</foo>')
-        with pytest.raises_regexp(XMLSerDesError, 'could not parse "banana" as "int"', ['foo']):
+        with pytest.raises(XMLSerDesError,
+                           match='could not parse "banana" as "int"') as exc_info:
             td.extract_from(bad_xml, 'foo')
+        assert exc_info.value.xpath == ['foo']
 
 
 @pytest.mark.skipif(sys.version_info < (3, 4),
                     reason='requires Python 3.4 or higher')
 class TestAtomicEnum(object):
     def test_bad_enum(self):
-        with pytest.raises_regexp(TypeError, 'expected Enum-derived type'):
+        with pytest.raises(TypeError, match='expected Enum-derived type'):
             X.AtomicEnum(int)
 
     def test_bad_enum_value(self):
         from enum import Enum
         Animal = Enum('Animal', 'Cat Dog Rabbit')
         td = X.AtomicEnum(Animal)
-        with pytest.raises_regexp(ValueError, "expected instance of <enum 'Animal'>"):
+        with pytest.raises(ValueError, match="expected instance of <enum 'Animal'>"):
             td.xml_element(42, 'bad-animal')
 
 
@@ -129,7 +134,7 @@ class TestListTypes(object):
                              ids=['three-elt', 'empty', 'no-default-tag'])
     #
     def test_bad_construction(self, list_descr, exc_re):
-        with pytest.raises_regexp(ValueError, exc_re):
+        with pytest.raises(ValueError, match=exc_re):
             make_TD(list_descr)
 
 
@@ -170,13 +175,13 @@ class TestRectangleEquality(object):
 
 class TestInstanceTypes(object):
     def test_bad_construction_verbose(self):
-        with pytest.raises_regexp(ValueError, 'has no xml_descriptor'):
+        with pytest.raises(ValueError, match='has no xml_descriptor'):
             X.Instance(BareRectangle)
 
     def test_bad_construction_terse(self):
-        with pytest.raises_regexp(ValueError, 'no "xml_descriptor" attribute'):
+        with pytest.raises(ValueError, match='no "xml_descriptor" attribute'):
             make_TD(BareRectangle)
-        with pytest.raises_regexp(ValueError, 'unhandled terse descriptor'):
+        with pytest.raises(ValueError, match='unhandled terse descriptor'):
             make_TD(lambda x: x)
 
     @pytest.mark.parametrize('td',
@@ -195,20 +200,22 @@ class TestInstanceTypes(object):
     def test_bad_xml_wrong_n_children(self):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring('<rect><a>42</a><b>100</b><c>123</c></rect>')
-        with pytest.raises_regexp(XMLSerDesWrongChildrenError,
-                                  'mismatched children: '
+        with pytest.raises(XMLSerDesWrongChildrenError,
+                           match=('mismatched children: '
                                   r'\[missing: width, missing: height, '
-                                  r'unexpected: a, unexpected: b, unexpected: c\]',
-                                  xpath=['rect']):
+                                  r'unexpected: a, '
+                                  r'unexpected: b, '
+                                  r'unexpected: c\]')) as exc_info:
             td.extract_from(bad_xml, 'rect')
+        assert exc_info.value.xpath == ['rect']
 
     def test_bad_xml_wrong_tag(self):
         td = X.Instance(Rectangle)
         bad_xml = etree.fromstring('<rect><a>42</a><b>100</b></rect>')
-        with pytest.raises_regexp(XMLSerDesError,
-                                  '.*missing: width.*unexpected: a',
-                                  xpath=['rect']):
+        with pytest.raises(XMLSerDesError,
+                           match='.*missing: width.*unexpected: a') as exc_info:
             td.extract_from(bad_xml, 'rect')
+        assert exc_info.value.xpath == ['rect']
 
 
 class _TestNumpyBase(object):
@@ -220,8 +227,9 @@ class _TestNumpyBase(object):
         ids=['string', 'multi-dml', 'wrong-dtype'])
     #
     def test_bad_value(self, x, regexp):
-        with pytest.raises_regexp(XMLSerDesError, regexp, []):
+        with pytest.raises(XMLSerDesError, match=regexp) as exc_info:
             self.td.xml_element(x, 'values')
+        assert exc_info.value.xpath == []
 
 
 class TestNumpyAtomic(_TestNumpyBase):
@@ -314,8 +322,9 @@ class TestNumpyRecordStructured(_TestNumpyBase):
     def test_bad_xml(self, bad_inner_str, exc_re, exp_xpath):
         bad_str = '<rectangles>%s</rectangles>' % bad_inner_str
         bad_xml = etree.fromstring(bad_str)
-        with pytest.raises_regexp(XMLSerDesError, exc_re, exp_xpath):
+        with pytest.raises(XMLSerDesError, match=exc_re) as exc_info:
             self.td.extract_from(bad_xml, 'rectangles')
+        assert exc_info.value.xpath == exp_xpath
 
 
 class TestNumpyDTypeScalar(object):
@@ -361,8 +370,9 @@ class TestNumpyDTypeScalar(object):
         ids=['string', 'vector', 'multi-dml', 'wrong-dtype-atomic', 'wrong-dtype-structured'])
     #
     def test_bad_value(self, x, regexp):
-        with pytest.raises_regexp(XMLSerDesError, regexp, []):
+        with pytest.raises(XMLSerDesError, match=regexp) as exc_info:
             self.atomics_td.xml_element(x, 'values')
+        assert exc_info.value.xpath == []
 
 
 class TestNumpyRecordStructuredNested(object):
@@ -425,7 +435,7 @@ class TestDescriptors(object):
         ids=['wrong-length', 'wrong-type'])
     #
     def test_bad_construction(self, bad_arg, exc_tp, exc_re):
-        with pytest.raises_regexp(exc_tp, exc_re):
+        with pytest.raises(exc_tp, match=exc_re):
             X.ElementDescriptor.new_from_tuple(bad_arg)
 
 
@@ -452,8 +462,9 @@ class TestObject(object):
     #
     def test_bad_input(self, xml_str, des_tag, exc_re, exp_xpath):
         bad_xml = etree.fromstring(xml_str)
-        with pytest.raises_regexp(XMLSerDesError, exc_re, exp_xpath):
+        with pytest.raises(XMLSerDesError, match=exc_re) as exc_info:
             X.deserialize(Rectangle, bad_xml, des_tag)
+        assert exc_info.value.xpath == exp_xpath
 
 
 class Layout(collections.namedtuple('Layout_', 'colour cornerprops stripes ids shape components')):
@@ -538,5 +549,5 @@ class TestTerseErrorInputs(object):
         ids=['empty', 'wrong-first-elt', '2-elt-not-dtype', '3-elt-not-dtype', 'wrong-length'])
     #
     def test_numpy_descriptor(self, bad_tup, exc_re):
-        with pytest.raises_regexp(ValueError, exc_re):
+        with pytest.raises(ValueError, match=exc_re):
             make_TD(bad_tup)
