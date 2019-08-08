@@ -6,6 +6,16 @@ instance of some class having multiple properties to be de/serialized.
 Support is provided for declarative specification of how this is to be
 done.
 
+## Supported Python versions
+
+ * Python 2.7
+ * Python 3.5
+ * Python 3.6
+ * Python 3.7
+
+Note that Python 3.4 officialy reached end-of-life in March 2019, so
+is no longer supported by this package.
+
 ## Documentation
 
 Documentation is available at [ReadTheDocs](https://python-xml-serdes.readthedocs.io/en/master/).
