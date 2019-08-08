@@ -269,6 +269,11 @@ class TestNumpyAtomic(_TestNumpyBase):
         elt = self.td.xml_element(xs, 'values')
         assert XU.str_from_xml_elt(elt) == '<values>32,42,100,99,-100</values>'
 
+    def test_empty_content(self):
+        xs = np.array([], dtype=np.int32)
+        elt = self.td.xml_element(xs, 'values')
+        assert XU.str_from_xml_elt(elt) == '<values></values>'
+
 
 class TestNumpyAtomicConvenience(TestNumpyAtomic):
     def setup_method(self, method):
