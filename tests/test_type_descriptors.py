@@ -249,21 +249,30 @@ class TestNumpyAtomic(_TestNumpyBase):
                       np.float32, np.float64]
 
     @pytest.mark.parametrize(
-        'dtype,td_func',
+        'dtype,td_func,use_empty_xs',
         list_product(dtypes_to_test,
-                     [X.NumpyAtomicVector, lambda dt: make_TD((np.ndarray, dt))]),
+                     [X.NumpyAtomicVector, lambda dt: make_TD((np.ndarray, dt))],
+                     [False, True]),
         ids=['-'.join(flds)
              for flds in list_product([dt.__name__ for dt in dtypes_to_test],  # noqa
-                                      ['verbose', 'terse'])])
+                                      ['verbose', 'terse'],
+                                      ['nonempty', 'empty'])])
     #
-    def test_round_trips(self, dtype, td_func):
-        xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
+    def test_round_trips(self, dtype, td_func, use_empty_xs):
+        xs = np.array([] if use_empty_xs
+                      else [-1.23, -9.99, 0.234, 42, 99, 100.11],
+                      dtype=dtype)
         self.round_trip_1(xs, td_func(dtype))
 
     def test_content(self):
         xs = np.array([32, 42, 100, 99, -100], dtype=np.int32)
         elt = self.td.xml_element(xs, 'values')
         assert XU.str_from_xml_elt(elt) == '<values>32,42,100,99,-100</values>'
+
+    def test_empty_content(self):
+        xs = np.array([], dtype=np.int32)
+        elt = self.td.xml_element(xs, 'values')
+        assert XU.str_from_xml_elt(elt) == '<values></values>'
 
 
 class TestNumpyAtomicConvenience(TestNumpyAtomic):
