@@ -256,8 +256,10 @@ class TestNumpyAtomic(_TestNumpyBase):
              for flds in list_product([dt.__name__ for dt in dtypes_to_test],  # noqa
                                       ['verbose', 'terse'])])
     #
-    def test_round_trips(self, dtype, td_func):
-        xs = np.array([-1.23, -9.99, 0.234, 42, 99, 100.11], dtype=dtype)
+    def test_round_trips(self, dtype, td_func, use_empty_xs):
+        xs = np.array([] if use_empty_xs
+                      else [-1.23, -9.99, 0.234, 42, 99, 100.11],
+                      dtype=dtype)
         self.round_trip_1(xs, td_func(dtype))
 
     def test_content(self):
