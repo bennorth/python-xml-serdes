@@ -267,7 +267,7 @@ class TestNumpyAtomic(_TestNumpyBase):
         xs = np.array([] if use_empty_xs
                       else [-1.23, -9.99, 0.234, 42, 99, 100.11],
                       dtype=dtype)
-        self.round_trip_1(xs, td_func(dtype))
+        self.round_trip_1(xs, td_func(dtype), go_via_string)
 
     def test_content(self):
         xs = np.array([32, 42, 100, 99, -100], dtype=np.int32)
