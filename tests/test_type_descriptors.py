@@ -236,9 +236,12 @@ class TestNumpyAtomic(_TestNumpyBase):
     def setup_method(self, method):
         self.td = X.NumpyAtomicVector(np.int32)
 
-    def round_trip_1(self, xs, td):
-        elt = td.xml_element(xs, 'values')
-        xs_round_trip = td.extract_from(elt, 'values')
+    def round_trip_1(self, xs, td, go_via_string):
+        written_elt = td.xml_element(xs, 'values')
+        read_elt = (etree.fromstring(XU.str_from_xml_elt(written_elt))
+                    if go_via_string
+                    else written_elt)
+        xs_round_trip = td.extract_from(read_elt, 'values')
         assert xs_round_trip.shape == xs.shape
         assert np.all(xs_round_trip == xs)
 
