@@ -588,7 +588,8 @@ class NumpyAtomicVector(TypeDescriptor, NumpyValidityAssertionMixin):
         return elt
 
     def _extract_from(self, elt, expected_tag, _xpath):
-        raw_s_elts = elt.text.split(',')
+        elt_text = elt.text or ''
+        raw_s_elts = elt_text.split(',')
         # A special case is when elt.text is the empty string:
         s_elts = ([] if raw_s_elts == [''] else raw_s_elts)
         elements_list = list(map(self.dtype, s_elts))
