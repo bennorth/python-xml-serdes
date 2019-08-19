@@ -249,16 +249,18 @@ class TestNumpyAtomic(_TestNumpyBase):
                       np.float32, np.float64]
 
     @pytest.mark.parametrize(
-        'dtype,td_func,use_empty_xs',
+        'dtype,td_func,use_empty_xs,go_via_string',
         list_product(dtypes_to_test,
                      [X.NumpyAtomicVector, lambda dt: make_TD((np.ndarray, dt))],
+                     [False, True],
                      [False, True]),
         ids=['-'.join(flds)
              for flds in list_product([dt.__name__ for dt in dtypes_to_test],  # noqa
                                       ['verbose', 'terse'],
-                                      ['nonempty', 'empty'])])
+                                      ['nonempty', 'empty'],
+                                      ['via-xml-elt', 'via-string'])])
     #
-    def test_round_trips(self, dtype, td_func, use_empty_xs):
+    def test_round_trips(self, dtype, td_func, use_empty_xs, go_via_string):
         xs = np.array([] if use_empty_xs
                       else [-1.23, -9.99, 0.234, 42, 99, 100.11],
                       dtype=dtype)
