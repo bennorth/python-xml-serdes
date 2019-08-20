@@ -457,3 +457,29 @@ class TestEnum(object):
                                             '<weight>42.5</weight></pet-details>')
         pd1 = PetDetails.from_xml(pd_xml, 'pet-details')
         assert pd1 == pd
+
+
+class TestNumpyArraysIncludingEmpty:
+    class HyperCube(XMLSerializableNamedTuple):
+        xml_default_tag = 'hyper-cube'
+        xml_descriptor = [('colour', str), ('dimensions', (np.ndarray, np.int32))]
+
+    @pytest.mark.parametrize('n_dims', [0, 1, 2, 3, 4])
+    def test_including_empty_numpy_array(self, n_dims):
+        hc = self.HyperCube('apple-green', np.arange(n_dims, dtype=np.int32))
+        hc_xml = hc.as_xml()
+        hc_xml_str = str_from_xml_elt(hc_xml)
+
+        exp_csv_content = ','.join(map(str, hc.dimensions))
+        assert hc_xml_str == ('<hyper-cube>'
+                                '<colour>apple-green</colour>'
+                                '<dimensions>{}</dimensions></hyper-cube>'
+                              .format(exp_csv_content))
+
+        hc_xml_reparsed = etree.fromstring(hc_xml_str)
+        hc1 = self.HyperCube.from_xml(hc_xml_reparsed, 'hyper-cube')
+
+        # Verify fields by hand, to properly test NumPy array equality
+        assert hc1.colour == hc.colour
+        assert hc1.dimensions.shape == hc.dimensions.shape
+        assert (hc1.dimensions == hc.dimensions).all()
