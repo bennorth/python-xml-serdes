@@ -10,3 +10,4 @@ build/
 dist/
 xml_serdes.egg-info/
 notes.txt
+venv/
