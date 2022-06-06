@@ -30,6 +30,13 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
     :meth:`xmlserdes.ElementDescriptor.new_from_tuple` method.
     """
 
+    def __new__(cls, *args, **kwargs):
+        elt_descr = super(ElementDescriptor, cls).__new__(cls, *args, **kwargs)
+        if not elt_descr.type_descr.tag_is_valid(elt_descr.tag):
+            raise ValueError('tag "{0}" not valid for complex type-descriptor'
+                             .format(elt_descr.tag))
+        return elt_descr
+
     @classmethod
     def _ensure_TypeDescriptor(cls, obj):
         """
@@ -64,7 +71,8 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
 
         if len(tup) == 2:
             tag, td = tup
-            return cls(tag, operator.attrgetter(tag), tag, cls._ensure_TypeDescriptor(td))
+            slot = (tag[1:] if tag[0] == '@' else tag)
+            return cls(tag, operator.attrgetter(slot), slot, cls._ensure_TypeDescriptor(td))
         elif len(tup) == 3:
             tag, vf, td = tup
             vslot = None
@@ -91,6 +99,9 @@ class ElementDescriptor(collections.namedtuple('_ElementDescriptor',
         <shape-width>42</shape-width>
         """
         return self.type_descr.xml_element(self.value_from(obj), self.tag, _xpath)
+
+    def xml_node(self, obj, _xpath=[]):
+        return self.type_descr.xml_node(self.value_from(obj), self.tag, _xpath)
 
     def extract_from(self, elt, _xpath=[]):
         """

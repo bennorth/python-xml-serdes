@@ -171,6 +171,18 @@ class XMLSerializableNamedTuple(six.with_metaclass(XMLSerializableNamedTupleMeta
     >>> print(xmlserdes.utils.str_from_xml_elt(r.as_xml()))
     <rect><wd>10</wd><ht>20</ht></rect>
 
+    If a field's name specifies that the its value is to be stored in an
+    XML attribute (by starting with the ``'@'`` character), then the
+    field name of the class removes that ``'@'``:
+
+    >>> class Ellipse(xmlserdes.XMLSerializableNamedTuple):
+    ...     xml_default_tag = 'oval'
+    ...     xml_descriptor = [('@major', int), ('@minor', int),
+    ...                       ('colour', str)]
+    >>> e = Ellipse(8, 5, 'red')
+    >>> print(xmlserdes.utils.str_from_xml_elt(e.as_xml()))
+    <oval major="8" minor="5"><colour>red</colour></oval>
+
     If class has no ``xml_default_tag`` attribute, it is created with
     value equal to the class name:
 

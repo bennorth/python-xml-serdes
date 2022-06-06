@@ -285,6 +285,21 @@ class TestNumpyAtomicConvenience(TestNumpyAtomic):
         self.td = X.NumpyVector(np.int32)
 
 
+class TestNumpyScalarDType(object):
+    def test_content(self):
+        colour_dtype = np.dtype([('red', np.uint8),
+                                 ('green', np.uint8),
+                                 ('blue', np.uint8)])
+        # The '[()]' indexing extracts scalar from 0-dim array:
+        colour = np.array((25, 50, 75), dtype=colour_dtype)[()]
+        td = make_TD(colour_dtype)
+        elt = td.xml_element(colour, 'colour')
+        assert XU.str_from_xml_elt(elt) == ('<colour>'
+                                            '<red>25</red>'
+                                            '<green>50</green>'
+                                            '<blue>75</blue></colour>')
+
+
 RectangleDType = np.dtype([('width', np.int32), ('height', np.int32)])
 
 RectanglePairDType = np.dtype([('big', RectangleDType), ('small', RectangleDType)])
