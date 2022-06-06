@@ -6,26 +6,20 @@ instance of some class having multiple properties to be de/serialized.
 Support is provided for declarative specification of how this is to be
 done.
 
+## Status
+
+As of 2022, I have no current plans to work on this further.
+
 ## Supported Python versions
 
- * Python 2.7
- * Python 3.5
- * Python 3.6
  * Python 3.7
-
-Note that Python 3.4 officialy reached end-of-life in March 2019, so
-is no longer supported by this package.
+ * Python 3.8
+ * Python 3.9
+ * Python 3.10
 
 ## Documentation
 
 Documentation is available at [ReadTheDocs](https://python-xml-serdes.readthedocs.io/en/master/).
-
-## Build status
-
-Courtesy of Travis-CI and Coveralls:
-
-[![Build Status](https://travis-ci.org/bennorth/python-xml-serdes.svg?branch=master)](https://travis-ci.org/bennorth/python-xml-serdes)
-[![Coverage Status](https://coveralls.io/repos/github/bennorth/python-xml-serdes/badge.svg?branch=master)](https://coveralls.io/github/bennorth/python-xml-serdes?branch=master)
 
 ## Licence
 
