@@ -5,9 +5,11 @@ import pytest
 from xmlserdes import XMLSerializable, XMLSerializableNamedTuple
 from xmlserdes.utils import str_from_xml_elt
 from xmlserdes.errors import XMLSerDesError, XMLSerDesWrongChildrenError
+from xmlserdes.type_descriptors import DTypeScalar
 
 
 from collections import OrderedDict
+from itertools import permutations
 import numpy as np
 from lxml import etree
 import sys
@@ -242,6 +244,30 @@ class TestNestedNamedTuple(object):
         assert str_from_xml_elt(p.as_xml(tag), **kwargs) == p.as_xml_str(tag, **kwargs)
 
 
+class TestBadAttributeContents(object):
+    def test_instance_attribute(self):
+        with pytest.raises(ValueError, match='tag "@circle" not valid'):
+            class BadInstance(XMLSerializableNamedTuple):
+                xml_descriptor = [('@circle', Circle)]
+
+    def test_list_attribute(self):
+        with pytest.raises(ValueError, match='tag "@circles" not valid'):
+            class BadList(XMLSerializableNamedTuple):
+                xml_descriptor = [('@circles', [Circle, 'circle'])]
+
+    def test_numpy_record_vector_attribute(self):
+        with pytest.raises(ValueError, match='tag "@dimensions" not valid'):
+            dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
+            class BadList(XMLSerializableNamedTuple):
+                xml_descriptor = [('@dimensions', (np.ndarray, dims_dtype, 'dims'))]
+
+    def test_dtype_scalar_attribute(self):
+        with pytest.raises(ValueError, match='tag "@dimensions" not valid'):
+            dims_dtype = np.dtype([('wd', np.uint8), ('ht', np.uint8)])
+            class BadList(XMLSerializableNamedTuple):
+                xml_descriptor = [('@dimensions', dims_dtype)]
+
+
 class RectangleCollection(XMLSerializableNamedTuple):
     xml_descriptor = [('creator', str),
                       ('rectangles', [Rectangle])]
@@ -306,6 +332,36 @@ class TestNamedTupleDifferentTags(object):
         assert str_from_xml_elt(e_xml) == self.expected_xml(tag_for_expected)
         e1 = Ellipse.from_xml(e_xml, tag_for_expected)
         assert e1 == e
+
+
+class FruitSalad(XMLSerializableNamedTuple):
+    xml_descriptor = [('@n-apples', 'n_apples', int),
+                      ('put-in', 'container', str)]
+
+
+class TestNamedTupleAttributes(object):
+    def test_round_trip(self):
+        s = FruitSalad(7, 'bowl')
+        assert (str_from_xml_elt(s.as_xml())
+                == '<FruitSalad n-apples="7"><put-in>bowl</put-in></FruitSalad>')
+
+
+class Substance(XMLSerializableNamedTuple):
+    xml_descriptor = [('name', str),
+                      ('@earth', int), ('@air', int), ('@fire', int), ('@water', int)]
+
+
+class TestAttributePermutations(object):
+    def test_create_attribute_ordering(self):
+        elt_fields = Substance._fields[1:]
+        composition = dict((c, 10 + i) for i, c in enumerate(elt_fields))
+        chalk = Substance('chalk', 10, 11, 12, 13)
+        for elements in permutations(elt_fields):
+            attribs_str = ''.join(' {0}="{1}"'.format(e, composition[e]) for e in elements)
+            xml_str = '<Substance{}><name>chalk</name></Substance>'.format(attribs_str)
+            xml = etree.fromstring(xml_str)
+            chalk1 = Substance.from_xml(xml, 'Substance')
+            assert chalk1 == chalk
 
 
 class TestBadNamedTupleConstruction(object):
@@ -444,17 +500,34 @@ class TestBadMetaclassUse(object):
 @pytest.mark.skipif(sys.version_info < (3, 4),
                     reason='requires Python 3.4 or higher')
 class TestEnum(object):
-    def test_round_trip(self):
+    try:
+        # Tests will only actually run under correct Python, so fine to
+        # ignore the ImportError if we don't find the 'enum' module at
+        # class-definition time.
         from enum import Enum
         Animal = Enum('Animal', 'Cat Dog Rabbit')
+    except ImportError:
+        pass
 
+    def test_round_trip(self):
         class PetDetails(XMLSerializableNamedTuple):
-            xml_descriptor = [('type', Animal), ('weight', float)]
+            xml_descriptor = [('type', self.Animal), ('weight', float)]
 
-        pd = PetDetails(Animal.Dog, 42.5)
+        pd = PetDetails(self.Animal.Dog, 42.5)
         pd_xml = pd.as_xml('pet-details')
         assert str_from_xml_elt(pd_xml) == ('<pet-details><type>Dog</type>'
                                             '<weight>42.5</weight></pet-details>')
+        pd1 = PetDetails.from_xml(pd_xml, 'pet-details')
+        assert pd1 == pd
+
+    def test_in_attribute(self):
+        # TODO: If tag-/slot-name starts with '@', strip from slot-name
+        class PetDetails(XMLSerializableNamedTuple):
+            xml_descriptor = [('@tp', 'type', self.Animal), ('@wt', 'weight', float)]
+
+        pd = PetDetails(self.Animal.Dog, 42.5)
+        pd_xml = pd.as_xml('pet-details')
+        assert str_from_xml_elt(pd_xml) == '<pet-details tp="Dog" wt="42.5"/>'
         pd1 = PetDetails.from_xml(pd_xml, 'pet-details')
         assert pd1 == pd
 
