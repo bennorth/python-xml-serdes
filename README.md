@@ -17,13 +17,6 @@ done.
 
 Documentation is available at [ReadTheDocs](https://python-xml-serdes.readthedocs.io/en/master/).
 
-## Build status
-
-Courtesy of Travis-CI and Coveralls:
-
-[![Build Status](https://travis-ci.org/bennorth/python-xml-serdes.svg?branch=master)](https://travis-ci.org/bennorth/python-xml-serdes)
-[![Coverage Status](https://coveralls.io/repos/github/bennorth/python-xml-serdes/badge.svg?branch=master)](https://coveralls.io/github/bennorth/python-xml-serdes?branch=master)
-
 ## Licence
 
 ```
