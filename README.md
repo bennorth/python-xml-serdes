@@ -6,6 +6,10 @@ instance of some class having multiple properties to be de/serialized.
 Support is provided for declarative specification of how this is to be
 done.
 
+## Status
+
+As of 2022, I have no current plans to work on this further.
+
 ## Supported Python versions
 
  * Python 3.7
