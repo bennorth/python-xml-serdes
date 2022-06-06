@@ -7,4 +7,6 @@ htmlcov/
 .junit/
 docs/build/
 build/
+dist/
+xml_serdes.egg-info/
 notes.txt
