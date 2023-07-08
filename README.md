@@ -9,10 +9,10 @@ done.
 ## Status
 
 As of 2022, I have no current plans to work on this further.
+(Although in July 2023 I did update the read-the-docs config.)
 
 ## Supported Python versions
 
- * Python 3.7
  * Python 3.8
  * Python 3.9
  * Python 3.10
